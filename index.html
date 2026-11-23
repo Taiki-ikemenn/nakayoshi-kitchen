@@ -474,6 +474,18 @@ body:has(#ov .overlay) #toast{bottom:auto;top:calc(var(--safe-t) + 10px)}
 .stagepick b{display:flex;flex-direction:column;align-items:center;line-height:1.2}
 .spbest{font-size:10px;color:var(--sub);font-weight:500;letter-spacing:.04em;white-space:nowrap}
 
+/* ひとこと */
+#stampMenu{position:fixed;z-index:96;display:grid;grid-template-columns:repeat(2,auto);gap:6px;padding:8px;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh);animation:popin .2s}
+#stampMenu button{min-height:40px;padding:0 14px;border-radius:12px;font-size:14px;font-weight:700;letter-spacing:.06em;color:var(--sc);background:color-mix(in srgb,var(--sc) 10%,var(--card));border:1px solid color-mix(in srgb,var(--sc) 30%,transparent)}
+body[data-theme=night] #stampMenu button{color:color-mix(in srgb,var(--sc) 50%,#fff)}
+#stampBox{position:fixed;left:calc(var(--safe-l) + 12px);bottom:calc(var(--safe-b) + 80px);z-index:94;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.stamp{display:flex;align-items:center;gap:8px;padding:5px 14px 5px 6px;background:var(--card);border:1.5px solid var(--sc);border-radius:999px;box-shadow:var(--sh);font-weight:700;font-size:15px;animation:stin 2.6s ease forwards}
+.stamp i{width:30px;height:34px;display:block}
+.stamp span{display:flex;flex-direction:column;line-height:1.15;color:var(--sc)}
+body[data-theme=night] .stamp span{color:color-mix(in srgb,var(--sc) 50%,#fff)}
+.stamp small{font-size:10px;color:var(--sub);font-weight:500}
+@keyframes stin{0%{opacity:0;transform:translateX(-20px)}10%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+
 </style>
 </head>
 <body>
@@ -937,6 +949,8 @@ const BOARDS = 2;           // まないたの数
 const PANS = 3;             // オーブン・コンロの数
 const CAP = {cutq:4, cookq:4, tray:8};
 const ACTIVE_STATES = ['wait'];
+/* 仲間に送るひとこと */
+const STAMPS = {thx:{t:'ありがとう', c:'#e2456f'}, nice:{t:'ナイス', c:'#2e9a6b'}, fast:{t:'急いで', c:'#e0913a'}, help:{t:'手伝って', c:'#3a87d4'}, wait:{t:'待って', c:'#8a7a6a'}, ok:{t:'了解', c:'#2b2520'}};
 
 function newRoomState(code, hostPid){
   const wk = weekInfo();
@@ -1040,6 +1054,7 @@ function apply(st, a, pid){
   if (a.t === 'roles' && P){ P.roles = (a.roles || []).filter(r => ROLE_IDS.includes(r)); return {ok:true}; }
   if (a.t === 'start' && pid === st.host && (st.phase === 'lobby' || st.phase === 'result')){ startStage(st, Math.max(1, a.stage | 0 || st.stage)); return {ok:true}; }
   if (a.t === 'lobby' && pid === st.host){ st.phase = 'lobby'; st.orders = []; st.items = []; st.result = null; return {ok:true}; }
+  if (a.t === 'stamp' && P && STAMPS[a.k]){ if (st.now - (P.lastStamp || 0) < 900) return {ok:false}; P.lastStamp = st.now; fx(st, 'stamp', {k:a.k, p:pid}); return {ok:true}; }
   if (st.phase !== 'play') return {ok:false, why:'notplay'};
   const shop = shopOf(st.shop);
   const item = a.i ? st.items.find(i => i.id === a.i) : null;
@@ -1401,6 +1416,7 @@ function recordResult(r){
 }
 const meArt = mood => chef({color:ME.color, hat:ME.hat, skin:ME.skin, mood});
 const pArt = (p, mood) => chef({color:p.color, hat:p.hat, skin:p.skin, mood});
+const BUBBLE = () => svg(`<path d="M12 14 h40 a6 6 0 0 1 6 6 v20 a6 6 0 0 1 -6 6 h-22 l-10 9 v-9 h-8 a6 6 0 0 1 -6 -6 v-20 a6 6 0 0 1 6 -6z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><circle cx="22" cy="30" r="3.4" fill="currentColor"/><circle cx="32" cy="30" r="3.4" fill="currentColor"/><circle cx="42" cy="30" r="3.4" fill="currentColor"/>`);
 const ARROW_UP = () => svg(`<path d="M32 50 V14 M18 28 L32 14 L46 28" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`);
 const ARROW_DN = () => svg(`<path d="M32 14 V50 M18 36 L32 50 L46 36" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`);
 const CHECK_W = () => svg(`<path d="M14 33 l11 11 l25 -26" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`);
@@ -1616,6 +1632,7 @@ function handleFx(st){
     lastFx = f.id;
     if (f.type === 'arrive') sfx('arrive');
     if (f.type === 'serve'){ sfx('serve'); burstOrder(f.o, f.coins); if (f.streak >= 2) banner(`連続 ${f.streak}`, 'small'); }
+    if (f.type === 'stamp'){ sfx(f.p === PID ? 'tap' : 'arrive'); showStamp(f); }
     if (f.type === 'rush'){ sfx('start'); banner('ラッシュ'); }
     if (f.type === 'left') sfx('left');
     if (f.type === 'cooked' && mineSt.includes('yaku')) sfx('cooked');
@@ -1712,6 +1729,7 @@ function renderPlay(){
     <span class="prog">${Array.from({length:total}, (_, i) => `<i class="${i < st.served ? 'ok' : i < st.served + st.missed ? 'ng' : i < st.served + st.missed + act ? 'now' : ''}"></i>`).join('')}</span>
     ${ps.length > 1 ? `<span class="mates">${ps.map(p => `<i>${pArt(p)}</i>`).join('')}</span>` : ''}
     <span class="coins"><span class="ic">${ICON.coin()}</span>${st.coins}</span>
+    ${ps.length > 1 ? `<button class="btn sm round" data-a="stamp" aria-label="ひとこと"><span class="ic mono">${BUBBLE()}</span></button>` : ''}
     <button class="btn sm round" data-a="quit" aria-label="やめる"><span class="ic mono">${ICON.back()}</span></button>`;
   /* お客 */
   const O = $('#orders'), orders = st.orders.slice().sort((a, b) => a.at - b.at);
@@ -1993,7 +2011,25 @@ $('#play').addEventListener('pointerdown', e => {
     return;
   }
 });
+function stampMenu(btn){
+  let m = $('#stampMenu'); if (m){ m.remove(); return; }
+  m = document.createElement('div'); m.id = 'stampMenu';
+  m.innerHTML = Object.entries(STAMPS).map(([k, s]) => `<button data-stamp="${k}" style="--sc:${s.c}">${esc(s.t)}</button>`).join('');
+  const r = btn.getBoundingClientRect(); m.style.top = (r.bottom + 8) + 'px'; m.style.right = (innerWidth - r.right) + 'px';
+  document.body.append(m);
+  m.addEventListener('click', ev => { const b = ev.target.closest('[data-stamp]'); if (!b) return; sfx('pop'); send({t:'stamp', k:b.dataset.stamp}); m.remove(); });
+  setTimeout(() => { const off = ev => { if (!m.contains(ev.target)){ m.remove(); document.removeEventListener('pointerdown', off, true); } }; document.addEventListener('pointerdown', off, true); }, 0);
+}
+function showStamp(f){
+  const s = STAMPS[f.k], p = NET.st && NET.st.players[f.p]; if (!s) return;
+  let box = $('#stampBox'); if (!box){ box = document.createElement('div'); box.id = 'stampBox'; document.body.append(box); }
+  const e = document.createElement('div'); e.className = 'stamp'; e.style.setProperty('--sc', s.c);
+  e.innerHTML = `<i>${p ? pArt(p, 'happy') : ''}</i><span><small>${esc(p ? p.name : '')}</small>${esc(s.t)}</span>`;
+  box.append(e); while (box.children.length > 4) box.firstElementChild.remove();
+  setTimeout(() => e.remove(), 2600);
+}
 $('#play').addEventListener('click', async e => {
+  const sb = e.target.closest('[data-a="stamp"]'); if (sb){ sfx('tap'); stampMenu(sb); return; }
   if (e.target.closest('[data-a="quit"]')){
     sfx('tap'); endDrag(true);
     if (!(await ask(NET.mode === 'solo' ? 'やめる？' : '部屋から出る？', NET.mode === 'solo' ? 'やめる' : '出る', '続ける'))) return;
