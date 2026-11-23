@@ -462,6 +462,18 @@ body:has(#ov .overlay) #toast{bottom:auto;top:calc(var(--safe-t) + 10px)}
 .zwrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 @container (aspect-ratio > 2.4){ .zwrap{flex-direction:row} .zwrap .chute{height:auto;width:84px;flex-direction:column;gap:4px;letter-spacing:.1em;writing-mode:horizontal-tb;font-size:12px} }
 
+/* 急ぎのお客・ラッシュ・連続 */
+.order.hurry{border-color:var(--warn);box-shadow:0 0 0 1px var(--warn), var(--sh2)}
+.order .tag{position:absolute;top:5px;right:6px;background:var(--warn);color:#fff;border-radius:999px;padding:1px 8px;font-size:10px;font-weight:700;letter-spacing:.1em;z-index:2}
+.banner{position:fixed;left:50%;top:42%;z-index:95;pointer-events:none;transform:translate(-50%,-50%);background:var(--ink);color:var(--card);font-weight:900;font-size:clamp(28px,6vw,48px);letter-spacing:.3em;padding:10px 34px 10px 46px;border-radius:18px;box-shadow:var(--sh);animation:ban 1.7s cubic-bezier(.2,1.2,.4,1) forwards}
+.banner.small{top:30%;font-size:clamp(16px,3vw,22px);letter-spacing:.14em;padding:6px 18px;background:var(--ok);border-radius:999px}
+@keyframes ban{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}15%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%)}}
+
+.rec{font-style:normal;margin-left:6px;background:var(--bad);color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;letter-spacing:.08em;animation:pin .5s 1.2s both}
+.res-row .pill.sub{color:var(--sub);font-weight:500;padding:0 14px}
+.stagepick b{display:flex;flex-direction:column;align-items:center;line-height:1.2}
+.spbest{font-size:10px;color:var(--sub);font-weight:500;letter-spacing:.04em;white-space:nowrap}
+
 </style>
 </head>
 <body>
@@ -906,8 +918,14 @@ function stageConfig(shopId, week, n, players){
     if (j >= 0){ const t = queue[j]; queue[j] = queue[1]; queue[1] = t; }
     else if (alt && queue[1]) queue[1].dish = alt.id;
   }
+  /* 急ぎのお客（待てる時間が短いかわりに、コインが多い） */
+  queue.forEach((q, i) => { if (n >= 2 && i >= 2 && rnd() < Math.min(.3, .12 + n * .015)) q.hurry = 1; });
+  /* ラッシュ：途中で何人か続けて来ます */
+  let rush = 0;
+  if (n >= 3){ rush = Math.min(6, 3 + Math.floor(n / 4)); const r0 = Math.floor(total * .45); for (let i = r0; i < Math.min(total, r0 + rush); i++) queue[i].rush = 1; }
+  const hurry = queue.filter(q => q.hurry).length;
   const newDish = n === 1 ? pool[pool.length - 1].id : dishCount(n) > dishCount(n - 1) ? pool[pool.length - 1].id : '';
-  return {total, maxActive, patience, gap, queue, newDish, dishes:pool.map(d => d.id)};
+  return {total, maxActive, patience, gap, queue, newDish, rush, hurry, dishes:pool.map(d => d.id)};
 }
 
 /* =====================================================================
@@ -963,7 +981,7 @@ function startStage(st, n){
   st.stage = n;
   st.cfg = stageConfig(st.shop, st.week, n, players);
   st.queue = st.cfg.queue.slice(); delete st.cfg.queue;
-  st.orders = []; st.items = []; st.coins = 0; st.served = 0; st.missed = 0; st.result = null;
+  st.orders = []; st.items = []; st.streak = 0; st.lastServe = 0; st.rushOn = false; st.coins = 0; st.served = 0; st.missed = 0; st.result = null;
   st.phase = 'intro'; st.introUntil = st.now + (st.cfg.newDish ? 6500 : 3500);
   fx(st, 'intro');
 }
@@ -975,9 +993,13 @@ function tick(st, now){
   if (st.phase === 'intro' && now >= st.introUntil){ st.phase = 'play'; st.startAt = now; st.nextAt = now + 1200; fx(st, 'start'); ch = true; }
   if (st.phase !== 'play') return ch;
   const act = activeOrders(st);
-  if (st.queue.length && act.length < st.cfg.maxActive && (now >= st.nextAt || act.length === 0 && now >= st.nextAt - st.cfg.gap + 2500)){
-    const q = st.queue.shift(), o = {id:nid(st), dish:q.dish, animal:q.animal, at:now, until:now + st.cfg.patience, plate:[], state:'wait'};
-    st.orders.push(o); st.nextAt = now + st.cfg.gap; fx(st, 'arrive', {o:o.id}); ch = true;
+  if (st.queue.length && act.length < st.cfg.maxActive + (st.queue[0].rush ? 1 : 0) && (now >= st.nextAt || act.length === 0 && now >= st.nextAt - st.cfg.gap + 2500)){
+    const q = st.queue.shift(), pat = Math.round(st.cfg.patience * (q.hurry ? .55 : 1));
+    const o = {id:nid(st), dish:q.dish, animal:q.animal, at:now, until:now + pat, pat, plate:[], state:'wait'};
+    if (q.hurry) o.hurry = 1;
+    st.orders.push(o); st.nextAt = now + st.cfg.gap * (q.rush ? .3 : 1); fx(st, 'arrive', {o:o.id}); ch = true;
+    if (q.rush && !st.rushOn){ st.rushOn = true; fx(st, 'rush'); }
+    if (!q.rush) st.rushOn = false;
   }
   for (const o of st.orders){
     if (o.state === 'wait' && now > o.until){ o.state = 'left'; o.leaveAt = now + 1800; st.missed++; fx(st, 'left', {o:o.id}); ch = true; }
@@ -1063,11 +1085,13 @@ function apply(st, a, pid){
     case 'serve': {
       const o = st.orders.find(x => x.id === a.o);
       if (!o || o.state !== 'wait' || !orderDone(st, o)) return {ok:false};
-      const d = dishOf(st.shop, o.dish), left = Math.max(0, (o.until - st.now) / st.cfg.patience);
-      const coins = d.comps.length * 10 + Math.round(left * 10) * 2;
+      const d = dishOf(st.shop, o.dish), left = Math.max(0, (o.until - st.now) / (o.pat || st.cfg.patience));
+      /* 続けて出すと連続ボーナス */
+      st.streak = st.now - (st.lastServe || 0) < 12000 ? (st.streak || 0) + 1 : 1; st.lastServe = st.now;
+      const coins = Math.round((d.comps.length * 10 + Math.round(left * 10) * 2) * (o.hurry ? 1.5 : 1)) + (st.streak >= 2 ? Math.min(5, st.streak - 1) * 5 : 0);
       o.state = 'happy'; o.leaveAt = st.now + 1800; o.coins = coins;
       st.coins += coins; st.served++;
-      fx(st, 'serve', {o:o.id, coins, p:pid});
+      fx(st, 'serve', {o:o.id, coins, p:pid, streak:st.streak});
       return {ok:true};
     }
     case 'trash': {
@@ -1365,8 +1389,12 @@ let BESTS = LSJ.get('nk:bests', {});          // "週:ステージ" → 星の�
 const totalStars = () => Object.values(BESTS).reduce((a, b) => a + b, 0);
 const progOf = w => Object.keys(BESTS).filter(k => k.startsWith(w + ':')).reduce((m, k) => Math.max(m, +k.split(':')[1]), 0);
 const nextStageFor = w => progOf(w) + 1;
+const COINBEST = LSJ.get('nk:coinbest', {});
+let lastRecord = false;
 function recordResult(r){
   const k = `${r.week}:${r.stage}`, before = totalStars(), prev = BESTS[k] || 0;
+  lastRecord = r.coins > (COINBEST[k] || 0) && !!COINBEST[k];
+  if (r.coins > (COINBEST[k] || 0)){ COINBEST[k] = r.coins; LSJ.set('nk:coinbest', COINBEST); }
   if (r.stars > prev){ BESTS[k] = r.stars; LSJ.set('nk:bests', BESTS); }
   const after = totalStars();
   return HATS.filter(h => h.need > before && h.need <= after);
@@ -1534,7 +1562,7 @@ function renderLobby(){
         <div class="roles">${ROLES.map(r => `<button class="rolecard ${mine.includes(r.id) ? 'on' : ''}" data-role="${r.id}" style="--rc:${r.color}" ${solo ? 'disabled' : ''}>
           <div class="art">${ROLE_ART[r.id]()}</div><div><b>${esc(r.name)}</b><small>${esc(r.desc)}</small><span class="how">${esc(HOW[r.id])}</span>${solo ? '' : `<div class="who">${owners(r.id).map(([, p]) => `<i>${pArt(p)}</i>`).join('')}</div>`}</div><div class="chk">${CHECK_W()}</div></button>`).join('')}</div>
         <div class="lb-hint">${solo ? 'ステージを選んで開始。' : '同じ係に複数人も可。誰も選ばない係は全員の画面に表示。未選択の人には自動で係を割り当て。'}</div>
-        <div class="lb-start">${host ? `<div class="stagepick"><button class="btn sm round" data-a="sp-" ${lobbyStage <= 1 ? 'disabled' : ''}>‹</button><b>ステージ ${lobbyStage}</b><button class="btn sm round" data-a="sp+" ${lobbyStage >= maxStage ? 'disabled' : ''}>›</button></div>
+        <div class="lb-start">${host ? `<div class="stagepick"><button class="btn sm round" data-a="sp-" ${lobbyStage <= 1 ? 'disabled' : ''}>‹</button><b>ステージ ${lobbyStage}<small class="spbest">${BESTS[`${st.week}:${lobbyStage}`] ? '★'.repeat(BESTS[`${st.week}:${lobbyStage}`]) + '　' : ''}${COINBEST[`${st.week}:${lobbyStage}`] ? '最高 ' + COINBEST[`${st.week}:${lobbyStage}`] : '未プレイ'}</small></b><button class="btn sm round" data-a="sp+" ${lobbyStage >= maxStage ? 'disabled' : ''}>›</button></div>
           <span class="spacer"></span><button class="btn big green" data-a="start">開始</button>` : `<div class="waitmsg">ホストの開始待ち</div>`}</div>
       </div></div>`;
   if (!solo) qrFor(st.code).then(u => { const q = $('#lbQR'); if (q && u) q.innerHTML = `<img src="${u}" alt="QRコード">`; });
@@ -1577,13 +1605,18 @@ function onNet(){
   }
   lastPhase = st.phase;
 }
+function banner(t, cls = ''){
+  const b = document.createElement('div'); b.className = 'banner ' + cls; b.textContent = t;
+  document.body.append(b); setTimeout(() => b.remove(), 1700);
+}
 function handleFx(st){
   const mineSt = myStations(st, PID);
   for (const f of st.fx || []){
     if (f.id <= lastFx) continue;
     lastFx = f.id;
     if (f.type === 'arrive') sfx('arrive');
-    if (f.type === 'serve'){ sfx('serve'); burstOrder(f.o, f.coins); }
+    if (f.type === 'serve'){ sfx('serve'); burstOrder(f.o, f.coins); if (f.streak >= 2) banner(`連続 ${f.streak}`, 'small'); }
+    if (f.type === 'rush'){ sfx('start'); banner('ラッシュ'); }
     if (f.type === 'left') sfx('left');
     if (f.type === 'cooked' && mineSt.includes('yaku')) sfx('cooked');
     if (f.type === 'burnt' && mineSt.includes('yaku')){ sfx('left'); toastMsg('焦げた'); }
@@ -1685,10 +1718,10 @@ function renderPlay(){
   if (!orders.length){ if (!$('.empty', O)) O.innerHTML = `<div class="empty">${st.phase === 'play' ? '来店待ち' : ''}</div>`; }
   else {
     const e0 = $('.empty', O); if (e0) e0.remove();
-    keyed(O, orders, o => o.id, o => elm(`<div class="order" data-cust="${o.id}"><div class="face"></div><div class="body"><div class="dish">${D[o.dish]()}</div><div class="comps"></div><div class="nm">${esc(dishOf(st.shop, o.dish).name)}</div></div><div class="pat"><b></b></div><div class="hearts"></div></div>`),
+    keyed(O, orders, o => o.id, o => elm(`<div class="order" data-cust="${o.id}"><div class="face"></div><div class="body"><div class="dish">${D[o.dish]()}</div><div class="comps"></div><div class="nm">${esc(dishOf(st.shop, o.dish).name)}</div></div><div class="pat"><b></b></div><div class="hearts"></div>${o.hurry ? '<span class="tag">急ぎ</span>' : ''}</div>`),
       (e, o) => {
         e.classList.toggle('happy', o.state === 'happy'); e.classList.toggle('left', o.state === 'left');
-        e.dataset.until = o.until; e.dataset.state = o.state;
+        e.dataset.until = o.until; e.dataset.state = o.state; e.dataset.pat = o.pat || ''; e.classList.toggle('hurry', !!o.hurry);
         const placed = [...o.plate], comps = dishOf(st.shop, o.dish).comps;
         const html = comps.map(c => { const i = placed.indexOf(c), ok = i >= 0; if (ok) placed.splice(i, 1); return `<i class="${ok ? 'ok' : ''}">${A[ING[c].ready]()}</i>`; }).join('');
         const cb = $('.comps', e); if (cb.dataset.h !== html){ cb.innerHTML = html; cb.dataset.h = html; }
@@ -1707,7 +1740,7 @@ function badgeFor(r, st, need){
   return 0;
 }
 function faceMood(e, o){
-  const left = (o.until - hostNow()) / (NET.st.cfg ? NET.st.cfg.patience : 60000);
+  const left = (o.until - hostNow()) / (o.pat || (NET.st.cfg ? NET.st.cfg.patience : 60000));
   const mood = o.state === 'happy' ? 'happy' : o.state === 'left' ? 'sad' : left < .3 ? 'sad' : 'normal';
   const f = $('.face', e); if (f.dataset.m !== mood + o.animal){ f.dataset.m = mood + o.animal; f.innerHTML = animalFace(o.animal, mood); }
 }
@@ -1783,7 +1816,7 @@ function frame(){
   const st = NET.st, now = hostNow(), pat = st.cfg ? st.cfg.patience : 60000;
   $$('#orders .order').forEach(e => {
     if (e.dataset.state !== 'wait') return;
-    const left = Math.max(0, (+e.dataset.until - now) / pat), b = $('.pat b', e);
+    const left = Math.max(0, (+e.dataset.until - now) / (+e.dataset.pat || pat)), b = $('.pat b', e);
     b.style.width = (left * 100) + '%'; b.classList.toggle('low', left < .3);
     const o = st.orders.find(x => x.id === e.dataset.k); if (o) faceMood(e, o);
   });
@@ -1986,7 +2019,7 @@ function showIntro(){
   const list = st.stage === 1 && st.cfg ? st.cfg.dishes.map(id => dishOf(st.shop, id)) : st.cfg && st.cfg.newDish ? [dishOf(st.shop, st.cfg.newDish)] : [];
   overlay(`<div class="sign">${esc(th.name + shop.name)}</div><h3>ステージ ${st.stage}</h3>
     ${list.length ? `<div class="lead">${st.stage === 1 ? 'メニュー' : '新メニュー'}</div><div class="menus">${list.map(recipeHTML).join('')}</div>` : ''}
-    <div class="lead">お客 ${st.cfg ? st.cfg.total : ''}人</div><div class="countdown" id="cd"></div>`);
+    <div class="lead">お客 ${st.cfg ? st.cfg.total : ''}人${st.cfg && st.cfg.hurry ? `・急ぎ ${st.cfg.hurry}人` : ''}${st.cfg && st.cfg.rush ? '・ラッシュあり' : ''}</div><div class="countdown" id="cd"></div>`);
 }
 function showResult(){
   const st = NET.st, r = st.result; if (!r) return;
@@ -1996,7 +2029,7 @@ function showResult(){
   const host = NET.isHost;
   const o = overlay(`<h3>${r.stars >= 3 ? '大成功' : r.stars === 2 ? '成功' : 'クリア'}</h3>
     <div class="stars">${[0, 1, 2].map(i => `<i data-on="${i < r.stars ? 1 : 0}">${ICON.star(i < r.stars)}</i>`).join('')}</div>
-    <div class="res-row"><span class="pill"><i>${ICON.heart()}</i>笑顔 ${r.served}/${r.total}</span><span class="pill"><i>${ICON.coin()}</i>${r.coins}</span><span class="pill"><i>${ICON.star()}</i>合計 ${totalStars()}</span></div>
+    <div class="res-row"><span class="pill"><i>${ICON.heart()}</i>笑顔 ${r.served}/${r.total}</span><span class="pill"><i>${ICON.coin()}</i>${r.coins}${lastRecord ? '<em class="rec">新記録</em>' : ''}</span><span class="pill sub">最高 ${COINBEST[`${r.week}:${r.stage}`] || r.coins}</span><span class="pill"><i>${ICON.star()}</i>合計 ${totalStars()}</span></div>
     ${unlocked.map(h => `<div class="unlock"><div class="av">${chef({color:ME.color, hat:h.id, skin:ME.skin, mood:'happy'})}</div><div style="text-align:left"><small>新しい着せ替え</small><br><b>${esc(h.name)}</b></div></div>`).join('')}
     <div class="ov-btns">${host ? `<button class="btn" data-r="lobby">${NET.mode === 'solo' ? '終了' : '部屋へ'}</button><button class="btn yellow" data-r="again">もう一度</button><button class="btn big green" data-r="next">次のステージ</button>`
       : `<div class="waitmsg">ホストの選択待ち</div><button class="btn" data-r="leave">退出</button>`}</div>`);
