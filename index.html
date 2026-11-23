@@ -417,6 +417,51 @@ body[data-theme=night] .cooker.stove{background:#3b4150}
 .loading .pan{width:70px;height:70px;animation:bob 1s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 
+/* ---------- iPhone 向け（小さい画面） ---------- */
+.menus{display:flex;flex-direction:column;gap:10px;width:100%}
+body:has(#ov .overlay) #toast{bottom:auto;top:calc(var(--safe-t) + 10px)}
+@media (max-width:520px){ .roomcode .av{width:64px!important;height:72px!important;margin:0!important} }
+#title{justify-content:flex-start;overflow-y:auto}
+#title > :first-child{margin-top:auto}
+#title > :last-child{margin-bottom:auto}
+#title > *{flex:none}
+.logo .lg-w{font-size:clamp(30px,min(6.6vw,11vh),74px)}
+.weekcard{flex-wrap:wrap}
+@media (max-width:560px){ .weekcard{gap:10px 14px} .weekcard .dishes{width:100%;justify-content:center} .weekcard .dishes div{width:44px;height:44px} .title-btns .btn{min-width:0;flex:1 1 140px} .title-btns{width:100%} }
+@media (max-height:600px){ #title{gap:10px} .subtitle{margin-top:-2px} .weekcard .dishes div{width:40px;height:40px} }
+
+@media (orientation:portrait), (max-width:760px){ .lb-left{min-height:auto;flex:none} .lobby > *{min-height:auto} }
+@media (orientation:landscape) and (max-height:600px){
+  .topbar{min-height:44px;margin-bottom:6px} .btn.round{width:44px;min-height:44px}
+  .lobby{grid-template-columns:200px 1fr;grid-template-rows:none;overflow:hidden;gap:12px}
+  .lb-left{display:flex;min-height:0;overflow:auto}
+  .lb-left .roomcode{padding:10px} .lb-left .roomcode .av{width:70px!important;height:79px!important;margin:4px auto!important}
+  .roomcode .qr{width:84px;height:84px;margin:4px auto} .roomcode .digits{font-size:34px} .rc-h{display:none}
+  .lb-right{min-height:0;overflow:auto;padding-bottom:4px}
+  .roles{grid-template-columns:1fr 1fr;flex:none;gap:8px}
+  .rolecard{min-height:0;padding:8px 10px;gap:10px} .rolecard .art{width:44px;height:44px;padding:7px;border-radius:12px}
+  .rolecard b{font-size:15px} .rolecard small{font-size:11px} .rolecard .how{margin-top:3px} .rolecard .who{margin-top:3px;min-height:0} .rolecard .chk{top:8px;right:8px;width:22px;height:22px}
+  .lb-hint{font-size:12px;line-height:1.5} .btn.big{min-height:48px}
+  .ovcard{padding:14px 18px;gap:8px;width:min(860px,100%)} .ovcard h3{font-size:22px}
+  .menus{display:flex;flex-direction:row;flex-wrap:wrap;gap:8px;justify-content:center;width:100%} .menus .newdish{flex:1 1 240px;width:auto;padding:6px}
+  .newdish .step .a{width:34px;height:34px} .newdish .eq .a{width:52px;height:52px}
+  .stars i{width:46px;height:46px} .countdown{font-size:30px}
+  #toast{bottom:auto;top:calc(var(--safe-t) + 8px)}
+}
+/* 横向き iPhone：タブを左にたてに並べて、たての広さを確保 */
+#play.side{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);gap:6px 8px}
+#play.side .hud,#play.side .orders{grid-column:1/-1}
+#play.side .tabs{grid-row:3;grid-column:1;flex-direction:column;width:64px}
+#play.side .tabs button{flex-direction:column;gap:1px;padding:4px 2px;font-size:11px}
+#play.side .tabs button i{width:24px;height:24px}
+#play.side .tabs button .bd{position:absolute;top:2px;right:4px}
+#play.side .stations{grid-row:3;grid-column:2}
+#play.side .panel .ph{display:none}
+#play.side .panel .pb{padding-top:8px}
+@container (aspect-ratio > 2.6){ .pb-z{flex-direction:row} }
+.zwrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+@container (aspect-ratio > 2.4){ .zwrap{flex-direction:row} .zwrap .chute{height:auto;width:84px;flex-direction:column;gap:4px;letter-spacing:.1em;writing-mode:horizontal-tb;font-size:12px} }
+
 </style>
 </head>
 <body>
@@ -489,6 +534,7 @@ A.cheese_ready = () => svg(`${shadow()}<rect x="12" y="16" width="40" height="34
 /* パンやさん */
 A.kiji = () => svg(`${shadow()}<path d="M12 42 c-3 -12 8 -22 20 -22 c12 0 23 10 20 22 c-1 6 -10 8 -20 8 c-10 0 -19 -2 -20 -8z" fill="#f6e2c0" ${L}/>${hl(24, 28, 7, 3)}
   <circle cx="40" cy="34" r="1.2" fill="#d8bb8a"/><circle cx="30" cy="38" r="1" fill="#d8bb8a"/>`);
+A.kiji_mid = () => svg(`${shadow()}${[[18, 40], [32, 34], [46, 40]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="10" ry="8" fill="#f6e2c0" ${L}/>`).join('')}${hl(29, 31, 3, 1.6)}`);
 A.kiji_ready = () => svg(`${shadow()}<path d="M10 42 c-3 -13 9 -23 22 -23 c13 0 25 10 22 23 c-1 6 -11 8 -22 8 c-11 0 -21 -2 -22 -8z" fill="#e39a45" ${L}/>
   <path d="M12 40 c0 -10 9 -18 20 -18 c11 0 20 8 20 18" fill="#f2b462" opacity=".55"/><path d="M22 30 l5 6 M30 27 l5 7 M38 28 l4 6" fill="none" ${LT}/>${hl(22, 27, 6, 2.6)}`);
 A.shokupan = () => svg(`${shadow()}<path d="M10 50 v-22 c-4 -4 -3 -14 7 -14 c4 -3 26 -3 30 0 c10 0 11 10 7 14 v22 z" fill="#e7a35c" ${L}/>
@@ -749,8 +795,8 @@ const ING = {
   tomato:  {name:'トマト',       raw:'tomato',   ready:'tomato_cut',   steps:['cut'], chop:4},
   lettuce: {name:'レタス',       raw:'lettuce',  ready:'lettuce_cut',  steps:['cut'], chop:5},
   cheese:  {name:'チーズ',       raw:'cheese',   ready:'cheese_ready', steps:[]},
-  kiji:    {name:'パン生地',     raw:'kiji',     ready:'kiji_ready',   steps:['cook'], cook:5000},
-  shokupan:{name:'食パン',   raw:'shokupan', ready:'shokupan_cut', steps:['cut'], chop:3},
+  kiji:    {name:'パン生地',     raw:'kiji',     mid:'kiji_mid', ready:'kiji_ready',   steps:['cut', 'cook'], cook:5000, chop:3},
+  shokupan:{name:'食パン',   raw:'shokupan', ready:'shokupan_cut', steps:['cut'], chop:4},
   ham:     {name:'ハム',         raw:'ham',      ready:'ham_cut',      steps:['cut'], chop:4},
   crois:   {name:'クロワッサン', raw:'crois',    ready:'crois_ready',  steps:['cook'], cook:5500},
   kome:    {name:'米',       raw:'kome',     ready:'kome_ready',   steps:['cook'], cook:5000},
@@ -833,18 +879,23 @@ function stageConfig(shopId, week, n, players){
   const shop = shopOf(shopId), rnd = rngOf(hashStr(`${shopId}:${week}:${n}`));
   const solo = players <= 1, cnt = dishCount(n);
   const pool = shop.dishes.slice(0, cnt);
-  const total = Math.min(16, 3 + Math.ceil(n * .8) + (players >= 3 ? 1 : 0));
-  const maxActive = Math.min(4, 1 + Math.ceil(n / 3) + (players >= 3 ? 1 : 0));
-  const patience = Math.round(Math.max(48, 95 - n * 3) * (solo ? 1.35 : 1) * 1000);
-  const gap = Math.round(Math.max(7, 16 - n * .6) * (solo ? 1.3 : 1) * 1000);
+  /* 人数が多いほど お客も多く、間かくも短くなります */
+  const total = Math.min(32, 5 + Math.ceil(n * 1.2) + (players - 1) * 2);
+  const maxActive = Math.min(4, 2 + Math.floor((n - 1) / 3) + (players >= 3 ? 1 : 0));
+  const patience = Math.round(Math.max(50, 95 - n * 3) * (solo ? 1.35 : 1) * 1000);
+  const gap = Math.round(Math.max(4.5, 11 - n * .5) * (solo ? 1.35 : 1) * (players >= 3 ? .85 : 1) * 1000);
   const animals = Object.keys(ANIMALS);
-  const queue = [];
+  const queue = [], load = {cut:0, cook:0};
+  const work = d => ({cut:d.comps.filter(c => ING[c].steps.includes('cut')).length * 1.4, cook:d.comps.filter(c => ING[c].steps.includes('cook')).length});
   for (let i = 0; i < total; i++){
     // あたらしい料理が少し多めに出ます
-    const weights = pool.map((d, j) => j === pool.length - 1 && cnt > 1 ? 2.2 : 1);
+    /* 切る・焼くの仕事量が かたよらないように、少ない方を使う料理を出やすくします */
+    const lack = load.cut <= load.cook ? 'cut' : 'cook';
+    const weights = pool.map((d, j) => (j === pool.length - 1 && cnt > 1 ? 2.2 : 1) * (work(d)[lack] ? 2.5 : 1));
     let r = rnd() * weights.reduce((a, b) => a + b, 0), k = 0;
     while (r > weights[k]){ r -= weights[k]; k++; }
-    queue.push({dish:pool[Math.min(k, pool.length - 1)].id, animal:animals[Math.floor(rnd() * animals.length)]});
+    const pick = pool[Math.min(k, pool.length - 1)], wk = work(pick); load.cut += wk.cut; load.cook += wk.cook;
+    queue.push({dish:pick.id, animal:animals[Math.floor(rnd() * animals.length)]});
   }
   /* 最初の2人で「切る」と「焼く」の両方が必要になるように並べかえます */
   const uses = (id, step) => shop.dishes.find(d => d.id === id).comps.some(c => ING[c].steps.includes(step));
@@ -1568,7 +1619,7 @@ function buildPlay(force){
   if (!force && key === layoutKey) return;
   layoutKey = key;
   const p = $('#play');
-  p.style.setProperty('--oh', L.oh + 'px'); p.classList.toggle('compact', L.compact);
+  p.style.setProperty('--oh', L.oh + 'px'); p.classList.toggle('compact', L.compact); p.classList.toggle('side', L.tabs && innerWidth > innerHeight && innerHeight < 600);
   p.style.setProperty('--fs', L.compact ? '24px' : '52px'); p.style.setProperty('--ds', L.compact ? '46px' : '64px'); p.style.setProperty('--cs', L.compact ? '16px' : '22px');
   const S = $('#stations');
   S.style.setProperty('--cols', L.cols); S.style.setProperty('--rows', L.rows);
@@ -1584,8 +1635,8 @@ window.addEventListener('resize', () => { if (curScreen === 'play'){ endDrag(tru
 const HOLD_SVG = `<svg class="hold" viewBox="0 0 100 100"><circle cx="50" cy="50" r="47" stroke-dasharray="295.3" stroke-dashoffset="295.3" transform="rotate(-90 50 50)"/></svg>`;
 function stationShell(r, st){
   const shop = shopOf(st.shop);
-  if (r === 'zairyo') return `<div class="crates">${shop.ings.map(c => `<div class="crate" data-take="${c}"><div class="art">${A[ING[c].raw]()}</div><span class="lb">${esc(ING[c].name)}</span><span class="need" hidden></span></div>`).join('')}</div>
-    <div class="chute" data-chute>${ARROW_DN()}送り口</div>`;
+  if (r === 'zairyo') return `<div class="zwrap"><div class="crates">${shop.ings.map(c => `<div class="crate" data-take="${c}"><div class="art">${A[ING[c].raw]()}</div><span class="lb">${esc(ING[c].name)}</span><span class="need" hidden></span></div>`).join('')}</div>
+    <div class="chute" data-chute>${ARROW_DN()}送り口</div></div>`;
   if (r === 'kiru') return `<div class="queue"><span class="ql">待ち</span><div class="qbox" style="display:flex;gap:6px"></div></div>
     <div class="boards">${[0, 1].map(b => `<div class="board" data-board="${b}"><div class="crumbs"></div></div>`).join('')}</div>`;
   if (r === 'yaku') return `<div class="queue"><span class="ql">待ち</span><div class="qbox" style="display:flex;gap:6px"></div></div>
@@ -1934,7 +1985,7 @@ function showIntro(){
   const st = NET.st, shop = shopOf(st.shop), th = THEMES.find(t => t.id === st.theme) || THEMES[0];
   const list = st.stage === 1 && st.cfg ? st.cfg.dishes.map(id => dishOf(st.shop, id)) : st.cfg && st.cfg.newDish ? [dishOf(st.shop, st.cfg.newDish)] : [];
   overlay(`<div class="sign">${esc(th.name + shop.name)}</div><h3>ステージ ${st.stage}</h3>
-    ${list.length ? `<div class="lead">${st.stage === 1 ? 'メニュー' : '新メニュー'}</div>${list.map(recipeHTML).join('')}` : ''}
+    ${list.length ? `<div class="lead">${st.stage === 1 ? 'メニュー' : '新メニュー'}</div><div class="menus">${list.map(recipeHTML).join('')}</div>` : ''}
     <div class="lead">お客 ${st.cfg ? st.cfg.total : ''}人</div><div class="countdown" id="cd"></div>`);
 }
 function showResult(){
@@ -1962,6 +2013,8 @@ function showResult(){
 }
 
 /* ---------- 起動 ---------- */
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('dblclick', e => e.preventDefault(), {passive:false});
 (function boot(){
   const room = new URLSearchParams(location.search).get('room');
   renderTitle();
