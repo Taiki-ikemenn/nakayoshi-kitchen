@@ -525,6 +525,22 @@ body[data-theme=night] .stamp span{color:color-mix(in srgb,var(--sc) 50%,#fff)}
 #lag i{width:12px;height:12px;border-radius:50%;border:2px solid var(--line2);border-top-color:var(--ink);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* 遊び方 */
+.helpov .ovcard{width:min(720px,100%)}
+.help{width:100%;display:flex;flex-direction:column;gap:8px}
+.hrow{display:flex;align-items:center;gap:12px;text-align:left;background:var(--card2);border:1px solid var(--line);border-left:4px solid var(--rc);border-radius:14px;padding:8px 12px}
+.hrow .hr{width:40px;height:40px;flex:none;padding:6px;border-radius:12px;background:color-mix(in srgb,var(--rc) 12%,var(--card))}
+.hrow div{flex:1;min-width:0}
+.hrow b{display:flex;align-items:center;gap:8px;font-size:15px}
+.hrow b span{font-size:10px;color:var(--rc);background:color-mix(in srgb,var(--rc) 10%,var(--card));border-radius:999px;padding:1px 8px;letter-spacing:.08em}
+.hrow small{display:block;font-size:12px;color:var(--sub);line-height:1.55;margin-top:2px}
+.hrow .ha{width:46px;height:46px;flex:none}
+.tips{width:100%;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px}
+.tips div{text-align:left;border:1px solid var(--line);border-radius:12px;padding:6px 10px}
+.tips b{font-size:13px;margin-right:6px}
+.tips small{font-size:11px;color:var(--sub)}
+@media (orientation:landscape) and (max-height:600px){ .help{display:grid;grid-template-columns:1fr 1fr} .hrow .ha{display:none} }
+
 </style>
 </head>
 <body>
@@ -1521,6 +1537,7 @@ function renderTitle(){
     <div class="title-btns"><button class="btn big green" data-a="solo">ひとりで</button><button class="btn big" data-a="multi"><span class="ic">${ICON.people()}</span>みんなで</button></div>
     <div class="howto">${ROLES.map(r => `<span><i>${ROLE_ART[r.id]()}</i>${esc(r.short)}：${esc(HOW[r.id])}</span>`).join('')}</div>
     <div class="title-foot"><span class="starcount"><span class="ic">${ICON.star()}</span>${totalStars()}</span>
+      <button class="btn sm" data-a="help">遊び方</button>
       <button class="btn sm ${LSJ.get('nk:guide', true) ? '' : 'off'}" data-a="guide">ガイド ${LSJ.get('nk:guide', true) ? 'ON' : 'OFF'}</button>
       <button class="btn sm round" data-a="sound" aria-label="音"><span class="ic mono">${ICON.sound(SND.on)}</span></button></div>`;
   show('title');
@@ -1530,6 +1547,7 @@ $('#title').addEventListener('click', async e => {
   sfx('tap');
   const a = b.dataset.a;
   if (a === 'dress') renderDress();
+  if (a === 'help') showHelp();
   if (a === 'guide'){ LSJ.set('nk:guide', !LSJ.get('nk:guide', true)); renderTitle(); }
   if (a === 'sound'){ SND.on = !SND.on; localStorage.setItem('nk:sound', SND.on ? '1' : '0'); if (!SND.on) bgmStop(); renderTitle(); }
   if (a === 'solo'){ soloStart(); NET.onChange = onNet; renderLobby(); }
@@ -1554,6 +1572,20 @@ $('#title').addEventListener('click', async e => {
 /* =========================================================
    着せ替え
    ========================================================= */
+function showHelp(){
+  const R = id => ROLES.find(r => r.id === id);
+  const rows = [
+    ['zairyo', '材料の箱を「送り口」へドラッグ。数字の出ている箱が今いる材料。', A.tomato],
+    ['kiru', 'まな板をトントン連打。速くたたくとコンボ。', A.tomato_cut],
+    ['yaku', '待っている材料を空きへドラッグ。焼けたら長押しで取り出す。放置すると焦げる。', A.kiji_ready],
+    ['recipe', '完成品をお皿へドラッグ。料理ができたら、お客へドラッグして渡す。', () => D.hamsand()]];
+  const tips = [['急ぎ', '待てる時間が短い。コイン1.5倍。'], ['ラッシュ', 'お客が続けて来る。'], ['連続', '12秒以内に続けて渡すとコインが増える。'], ['チャレンジ', '今週のお題。達成で★3。'], ['ひとこと', 'みんなで遊ぶとき、仲間に一言送れる。']];
+  const o = overlay(`<h3>遊び方</h3><div class="lead">4つの係で協力して、お客に料理を渡す。係は自分で選ぶ（複数可）。</div>
+    <div class="help">${rows.map(([id, t, art]) => `<div class="hrow" style="--rc:${R(id).color}"><i class="hr">${ROLE_ART[id]()}</i><div><b>${esc(R(id).name)}<span>${esc(HOW[id])}</span></b><small>${esc(t)}</small></div><i class="ha">${art()}</i></div>`).join('')}</div>
+    <div class="tips">${tips.map(([k, t]) => `<div><b>${esc(k)}</b><small>${esc(t)}</small></div>`).join('')}</div>
+    <button class="btn green" data-h="x">閉じる</button>`, 'helpov');
+  o.onclick = e => { if (e.target.closest('[data-h]') || e.target === o){ sfx('tap'); closeOv(); } };
+}
 function renderDress(){
   const s = totalStars(), d = $('#dress');
   d.innerHTML = `<div class="topbar"><button class="btn round" data-a="back" aria-label="戻る"><span class="ic mono">${ICON.back()}</span></button><h2>着せ替え</h2><span class="starcount"><span class="ic">${ICON.star()}</span>${s}</span></div>
