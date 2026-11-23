@@ -486,6 +486,13 @@ body[data-theme=night] .stamp span{color:color-mix(in srgb,var(--sc) 50%,#fff)}
 .stamp small{font-size:10px;color:var(--sub);font-weight:500}
 @keyframes stin{0%{opacity:0;transform:translateX(-20px)}10%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
 
+/* はじめてのガイド */
+#guide{position:fixed;z-index:85;pointer-events:none;width:0;height:0}
+#guide .ring{position:absolute;left:-26px;top:-26px;width:52px;height:52px;border-radius:50%;border:3px solid var(--ink);opacity:.55;animation:gring 1.2s ease-out infinite}
+#guide span{position:absolute;left:0;top:34px;transform:translateX(-50%);white-space:nowrap;background:var(--ink);color:var(--card);font-size:13px;font-weight:700;letter-spacing:.08em;padding:5px 12px;border-radius:999px;box-shadow:var(--sh2)}
+#guide.up span{top:auto;bottom:34px}
+@keyframes gring{0%{transform:scale(.5);opacity:.7}100%{transform:scale(1.4);opacity:0}}
+
 </style>
 </head>
 <body>
@@ -1828,9 +1835,40 @@ function renderStation(r, pn, st, need){
 const KNIFE = () => svg(`<path d="M10 46 l30 -30 c5 -5 11 1 6 6 l-24 30z" fill="#e8edf3" ${L}/><path d="M22 52 l-8 8 c-3 3 -7 -1 -4 -4 l8 -8" fill="#3b3f47" ${L}/>${hl(32, 26, 9, 1.6, -45, .8)}`);
 
 /* 毎フレーム：待ち時間・焼け具合 */
+/* はじめての人向けガイド：次にやることを指でさし示します（ステージ1〜2、星を3つ取るまで） */
+let guideT = 0;
+function guideTarget(st){
+  const c = el => el && el.offsetParent !== null ? el : null;
+  const pc = c($('.platecard[data-done="1"]')); if (pc) return [pc, 'お客へドラッグ'];
+  const act = st.orders.filter(o => o.state === 'wait');
+  for (const it of st.items.filter(i => i.loc === 'tray')){
+    const o = act.find(o => orderNeeds(st, o).includes(it.c));
+    if (o && c($(`[data-tray="${it.id}"]`))) return [$(`[data-tray="${it.id}"]`), 'お皿へドラッグ'];
+  }
+  const rd = c($('.slot.ready:not(.taken)')); if (rd) return [rd, '長押しで取り出す'];
+  const q = c($('[data-cookq]')); if (q && [...$$('.slot')].some(s => !s.dataset.i)) return [q, '空いている所へドラッグ'];
+  const bd = c([...$$('.board')].find(b => b.dataset.i && $('.it', b))); if (bd) return [bd, '連打で切る'];
+  const k = Object.keys(needCounts(st))[0], cr = k && c($(`[data-take="${k}"]:not(.full)`)); if (cr) return [cr, '送り口へドラッグ'];
+  const tb = [...$$('#tabs button .bd')].find(x => !x.hidden); if (tb) return [tb.parentElement, 'ここをタップ'];
+  return null;
+}
+function guide(st, now){
+  let g = $('#guide');
+  const on = st.phase === 'play' && st.stage <= 2 && totalStars() < 3 && !DRAG.on && LSJ.get('nk:guide', true);
+  if (!on){ if (g) g.remove(); return; }
+  if (now - guideT < 250) return; guideT = now;
+  const t = guideTarget(st);
+  if (!t){ if (g) g.hidden = true; return; }
+  if (!g){ g = document.createElement('div'); g.id = 'guide'; g.innerHTML = '<i class="ring"></i><span></span>'; document.body.append(g); }
+  const r = t[0].getBoundingClientRect();
+  g.hidden = false; g.style.left = (r.left + r.width / 2) + 'px'; g.style.top = (r.top + r.height / 2) + 'px';
+  const sp = $('span', g); if (sp.textContent !== t[1]) sp.textContent = t[1];
+  g.classList.toggle('up', r.top + r.height / 2 > innerHeight * .6);
+}
 function frame(){
   requestAnimationFrame(frame);
-  if (curScreen !== 'play' || !NET.st) return;
+  if (curScreen !== 'play' || !NET.st){ const g = $('#guide'); if (g) g.remove(); return; }
+  guide(NET.st, performance.now());
   const st = NET.st, now = hostNow(), pat = st.cfg ? st.cfg.patience : 60000;
   $$('#orders .order').forEach(e => {
     if (e.dataset.state !== 'wait') return;
