@@ -507,6 +507,20 @@ body[data-theme=night] .stamp span{color:color-mix(in srgb,var(--sc) 50%,#fff)}
 .srow.mvp{border-color:var(--warn)}
 @media (orientation:landscape) and (max-height:600px){ .stats{display:grid;grid-template-columns:1fr 1fr} }
 
+/* 今週のチャレンジ */
+.weekcard .chal{order:5;width:100%;display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:8px;margin-top:2px}
+.weekcard .chal small{font-size:11px;color:var(--sub);letter-spacing:.12em;white-space:nowrap}
+.weekcard .chal b{flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.weekcard .chal span{font-size:12px;font-weight:700;color:var(--warn);border:1px solid var(--warn);border-radius:999px;padding:1px 10px;white-space:nowrap}
+.weekcard .chal.done span{background:var(--ok);border-color:var(--ok);color:#fff}
+.chalok{display:flex;align-items:center;gap:10px;background:color-mix(in srgb,var(--warn) 10%,var(--card));border:1px solid var(--warn);border-radius:14px;padding:8px 14px;animation:pin .5s 1.4s both;text-align:left}
+.chalok small{display:block;font-size:11px;color:var(--warn);font-weight:700;letter-spacing:.1em}
+.chalok b{font-size:14px}
+.chalok span{margin-left:auto;font-weight:900;color:var(--warn)}
+@media (max-height:600px){ .weekcard .chal{padding-top:4px} }
+.chalok{flex-wrap:wrap;row-gap:0} .chalok small{width:100%}
+.weekcard .chal b{white-space:normal;line-height:1.35}
+
 </style>
 </head>
 <body>
@@ -916,6 +930,16 @@ function weekInfo(t = Date.now()){
   return {w, shop, theme, daysLeft, next:SHOPS[mod(w + 1, SHOPS.length)]};
 }
 
+/* ---------- 今週のチャレンジ（達成で★3つ） ---------- */
+const CHALLENGES = [
+  {id:'combo', name:'連続5回', desc:'1ステージで連続5回渡す', ok:r => (r.maxStreak || 0) >= 5},
+  {id:'hurry', name:'急ぎ客4人', desc:'1ステージで急ぎ客を4人笑顔に', ok:r => (r.hurryServed || 0) >= 4},
+  {id:'perfect', name:'全員笑顔', desc:'ステージ4以上で全員笑顔', ok:r => r.stage >= 4 && r.served === r.total},
+  {id:'rich', name:'コイン600', desc:'1ステージでコイン600以上', ok:r => r.coins >= 600},
+  {id:'far', name:'ステージ7', desc:'ステージ7をクリア', ok:r => r.stage >= 7}
+];
+const challengeOf = w => CHALLENGES[mod(w * 3 + 1, CHALLENGES.length)];
+
 /* ---------- ステージ（番号から自動で作ります） ---------- */
 function hashStr(s){ let h = 2166136261; for (let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 function rngOf(seed){ let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -1021,7 +1045,7 @@ function startStage(st, n){
   st.cfg = stageConfig(st.shop, st.week, n, players);
   if (isEasy(st)){ st.cfg.patience = Math.round(st.cfg.patience * 1.4); st.cfg.gap = Math.round(st.cfg.gap * 1.15); }
   st.queue = st.cfg.queue.slice(); delete st.cfg.queue;
-  st.orders = []; st.items = []; st.streak = 0; st.lastServe = 0; st.stats = {}; st.rushOn = false; st.coins = 0; st.served = 0; st.missed = 0; st.result = null;
+  st.orders = []; st.items = []; st.streak = 0; st.lastServe = 0; st.stats = {}; st.maxStreak = 0; st.hurryServed = 0; st.rushOn = false; st.coins = 0; st.served = 0; st.missed = 0; st.result = null;
   st.phase = 'intro'; st.introUntil = st.now + (st.cfg.newDish ? 6500 : 3500);
   fx(st, 'intro');
 }
@@ -1055,7 +1079,7 @@ function tick(st, now){
   if (!st.queue.length && !st.orders.length){
     const total = st.cfg.total, ratio = st.served / total;
     const stars = ratio >= .9 ? 3 : ratio >= .6 ? 2 : 1;
-    st.result = {stars, served:st.served, total, coins:st.coins, stage:st.stage, shop:st.shop, week:st.week, stats:st.stats || {}};
+    st.result = {stars, served:st.served, total, coins:st.coins, stage:st.stage, shop:st.shop, week:st.week, stats:st.stats || {}, maxStreak:st.maxStreak || 0, hurryServed:st.hurryServed || 0};
     st.phase = 'result'; st.items = []; fx(st, 'result'); ch = true;
   }
   return ch;
@@ -1133,6 +1157,7 @@ function apply(st, a, pid){
       const coins = Math.round((d.comps.length * 10 + Math.round(left * 10) * 2) * (o.hurry ? 1.5 : 1)) + (st.streak >= 2 ? Math.min(5, st.streak - 1) * 5 : 0);
       o.state = 'happy'; o.leaveAt = st.now + 1800; o.coins = coins;
       st.coins += coins; st.served++;
+      st.maxStreak = Math.max(st.maxStreak || 0, st.streak); if (o.hurry) st.hurryServed = (st.hurryServed || 0) + 1;
       fx(st, 'serve', {o:o.id, coins, p:pid, streak:st.streak}); bump(st, pid, 'serve');
       return {ok:true};
     }
@@ -1428,16 +1453,20 @@ const HOW = {zairyo:'ドラッグ', kiru:'連打', yaku:'ドラッグ・長押�
 let ME = Object.assign({name:'コック', color:COLORS[Math.floor(Math.random() * 8)], hat:'chef', skin:0, roles:[]}, LSJ.get('nk:me', {}));
 const saveMe = () => LSJ.set('nk:me', ME);
 let BESTS = LSJ.get('nk:bests', {});          // "週:ステージ" → 星の数
-const totalStars = () => Object.values(BESTS).reduce((a, b) => a + b, 0);
+const CHAL = LSJ.get('nk:chal', {});           // 週 → 達成
+const totalStars = () => Object.values(BESTS).reduce((a, b) => a + b, 0) + Object.keys(CHAL).length * 3;
 const progOf = w => Object.keys(BESTS).filter(k => k.startsWith(w + ':')).reduce((m, k) => Math.max(m, +k.split(':')[1]), 0);
 const nextStageFor = w => progOf(w) + 1;
 const COINBEST = LSJ.get('nk:coinbest', {});
-let lastRecord = false;
+let lastRecord = false, lastChal = false;
 function recordResult(r){
   const k = `${r.week}:${r.stage}`, before = totalStars(), prev = BESTS[k] || 0;
   lastRecord = r.coins > (COINBEST[k] || 0) && !!COINBEST[k];
   if (r.coins > (COINBEST[k] || 0)){ COINBEST[k] = r.coins; LSJ.set('nk:coinbest', COINBEST); }
   if (r.stars > prev){ BESTS[k] = r.stars; LSJ.set('nk:bests', BESTS); }
+  lastChal = false;
+  const ch = challengeOf(r.week);
+  if (!CHAL[r.week] && ch.ok(r)){ CHAL[r.week] = 1; LSJ.set('nk:chal', CHAL); lastChal = true; }
   const after = totalStars();
   return HATS.filter(h => h.need > before && h.need <= after);
 }
@@ -1482,6 +1511,7 @@ function renderTitle(){
   $('#title').innerHTML = `${logoSVG()}<div class="subtitle">協力クッキング　1–4人</div>
     <div class="card weekcard"><div class="sign">${esc(wk.theme.name + wk.shop.name)}</div>
       <div class="info"><small>今週の店</small><b>残り${wk.daysLeft}日　次は${esc(wk.next.name)}</b><small>ステージ${nextStageFor(wk.w)}から</small></div>
+      <div class="chal ${CHAL[wk.w] ? 'done' : ''}"><small>今週のチャレンジ</small><b>${esc(challengeOf(wk.w).desc)}</b><span>${CHAL[wk.w] ? '達成' : '★3'}</span></div>
       <div class="dishes">${wk.shop.dishes.map(d => `<div>${D[d.id]()}</div>`).join('')}</div></div>
     <div class="card title-me"><div class="av">${meArt('happy')}</div><div style="text-align:left"><b style="font-size:18px">${esc(ME.name)}</b><br><button class="btn sm" data-a="dress" style="margin-top:6px">着せ替え</button></div></div>
     <div class="title-btns"><button class="btn big green" data-a="solo">ひとりで</button><button class="btn big" data-a="multi"><span class="ic">${ICON.people()}</span>みんなで</button></div>
@@ -2135,6 +2165,7 @@ function showResult(){
   const o = overlay(`<h3>${r.stars >= 3 ? '大成功' : r.stars === 2 ? '成功' : 'クリア'}</h3>
     <div class="stars">${[0, 1, 2].map(i => `<i data-on="${i < r.stars ? 1 : 0}">${ICON.star(i < r.stars)}</i>`).join('')}</div>
     <div class="res-row"><span class="pill"><i>${ICON.heart()}</i>笑顔 ${r.served}/${r.total}</span><span class="pill"><i>${ICON.coin()}</i>${r.coins}${lastRecord ? '<em class="rec">新記録</em>' : ''}</span><span class="pill sub">最高 ${COINBEST[`${r.week}:${r.stage}`] || r.coins}</span><span class="pill"><i>${ICON.star()}</i>合計 ${totalStars()}</span></div>
+    ${lastChal ? `<div class="chalok"><small>今週のチャレンジ達成</small><b>${esc(challengeOf(r.week).desc)}</b><span>★3</span></div>` : ''}
     ${statsHTML(st, r)}
     ${unlocked.map(h => `<div class="unlock"><div class="av">${chef({color:ME.color, hat:h.id, skin:ME.skin, mood:'happy'})}</div><div style="text-align:left"><small>新しい着せ替え</small><br><b>${esc(h.name)}</b></div></div>`).join('')}
     <div class="ov-btns">${host ? `<button class="btn" data-r="lobby">${NET.mode === 'solo' ? '終了' : '部屋へ'}</button><button class="btn yellow" data-r="again">もう一度</button><button class="btn big green" data-r="next">次のステージ</button>`
