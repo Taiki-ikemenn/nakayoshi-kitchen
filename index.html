@@ -493,6 +493,20 @@ body[data-theme=night] .stamp span{color:color-mix(in srgb,var(--sc) 50%,#fff)}
 #guide.up span{top:auto;bottom:34px}
 @keyframes gring{0%{transform:scale(.5);opacity:.7}100%{transform:scale(1.4);opacity:0}}
 
+.seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px;gap:2px;box-shadow:var(--sh2)}
+.seg button{min-height:38px;padding:0 12px;border-radius:10px;font-size:14px;font-weight:700;color:var(--sub);letter-spacing:.04em}
+.seg button.on{background:var(--ink);color:var(--card)}
+.btn.sm.off{color:var(--sub)}
+
+.stats{width:100%;display:flex;flex-direction:column;gap:6px}
+.srow{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:5px 12px 5px 6px;text-align:left}
+.srow i{width:30px;height:34px;display:block;flex:none}
+.srow b{font-size:14px;white-space:nowrap}
+.srow em{font-style:normal;font-size:10px;font-weight:700;color:#fff;background:var(--warn);border-radius:999px;padding:1px 8px;letter-spacing:.08em}
+.srow span{margin-left:auto;font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow.mvp{border-color:var(--warn)}
+@media (orientation:landscape) and (max-height:600px){ .stats{display:grid;grid-template-columns:1fr 1fr} }
+
 </style>
 </head>
 <body>
@@ -950,8 +964,11 @@ function stageConfig(shopId, week, n, players){
 /* =====================================================================
    ゲームのしくみ（ホストの端末だけが進めます。ほかの端末は結果を表示します）
    ===================================================================== */
-const chopN = c => ING[c].chop || 4;   // 何回たたくと切れるか（かたいものほど多い）
 const BURN = 9000;          // できあがりから こげるまで
+/* やさしい：連打が少なく、焦げにくく、お客が長く待つ */
+const isEasy = st => !!st && st.diff === 'easy';
+const chopN = (c, st) => { const n = ING[c].chop || 4; return isEasy(st) ? Math.max(2, Math.ceil(n * .6)) : n; };   // 何回たたくと切れるか
+const burnMs = st => isEasy(st) ? BURN * 1.8 : BURN;
 const BOARDS = 2;           // まないたの数
 const PANS = 3;             // オーブン・コンロの数
 const CAP = {cutq:4, cookq:4, tray:8};
@@ -964,11 +981,12 @@ function newRoomState(code, hostPid){
   return {v:1, code, host:hostPid, phase:'lobby', now:Date.now(), seq:0,
     week:wk.w, shop:wk.shop.id, theme:wk.theme.id, stage:1,
     players:{}, orders:[], items:[], queue:[], cfg:null, fx:[], fxSeq:0,
-    coins:0, served:0, missed:0, result:null, uid:1};
+    coins:0, served:0, missed:0, result:null, uid:1, diff:LSJ.get('nk:diff', 'normal')};
 }
 const nid = st => 'i' + (st.uid++).toString(36);
 const nextLoc = (c, s) => { const st = ING[c].steps[s]; return st === 'cut' ? 'cutq' : st === 'cook' ? 'cookq' : 'tray'; };
 const locCount = (st, loc) => st.items.filter(i => i.loc === loc).length;
+function bump(st, pid, k){ if (!pid) return; st.stats = st.stats || {}; const s = st.stats[pid] = st.stats[pid] || {}; s[k] = (s[k] || 0) + 1; }
 function fx(st, type, data = {}){ st.fx.push(Object.assign({id:++st.fxSeq, type, at:st.now}, data)); if (st.fx.length > 14) st.fx.splice(0, st.fx.length - 14); }
 const activeOrders = st => st.orders.filter(o => o.state === 'wait').sort((a, b) => a.at - b.at);
 const orderNeeds = (st, o) => { const d = dishOf(st.shop, o.dish), left = [...d.comps]; o.plate.forEach(c => { const i = left.indexOf(c); if (i >= 0) left.splice(i, 1); }); return left; };
@@ -1001,8 +1019,9 @@ function startStage(st, n){
   if (wk.w !== st.week){ st.week = wk.w; st.shop = wk.shop.id; st.theme = wk.theme.id; }
   st.stage = n;
   st.cfg = stageConfig(st.shop, st.week, n, players);
+  if (isEasy(st)){ st.cfg.patience = Math.round(st.cfg.patience * 1.4); st.cfg.gap = Math.round(st.cfg.gap * 1.15); }
   st.queue = st.cfg.queue.slice(); delete st.cfg.queue;
-  st.orders = []; st.items = []; st.streak = 0; st.lastServe = 0; st.rushOn = false; st.coins = 0; st.served = 0; st.missed = 0; st.result = null;
+  st.orders = []; st.items = []; st.streak = 0; st.lastServe = 0; st.stats = {}; st.rushOn = false; st.coins = 0; st.served = 0; st.missed = 0; st.result = null;
   st.phase = 'intro'; st.introUntil = st.now + (st.cfg.newDish ? 6500 : 3500);
   fx(st, 'intro');
 }
@@ -1031,12 +1050,12 @@ function tick(st, now){
   for (const it of st.items){
     if (it.loc !== 'pan') continue;
     if (!it.done && now >= it.cs + ING[it.c].cook){ it.done = true; fx(st, 'cooked', {i:it.id}); ch = true; }
-    if (!it.burnt && now >= it.cs + ING[it.c].cook + BURN){ it.burnt = true; fx(st, 'burnt', {i:it.id}); ch = true; }
+    if (!it.burnt && now >= it.cs + ING[it.c].cook + burnMs(st)){ it.burnt = true; fx(st, 'burnt', {i:it.id}); ch = true; }
   }
   if (!st.queue.length && !st.orders.length){
     const total = st.cfg.total, ratio = st.served / total;
     const stars = ratio >= .9 ? 3 : ratio >= .6 ? 2 : 1;
-    st.result = {stars, served:st.served, total, coins:st.coins, stage:st.stage, shop:st.shop, week:st.week};
+    st.result = {stars, served:st.served, total, coins:st.coins, stage:st.stage, shop:st.shop, week:st.week, stats:st.stats || {}};
     st.phase = 'result'; st.items = []; fx(st, 'result'); ch = true;
   }
   return ch;
@@ -1060,6 +1079,7 @@ function apply(st, a, pid){
   const P = st.players[pid];
   if (a.t === 'roles' && P){ P.roles = (a.roles || []).filter(r => ROLE_IDS.includes(r)); return {ok:true}; }
   if (a.t === 'start' && pid === st.host && (st.phase === 'lobby' || st.phase === 'result')){ startStage(st, Math.max(1, a.stage | 0 || st.stage)); return {ok:true}; }
+  if (a.t === 'diff' && pid === st.host && st.phase !== 'play' && st.phase !== 'intro'){ st.diff = a.v === 'easy' ? 'easy' : 'normal'; return {ok:true}; }
   if (a.t === 'lobby' && pid === st.host){ st.phase = 'lobby'; st.orders = []; st.items = []; st.result = null; return {ok:true}; }
   if (a.t === 'stamp' && P && STAMPS[a.k]){ if (st.now - (P.lastStamp || 0) < 900) return {ok:false}; P.lastStamp = st.now; fx(st, 'stamp', {k:a.k, p:pid}); return {ok:true}; }
   if (st.phase !== 'play') return {ok:false, why:'notplay'};
@@ -1071,13 +1091,13 @@ function apply(st, a, pid){
       const loc = nextLoc(a.c, 0);
       if (locCount(st, loc) >= CAP[loc]){ fx(st, 'full', {loc, p:pid}); return {ok:false, why:'full', loc}; }
       st.items.push({id:nid(st), c:a.c, s:0, loc, by:pid});
-      fillBoards(st); fx(st, 'take', {c:a.c, p:pid});
+      fillBoards(st); fx(st, 'take', {c:a.c, p:pid}); bump(st, pid, 'take');
       return {ok:true, loc};
     }
     case 'chop': {
       if (!item || item.loc !== 'board') return {ok:false};
       item.chop = (item.chop || 0) + 1;
-      if (item.chop >= chopN(item.c)){ moveNext(st, item); fx(st, 'cut', {c:item.c, p:pid}); fillBoards(st); }
+      if (item.chop >= chopN(item.c, st)){ moveNext(st, item); fx(st, 'cut', {c:item.c, p:pid}); bump(st, pid, 'cut'); fillBoards(st); }
       return {ok:true};
     }
     case 'cook': {
@@ -1092,7 +1112,7 @@ function apply(st, a, pid){
     case 'out': {
       if (!item || item.loc !== 'pan' || st.now < item.cs + ING[item.c].cook) return {ok:false};
       if (item.burnt){ st.items = st.items.filter(i => i !== item); fx(st, 'toss', {p:pid}); return {ok:true, burnt:true}; }
-      moveNext(st, item); fillBoards(st); fx(st, 'out', {c:item.c, p:pid});
+      moveNext(st, item); fillBoards(st); fx(st, 'out', {c:item.c, p:pid}); bump(st, pid, 'cook');
       return {ok:true};
     }
     case 'plate': {
@@ -1101,7 +1121,7 @@ function apply(st, a, pid){
       if (!o) o = activeOrders(st).find(x => orderNeeds(st, x).includes(item.c));
       if (!o){ fx(st, 'nope', {i:item.id, p:pid}); return {ok:false, why:'nope'}; }
       o.plate.push(item.c); st.items = st.items.filter(i => i !== item);
-      fx(st, 'plate', {o:o.id, c:item.c, p:pid});
+      fx(st, 'plate', {o:o.id, c:item.c, p:pid}); bump(st, pid, 'plate');
       return {ok:true, o:o.id};
     }
     case 'serve': {
@@ -1113,7 +1133,7 @@ function apply(st, a, pid){
       const coins = Math.round((d.comps.length * 10 + Math.round(left * 10) * 2) * (o.hurry ? 1.5 : 1)) + (st.streak >= 2 ? Math.min(5, st.streak - 1) * 5 : 0);
       o.state = 'happy'; o.leaveAt = st.now + 1800; o.coins = coins;
       st.coins += coins; st.served++;
-      fx(st, 'serve', {o:o.id, coins, p:pid, streak:st.streak});
+      fx(st, 'serve', {o:o.id, coins, p:pid, streak:st.streak}); bump(st, pid, 'serve');
       return {ok:true};
     }
     case 'trash': {
@@ -1467,6 +1487,7 @@ function renderTitle(){
     <div class="title-btns"><button class="btn big green" data-a="solo">ひとりで</button><button class="btn big" data-a="multi"><span class="ic">${ICON.people()}</span>みんなで</button></div>
     <div class="howto">${ROLES.map(r => `<span><i>${ROLE_ART[r.id]()}</i>${esc(r.short)}：${esc(HOW[r.id])}</span>`).join('')}</div>
     <div class="title-foot"><span class="starcount"><span class="ic">${ICON.star()}</span>${totalStars()}</span>
+      <button class="btn sm ${LSJ.get('nk:guide', true) ? '' : 'off'}" data-a="guide">ガイド ${LSJ.get('nk:guide', true) ? 'ON' : 'OFF'}</button>
       <button class="btn sm round" data-a="sound" aria-label="音"><span class="ic mono">${ICON.sound(SND.on)}</span></button></div>`;
   show('title');
 }
@@ -1475,6 +1496,7 @@ $('#title').addEventListener('click', async e => {
   sfx('tap');
   const a = b.dataset.a;
   if (a === 'dress') renderDress();
+  if (a === 'guide'){ LSJ.set('nk:guide', !LSJ.get('nk:guide', true)); renderTitle(); }
   if (a === 'sound'){ SND.on = !SND.on; localStorage.setItem('nk:sound', SND.on ? '1' : '0'); if (!SND.on) bgmStop(); renderTitle(); }
   if (a === 'solo'){ soloStart(); NET.onChange = onNet; renderLobby(); }
   if (a === 'multi'){
@@ -1585,8 +1607,8 @@ function renderLobby(){
         <div class="roles">${ROLES.map(r => `<button class="rolecard ${mine.includes(r.id) ? 'on' : ''}" data-role="${r.id}" style="--rc:${r.color}" ${solo ? 'disabled' : ''}>
           <div class="art">${ROLE_ART[r.id]()}</div><div><b>${esc(r.name)}</b><small>${esc(r.desc)}</small><span class="how">${esc(HOW[r.id])}</span>${solo ? '' : `<div class="who">${owners(r.id).map(([, p]) => `<i>${pArt(p)}</i>`).join('')}</div>`}</div><div class="chk">${CHECK_W()}</div></button>`).join('')}</div>
         <div class="lb-hint">${solo ? 'ステージを選んで開始。' : '同じ係に複数人も可。誰も選ばない係は全員の画面に表示。未選択の人には自動で係を割り当て。'}</div>
-        <div class="lb-start">${host ? `<div class="stagepick"><button class="btn sm round" data-a="sp-" ${lobbyStage <= 1 ? 'disabled' : ''}>‹</button><b>ステージ ${lobbyStage}<small class="spbest">${BESTS[`${st.week}:${lobbyStage}`] ? '★'.repeat(BESTS[`${st.week}:${lobbyStage}`]) + '　' : ''}${COINBEST[`${st.week}:${lobbyStage}`] ? '最高 ' + COINBEST[`${st.week}:${lobbyStage}`] : '未プレイ'}</small></b><button class="btn sm round" data-a="sp+" ${lobbyStage >= maxStage ? 'disabled' : ''}>›</button></div>
-          <span class="spacer"></span><button class="btn big green" data-a="start">開始</button>` : `<div class="waitmsg">ホストの開始待ち</div>`}</div>
+        <div class="lb-start">${host ? `<div class="seg" role="group"><button data-a="diff" data-v="easy" class="${st.diff === 'easy' ? 'on' : ''}">やさしい</button><button data-a="diff" data-v="normal" class="${st.diff !== 'easy' ? 'on' : ''}">ふつう</button></div><div class="stagepick"><button class="btn sm round" data-a="sp-" ${lobbyStage <= 1 ? 'disabled' : ''}>‹</button><b>ステージ ${lobbyStage}<small class="spbest">${BESTS[`${st.week}:${lobbyStage}`] ? '★'.repeat(BESTS[`${st.week}:${lobbyStage}`]) + '　' : ''}${COINBEST[`${st.week}:${lobbyStage}`] ? '最高 ' + COINBEST[`${st.week}:${lobbyStage}`] : '未プレイ'}</small></b><button class="btn sm round" data-a="sp+" ${lobbyStage >= maxStage ? 'disabled' : ''}>›</button></div>
+          <span class="spacer"></span><button class="btn big green" data-a="start">開始</button>` : `<div class="waitmsg">${st.diff === 'easy' ? 'やさしい・' : ''}ホストの開始待ち</div>`}</div>
       </div></div>`;
   if (!solo) qrFor(st.code).then(u => { const q = $('#lbQR'); if (q && u) q.innerHTML = `<img src="${u}" alt="QRコード">`; });
   show('lobby');
@@ -1598,6 +1620,7 @@ $('#lobby').addEventListener('click', async e => {
   if (b.dataset.a === 'sp-'){ lobbyStage = Math.max(1, lobbyStage - 1); renderLobby(); }
   if (b.dataset.a === 'sp+'){ lobbyStage = Math.min(nextStageFor(NET.st.week), lobbyStage + 1); renderLobby(); }
   if (b.dataset.a === 'start') send({t:'start', stage:lobbyStage});
+  if (b.dataset.a === 'diff'){ LSJ.set('nk:diff', b.dataset.v); send({t:'diff', v:b.dataset.v}); if (NET.isHost) renderLobby(); }
   if (b.dataset.role){
     const r = b.dataset.role, set = new Set(ME.roles || []);
     set.has(r) ? set.delete(r) : set.add(r);
@@ -1790,7 +1813,7 @@ function renderStation(r, pn, st, need){
         bd.innerHTML = it ? `<div class="crumbs"></div><div class="tapme">連打</div><div class="combo"></div><div class="it">${ingArt(it.c, it.s)}</div><div class="knife">${KNIFE()}</div><div class="bar"><b></b></div>`
           : `<div class="crumbs"></div><div class="emp">材料待ち</div>`;
       }
-      if (it){ const n = Math.max(it.chop || 0, localChop[it.id] || 0); $('.bar b', bd).style.width = Math.min(100, n / chopN(it.c) * 100) + '%'; }
+      if (it){ const n = Math.max(it.chop || 0, localChop[it.id] || 0); $('.bar b', bd).style.width = Math.min(100, n / chopN(it.c, st) * 100) + '%'; }
     });
   }
   if (r === 'yaku'){
@@ -1880,7 +1903,7 @@ function frame(){
     if (!sl.dataset.i || sl.dataset.pend === sl.dataset.i) return;
     const cs = +sl.dataset.cs, ck = +sl.dataset.ck, p = Math.min(1, (now - cs) / ck), pr = $('.pr', sl);
     if (pr) pr.setAttribute('stroke-dashoffset', 276.5 * (1 - p));
-    const over = now - cs - ck, state = p < 1 ? 'cook' : over >= BURN ? 'burnt' : over >= BURN - 3500 ? 'warn' : 'ready';
+    const over = now - cs - ck, state = p < 1 ? 'cook' : over >= burnMs(st) ? 'burnt' : over >= burnMs(st) - 3500 ? 'warn' : 'ready';
     if (sl.dataset.state !== state){
       sl.dataset.state = state;
       sl.classList.toggle('ready', state !== 'cook'); sl.classList.toggle('warn', state === 'warn'); sl.classList.toggle('burnt', state === 'burnt');
@@ -2001,7 +2024,7 @@ $('#play').addEventListener('pointerdown', e => {
     if (itEl){ itEl.classList.remove('hit'); void itEl.offsetWidth; itEl.classList.add('hit'); }
     if (cb && combo.n >= 3){ cb.textContent = `×${combo.n}`; cb.classList.remove('on'); void cb.offsetWidth; cb.classList.add('on'); }
     crumbs(bd, CRUMB[it.c] || '#ccc');
-    const n = chopN(it.c);
+    const n = chopN(it.c, NET.st);
     sfx(localChop[id] >= n ? 'cut' : 'chop');
     const bar = $('.bar b', bd); if (bar) bar.style.width = Math.min(100, localChop[id] / n * 100) + '%';
     const tm = $('.tapme', bd); if (tm) tm.hidden = true;
@@ -2093,7 +2116,15 @@ function showIntro(){
   const list = st.stage === 1 && st.cfg ? st.cfg.dishes.map(id => dishOf(st.shop, id)) : st.cfg && st.cfg.newDish ? [dishOf(st.shop, st.cfg.newDish)] : [];
   overlay(`<div class="sign">${esc(th.name + shop.name)}</div><h3>ステージ ${st.stage}</h3>
     ${list.length ? `<div class="lead">${st.stage === 1 ? 'メニュー' : '新メニュー'}</div><div class="menus">${list.map(recipeHTML).join('')}</div>` : ''}
-    <div class="lead">お客 ${st.cfg ? st.cfg.total : ''}人${st.cfg && st.cfg.hurry ? `・急ぎ ${st.cfg.hurry}人` : ''}${st.cfg && st.cfg.rush ? '・ラッシュあり' : ''}</div><div class="countdown" id="cd"></div>`);
+    <div class="lead">${isEasy(st) ? 'やさしい・' : ''}お客 ${st.cfg ? st.cfg.total : ''}人${st.cfg && st.cfg.hurry ? `・急ぎ ${st.cfg.hurry}人` : ''}${st.cfg && st.cfg.rush ? '・ラッシュあり' : ''}</div><div class="countdown" id="cd"></div>`);
+}
+function statsHTML(st, r){
+  const ids = Object.keys(st.players).filter(id => r.stats && r.stats[id]);
+  if (ids.length < 2) return '';
+  const K = [['take', '材料'], ['cut', '切る'], ['cook', '焼く'], ['plate', '盛る'], ['serve', '渡す']];
+  const score = id => K.reduce((a, [k]) => a + (r.stats[id][k] || 0), 0), best = ids.reduce((a, b) => score(b) > score(a) ? b : a);
+  return `<div class="stats">${ids.map(id => { const p = st.players[id], s = r.stats[id];
+    return `<div class="srow ${id === best ? 'mvp' : ''}"><i>${pArt(p, 'happy')}</i><b>${esc(p.name)}</b>${id === best ? '<em>大活躍</em>' : ''}<span>${K.filter(([k]) => s[k]).map(([k, t]) => `${t} ${s[k]}`).join('　')}</span></div>`; }).join('')}</div>`;
 }
 function showResult(){
   const st = NET.st, r = st.result; if (!r) return;
@@ -2104,6 +2135,7 @@ function showResult(){
   const o = overlay(`<h3>${r.stars >= 3 ? '大成功' : r.stars === 2 ? '成功' : 'クリア'}</h3>
     <div class="stars">${[0, 1, 2].map(i => `<i data-on="${i < r.stars ? 1 : 0}">${ICON.star(i < r.stars)}</i>`).join('')}</div>
     <div class="res-row"><span class="pill"><i>${ICON.heart()}</i>笑顔 ${r.served}/${r.total}</span><span class="pill"><i>${ICON.coin()}</i>${r.coins}${lastRecord ? '<em class="rec">新記録</em>' : ''}</span><span class="pill sub">最高 ${COINBEST[`${r.week}:${r.stage}`] || r.coins}</span><span class="pill"><i>${ICON.star()}</i>合計 ${totalStars()}</span></div>
+    ${statsHTML(st, r)}
     ${unlocked.map(h => `<div class="unlock"><div class="av">${chef({color:ME.color, hat:h.id, skin:ME.skin, mood:'happy'})}</div><div style="text-align:left"><small>新しい着せ替え</small><br><b>${esc(h.name)}</b></div></div>`).join('')}
     <div class="ov-btns">${host ? `<button class="btn" data-r="lobby">${NET.mode === 'solo' ? '終了' : '部屋へ'}</button><button class="btn yellow" data-r="again">もう一度</button><button class="btn big green" data-r="next">次のステージ</button>`
       : `<div class="waitmsg">ホストの選択待ち</div><button class="btn" data-r="leave">退出</button>`}</div>`);
