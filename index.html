@@ -521,6 +521,10 @@ body[data-theme=night] .stamp span{color:color-mix(in srgb,var(--sc) 50%,#fff)}
 .chalok{flex-wrap:wrap;row-gap:0} .chalok small{width:100%}
 .weekcard .chal b{white-space:normal;line-height:1.35}
 
+#lag{position:fixed;left:50%;top:calc(var(--safe-t) + 54px);transform:translateX(-50%);z-index:93;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 16px;font-size:13px;font-weight:700;color:var(--sub);letter-spacing:.1em;box-shadow:var(--sh);pointer-events:none}
+#lag i{width:12px;height:12px;border-radius:50%;border:2px solid var(--line2);border-top-color:var(--ink);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 </style>
 </head>
 <body>
@@ -1336,9 +1340,9 @@ function checkTakeover(){
   NET.isHost = true; NET.hostSince = Date.now();
   const st = NET.st; st.host = PID; st.now = Date.now();
   if (st.phase === 'play') Object.values(st.orders).forEach(o => { if (o.state === 'wait') o.until += 6000; });   // 待たせたぶん、少しのばします
+  fx(st, 'host', {p:PID});
   hostLoop(); schedulePush(true);
   if (NET.onChange) NET.onChange();
-  toastMsg('ホストを引き継ぎ');
 }
 /* 操作を送ります（ホストならその場で反映） */
 function send(a){
@@ -1692,6 +1696,7 @@ function handleFx(st){
     lastFx = f.id;
     if (f.type === 'arrive') sfx('arrive');
     if (f.type === 'serve'){ sfx('serve'); burstOrder(f.o, f.coins); if (f.streak >= 2) banner(`連続 ${f.streak}`, 'small'); }
+    if (f.type === 'host'){ const p = st.players[f.p]; toastMsg(f.p === PID ? 'ホストを引き継ぎ' : `${p ? p.name : '次の人'}がホストに`); }
     if (f.type === 'stamp'){ sfx(f.p === PID ? 'tap' : 'arrive'); showStamp(f); }
     if (f.type === 'rush'){ sfx('start'); banner('ラッシュ'); }
     if (f.type === 'left') sfx('left');
@@ -1920,8 +1925,13 @@ function guide(st, now){
 }
 function frame(){
   requestAnimationFrame(frame);
-  if (curScreen !== 'play' || !NET.st){ const g = $('#guide'); if (g) g.remove(); return; }
+  if (curScreen !== 'play' || !NET.st){ const g = $('#guide'); if (g) g.remove(); const l = $('#lag'); if (l) l.remove(); return; }
   guide(NET.st, performance.now());
+  /* ホストから届かないとき */
+  const lag = NET.mode === 'room' && !NET.isHost && NET.lastRecv && Date.now() - NET.lastRecv > 5500;
+  let lg = $('#lag');
+  if (lag && !lg){ lg = document.createElement('div'); lg.id = 'lag'; lg.innerHTML = '<i></i>通信待ち'; document.body.append(lg); }
+  if (!lag && lg) lg.remove();
   const st = NET.st, now = hostNow(), pat = st.cfg ? st.cfg.patience : 60000;
   $$('#orders .order').forEach(e => {
     if (e.dataset.state !== 'wait') return;
