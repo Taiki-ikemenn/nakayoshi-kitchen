@@ -1056,9 +1056,9 @@ const shopOf = id => SHOPS.find(s => s.id === id) || SHOPS[0];
 const dishOf = (shop, id) => shopOf(shop).dishes.find(d => d.id === id);
 const THEMES = [{id:'day', name:'', sky:'#bfe6ff'}];   // ふんいき違い（夜・祭り・雪）はなし
 
-/* ---------- 週がわり（月曜日に お店が かわります） ---------- */
+/* ---------- 3日ごとに お店が かわります ---------- */
 const EPOCH = new Date(2026, 10, 23).getTime();   // 2026年11月23日（月）
-const WEEK = 7 * 864e5;
+const WEEK = 3 * 864e5;   // お店が変わる間かく（3日）
 const mod = (a, n) => ((a % n) + n) % n;
 function weekInfo(t = Date.now()){
   const d = new Date(t); d.setHours(0, 0, 0, 0);
@@ -1069,7 +1069,7 @@ function weekInfo(t = Date.now()){
   return {w, shop, theme, daysLeft, next:SHOPS[mod(w + 1, SHOPS.length)]};
 }
 
-/* ---------- 今週のチャレンジ（達成で★3つ） ---------- */
+/* ---------- 今回のチャレンジ（達成で★3つ） ---------- */
 const CHALLENGES = [
   {id:'combo', name:'連続5回', desc:'1ステージで連続5回渡す', ok:r => (r.maxStreak || 0) >= 5},
   {id:'hurry', name:'急ぎ客4人', desc:'1ステージで急ぎ客を4人笑顔に', ok:r => (r.hurryServed || 0) >= 4},
@@ -1708,8 +1708,8 @@ function renderTitle(){
   const wk = weekInfo(); applyShop(wk.shop.id, wk.theme.id);
   $('#title').innerHTML = `${logoSVG()}<div class="subtitle">協力クッキング　1–4人</div>
     <div class="card weekcard"><div class="sign">${esc(wk.theme.name + wk.shop.name)}</div>
-      <div class="info"><small>今週の店</small><b>残り${wk.daysLeft}日　次は${esc(wk.next.name)}</b><small>ステージ${nextStageFor(wk.w)}から</small></div>
-      <div class="chal ${CHAL[wk.w] ? 'done' : ''}"><small>今週のチャレンジ</small><b>${esc(challengeOf(wk.w).desc)}</b><span>${CHAL[wk.w] ? '達成' : '★3'}</span></div>
+      <div class="info"><small>今のお店</small><b>残り${wk.daysLeft}日　次は${esc(wk.next.name)}</b><small>ステージ${nextStageFor(wk.w)}から</small></div>
+      <div class="chal ${CHAL[wk.w] ? 'done' : ''}"><small>今回のチャレンジ</small><b>${esc(challengeOf(wk.w).desc)}</b><span>${CHAL[wk.w] ? '達成' : '★3'}</span></div>
       <div class="dishes">${wk.shop.dishes.map(d => `<div>${D[d.id]()}</div>`).join('')}</div></div>
     <div class="card title-me"><div class="av">${meArt('happy')}</div><div style="text-align:left"><b style="font-size:18px">${esc(ME.name)}</b><br><button class="btn sm" data-a="dress" style="margin-top:6px">着せ替え</button></div></div>
     <div class="title-btns"><button class="btn big green" data-a="solo">ひとりで</button><button class="btn big" data-a="multi"><span class="ic">${ICON.people()}</span>みんなで</button></div>
@@ -1760,7 +1760,7 @@ function showHelp(){
     ['mazeru', 'ボウルの上を指でぐるぐる回して混ぜる。ステージ3から。', A.cream_ready],
     ['arau', '汚れたお皿を左右にゴシゴシ。お皿がないと盛り付けできない。ステージ5から。', A.plate_dirty],
     ['kazaru', 'できた料理に、大きい丸から点を順になぞって仕上げる。ステージ7から。', () => D.cheeseburger ? D.cheeseburger() : D.hamsand()]];
-  const tips = [['係の数', 'ステージ3・5・7で係が増える。部屋で使わない係を選べる。'], ['急ぎ', '待てる時間が短い。コイン1.5倍。'], ['ラッシュ', 'お客が続けて来る。'], ['連続', '12秒以内に続けて渡すとコインが増える。'], ['チャレンジ', '今週のお題。達成で★3。'], ['ひとこと', 'みんなで遊ぶとき、仲間に一言送れる。']];
+  const tips = [['係の数', 'ステージ3・5・7で係が増える。部屋で使わない係を選べる。'], ['急ぎ', '待てる時間が短い。コイン1.5倍。'], ['ラッシュ', 'お客が続けて来る。'], ['連続', '12秒以内に続けて渡すとコインが増える。'], ['チャレンジ', 'お店ごとのお題。達成で★3。'], ['ひとこと', 'みんなで遊ぶとき、仲間に一言送れる。']];
   const o = overlay(`<h3>遊び方</h3><div class="lead">4つの係で協力して、お客に料理を渡す。係は自分で選ぶ（複数可）。</div>
     <div class="help">${rows.map(([id, t, art]) => `<div class="hrow" style="--rc:${R(id).color}"><i class="hr">${ROLE_ART[id]()}</i><div><b>${esc(R(id).name)}<span>${esc(HOW[id])}</span></b><small>${esc(t)}</small></div><i class="ha">${art()}</i></div>`).join('')}</div>
     <div class="tips">${tips.map(([k, t]) => `<div><b>${esc(k)}</b><small>${esc(t)}</small></div>`).join('')}</div>
@@ -2541,7 +2541,7 @@ function showResult(){
   const o = overlay(`<h3>${r.stars >= 3 ? '大成功' : r.stars === 2 ? '成功' : 'クリア'}</h3>
     <div class="stars">${[0, 1, 2].map(i => `<i data-on="${i < r.stars ? 1 : 0}">${ICON.star(i < r.stars)}</i>`).join('')}</div>
     <div class="res-row"><span class="pill"><i>${ICON.heart()}</i>笑顔 ${r.served}/${r.total}</span><span class="pill"><i>${ICON.coin()}</i>${r.coins}${lastRecord ? '<em class="rec">新記録</em>' : ''}</span><span class="pill sub">最高 ${COINBEST[`${r.week}:${r.stage}`] || r.coins}</span><span class="pill"><i>${ICON.star()}</i>合計 ${totalStars()}</span></div>
-    ${lastChal ? `<div class="chalok"><small>今週のチャレンジ達成</small><b>${esc(challengeOf(r.week).desc)}</b><span>★3</span></div>` : ''}
+    ${lastChal ? `<div class="chalok"><small>チャレンジ達成</small><b>${esc(challengeOf(r.week).desc)}</b><span>★3</span></div>` : ''}
     ${statsHTML(st, r)}
     ${unlocked.map(h => `<div class="unlock"><div class="av">${chef({color:ME.color, hat:h.id, skin:ME.skin, mood:'happy'})}</div><div style="text-align:left"><small>新しい着せ替え</small><br><b>${esc(h.name)}</b></div></div>`).join('')}
     <div class="ov-btns">${host ? `<button class="btn" data-r="lobby">${NET.mode === 'solo' ? '終了' : '部屋へ'}</button><button class="btn yellow" data-r="again">もう一度</button><button class="btn big green" data-r="next">次のステージ</button>`
