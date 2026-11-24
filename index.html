@@ -541,6 +541,109 @@ body[data-theme=night] .stamp span{color:color-mix(in srgb,var(--sc) 50%,#fff)}
 .tips small{font-size:11px;color:var(--sub)}
 @media (orientation:landscape) and (max-height:600px){ .help{display:grid;grid-template-columns:1fr 1fr} .hrow .ha{display:none} }
 
+/* ===== 混ぜる係 ===== */
+.bowls{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.bowl{position:relative;border-radius:18px;background:color-mix(in srgb,var(--rc) 7%,var(--card2));border:1px solid var(--line);display:flex;align-items:center;justify-content:center;touch-action:none;overflow:hidden}
+.bowl .bw{position:relative;width:min(70%,62cqh);aspect-ratio:1;display:flex;align-items:center;justify-content:center}
+.bowl .bw > svg{position:absolute;inset:0}
+.bowl .bw.empty{opacity:.35}
+.bowl .bw .it{position:relative;width:52%;aspect-ratio:1;margin-top:-6%;transition:transform .05s;z-index:1}
+.bowl .ring{position:absolute;width:min(92%,84cqh);aspect-ratio:1;height:auto;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none}
+.bowl .ring circle{fill:none;stroke-width:5;stroke-linecap:round}
+.bowl .whisk{position:absolute;width:44px;height:44px;right:10%;top:10%;pointer-events:none;z-index:2;transform:translate(-30%,-80%)}
+.bowl .whisk.on{right:auto}
+.bowl .tapme,.dish-w .tapme,.decoboard .tapme{position:absolute;top:10px;left:12px;z-index:3;font-size:11px;letter-spacing:.16em;color:var(--sub);font-weight:700}
+.bowl .emp,.dish-w .emp,.decoboard .emp{position:absolute;color:var(--sub);font-size:13px;letter-spacing:.12em}
+@container (aspect-ratio < .8){ .bowls{grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr))} .bowl .bw{width:min(60%,30cqh)} .bowl .ring{width:min(80%,40cqh)} }
+
+/* ===== 洗う係 ===== */
+.shelf{flex:none;display:flex;align-items:center;gap:8px;min-height:56px;padding:5px 10px;background:var(--card2);border:1px solid var(--line);border-radius:14px}
+.shelf .ql{font-size:11px;color:var(--sub);white-space:nowrap;letter-spacing:.12em}
+.cleanbox{display:flex;align-items:center;flex:1;min-width:0}
+.cleanbox i{width:40px;height:40px;display:block;margin-right:-18px}
+.cleanbox b{margin-left:26px;font-size:18px;font-variant-numeric:tabular-nums}
+.cleanbox .none{font-size:12px;color:var(--bad);font-weight:700}
+.sink{flex:1;min-height:0;position:relative;border-radius:18px;background:linear-gradient(180deg,#cfe9f0,#b6dbe6);box-shadow:inset 0 3px 10px rgba(0,0,0,.12);display:flex}
+body[data-theme=night] .sink{background:linear-gradient(180deg,#3d5a66,#2d4752)}
+.dish-w{flex:1;position:relative;display:flex;align-items:center;justify-content:center;touch-action:none;overflow:hidden;border-radius:18px}
+.dish-w .pl{width:min(64%,78cqh);aspect-ratio:1;position:relative;--clean:0}
+.dish-w .pl svg path,.dish-w .pl svg circle{transition:opacity .2s}
+.dish-w .pl svg path[stroke="#b98a5a"],.dish-w .pl svg circle[fill="#c9343a"],.dish-w .pl svg circle[fill="#8a5a3a"]{opacity:calc(.75 * (1 - var(--clean)))}
+.dish-w .bar{position:absolute;bottom:12px;left:14%;right:14%;height:7px;border-radius:4px;background:rgba(43,37,32,.14);overflow:hidden}
+.dish-w .bar b{display:block;height:100%;width:0;background:var(--rc);border-radius:4px;transition:width .1s}
+.suds{position:absolute;inset:0;pointer-events:none}
+.suds i{position:absolute;width:var(--s);height:var(--s);border-radius:50%;background:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.95);animation:sud .9s ease-out forwards}
+@keyframes sud{0%{transform:scale(.3);opacity:0}30%{opacity:1}100%{transform:translateY(-24px) scale(1.2);opacity:0}}
+.stack{position:absolute;right:12px;top:10px;font-size:12px;font-weight:700;color:var(--sub);letter-spacing:.08em}
+
+/* ===== 飾る係 ===== */
+.decoboard{flex:1;min-height:0;position:relative;border-radius:18px;background:var(--card2);border:1px solid var(--line);touch-action:none;overflow:hidden;--sauce:#d9342b}
+.decoboard .dish{position:absolute;inset:6%;opacity:.95;pointer-events:none}
+.decoboard .dish svg{width:100%;height:100%}
+.decoboard .pat{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.decoboard .guide{fill:none;stroke:var(--ink);stroke-opacity:.28;stroke-width:2.4;stroke-dasharray:3 4;stroke-linecap:round;stroke-linejoin:round}
+.decoboard .cp{fill:var(--card);stroke:var(--ink);stroke-opacity:.45;stroke-width:1.4}
+.decoboard .cp.start{fill:var(--rc);stroke:none;animation:cpp 1s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
+.decoboard .cp.hit{fill:var(--sauce);stroke:none;animation:none}
+@keyframes cpp{50%{transform:scale(1.3)}}
+.decoboard .ink{fill:none;stroke:var(--sauce);stroke-width:4.2;stroke-linecap:round;stroke-linejoin:round}
+.decoboard.done{animation:pin .4s}
+.platecnt{margin-left:auto;flex:none;font-size:12px;font-weight:700;color:var(--sub);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 10px;white-space:nowrap}
+.platecnt.zero{color:#fff;background:var(--bad);border-color:var(--bad)}
+.platecard .go.wait{color:#d4508f}
+
+/* ===== 部屋・紹介 ===== */
+.rolecard .from{font-style:normal;margin-left:8px;font-size:10px;font-weight:700;color:var(--sub);border:1px solid var(--line2);border-radius:999px;padding:1px 7px;letter-spacing:.06em;vertical-align:middle}
+.rolecard.later{opacity:.6}
+.rolecard.later.on{opacity:.75}
+.roles{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));overflow:auto;align-content:start}
+.rolecard{min-height:0}
+.usebar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.usebar small{font-size:12px;color:var(--sub);letter-spacing:.12em;margin-right:4px}
+.usebar button{display:flex;align-items:center;gap:6px;min-height:34px;padding:0 6px 0 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13px;font-weight:700;color:var(--sub)}
+.usebar button i{font-style:normal;font-size:10px;border-radius:999px;padding:2px 7px;background:var(--bg2);color:var(--sub)}
+.usebar button.on{color:var(--ink);border-color:var(--rc)}
+.usebar button.on i{background:var(--rc);color:#fff}
+.newrole{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:color-mix(in srgb,var(--rc) 8%,var(--card));border:1px solid var(--rc);border-radius:16px;padding:8px 14px}
+.newrole i{width:40px;height:40px;display:block;flex:none}
+.newrole small{display:block;font-size:11px;color:var(--rc);font-weight:700;letter-spacing:.12em}
+.newrole b{font-size:16px}
+.newrole span{margin-left:auto;font-size:12px;font-weight:700;color:var(--rc);letter-spacing:.1em}
+.myroles{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center}
+.myroles small{font-size:12px;color:var(--sub);letter-spacing:.12em}
+.myroles span{font-size:13px;font-weight:700;padding:3px 12px;border-radius:999px;background:color-mix(in srgb,var(--rc) 12%,var(--card));color:var(--ink);border:1px solid var(--rc)}
+/* 係が多いときのタブ */
+#play.many .tabs button{font-size:11px;letter-spacing:0;padding-left:0;padding-right:0}
+#play.many .tabs button i{width:22px;height:22px}
+#play.side.many .tabs{width:52px;gap:2px}
+#play.side.many .tabs button{font-size:0;gap:0;padding:2px}
+#play.side.many .tabs button .bd{font-size:10px;min-width:16px;height:16px;top:0;right:0}
+.bowl{container-type:size}
+.bowl .bw{width:min(66cqw,62cqh)}
+.bowl .ring{width:min(88cqw,86cqh)}
+@container (aspect-ratio < .8){ .bowl .bw{width:min(66cqw,62cqh)} .bowl .ring{width:min(88cqw,86cqh)} }
+.decoboard .guide{stroke-width:3}
+.decoboard .ink{stroke-width:5}
+#play.side.many .tabs{overflow-y:auto;scrollbar-width:none;justify-content:flex-start}
+#play.side.many .tabs button{flex:1 0 26px;min-height:26px}
+#play.side.many .tabs button i{width:20px;height:20px}
+
+.rolecard > div:nth-child(2){padding-right:24px;min-width:0}
+.rolecard .from{white-space:nowrap;display:inline-block}
+@media (max-width:760px), (max-height:600px){
+  .roles{grid-template-columns:1fr 1fr;gap:8px}
+  .rolecard{padding:8px 10px;gap:8px;min-height:0}
+  .rolecard .art{width:40px;height:40px;padding:6px;border-radius:12px}
+  .rolecard b{font-size:14px} .rolecard small{font-size:11px}
+  .rolecard .from{display:block;margin:2px 0 0;width:max-content}
+  .rolecard .chk{top:8px;right:8px;width:22px;height:22px}
+  .rolecard .how{margin-top:3px}
+}
+@media (max-width:760px), (max-height:600px){ .roles{grid-template-columns:repeat(2,minmax(0,1fr))} .lobby{grid-template-columns:minmax(0,1fr)} }
+@media (orientation:landscape) and (max-height:600px){ .lobby{grid-template-columns:200px minmax(0,1fr)} }
+@media (max-width:420px){ .rolecard .art{display:none} .rolecard{padding:8px 10px} }
+.lobby{padding:2px}
+
 </style>
 </head>
 <body>
@@ -824,7 +927,16 @@ function chef({color = COLORS[0], hat = 'chef', skin = 0, mood = 'normal'} = {},
 }
 
 /* ---------- 係のアイコン ---------- */
+A.plate_dirty = () => svg(`${shadow(32, 54, 24)}<ellipse cx="32" cy="42" rx="26" ry="11" fill="#e9eef5" ${L}/><ellipse cx="32" cy="41" rx="19" ry="7.4" fill="#fff"/>
+  <path d="M20 40 c4 -3 8 2 12 -1 c3 -2 6 1 9 0" fill="none" stroke="#b98a5a" stroke-width="3.2" stroke-linecap="round" opacity=".75"/><circle cx="40" cy="44" r="2.4" fill="#c9343a" opacity=".55"/><circle cx="24" cy="44" r="1.8" fill="#8a5a3a" opacity=".6"/>`);
+A.plate_clean = () => svg(`${shadow(32, 54, 24)}<ellipse cx="32" cy="42" rx="26" ry="11" fill="#e9eef5" ${L}/><ellipse cx="32" cy="41" rx="19" ry="7.4" fill="#fff"/>${hl(24, 38, 6, 1.6, -10, .9)}`);
 const ROLE_ART = {
+  mazeru:() => svg(`<path d="M8 32 h48 c0 13 -10 22 -24 22 c-14 0 -24 -9 -24 -22z" fill="#c9b6ec" ${L}/><path d="M12 32 c6 4 14 5 20 5 c6 0 14 -1 20 -5" fill="none" stroke="#fff" stroke-width="2.4" opacity=".7"/>
+    <path d="M30 34 l12 -24" stroke="${INK}" stroke-width="2.6" stroke-linecap="round"/><path d="M42 10 c-6 -2 -10 4 -8 10 c3 6 10 4 11 -2 c1 -4 -1 -7 -3 -8z" fill="none" ${LT}/>`),
+  arau:() => svg(`<ellipse cx="30" cy="42" rx="24" ry="10" fill="#dff1f6" ${L}/><ellipse cx="30" cy="41" rx="16" ry="6" fill="#fff"/>
+    <circle cx="46" cy="22" r="7" fill="#fff" ${LT}/><circle cx="34" cy="16" r="5" fill="#fff" ${LT}/><circle cx="52" cy="12" r="4" fill="#fff" ${LT}/>${hl(44, 19, 2, 1.4)}`),
+  kazaru:() => svg(`<path d="M14 12 l26 10 l-12 22 z" fill="#f6c2d8" ${L}/><path d="M28 44 l-4 8" stroke="${INK}" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M30 54 c6 -4 10 2 16 -2 c4 -3 8 0 10 -2" fill="none" stroke="#d4508f" stroke-width="3.4" stroke-linecap="round"/>`),
   zairyo:() => svg(`<path d="M10 28 h44 l-5 22 c-1 3 -3 4 -6 4 h-22 c-3 0 -5 -1 -6 -4z" fill="#e6a55c" ${L}/><path d="M18 28 c0 -10 6 -16 14 -16 c8 0 14 6 14 16" fill="none" ${L}/>
     <path d="M14 36 h36 M16 43 h32" stroke="#c9843f" stroke-width="2.2"/><circle cx="24" cy="24" r="6" fill="#f0473f" ${LT}/><path d="M34 26 c0 -8 8 -10 12 -6 c-2 4 -6 6 -12 6z" fill="#8fd16a" ${LT}/>`),
   kiru:() => svg(`<rect x="8" y="34" width="48" height="18" rx="6" fill="#e9b97a" ${L}/><circle cx="48" cy="43" r="2.4" fill="#c99556"/>
@@ -862,9 +974,21 @@ function logoSVG(){
 const ROLES = [
   {id:'zairyo', name:'材料係', short:'材料', desc:'棚から材料を出す', color:'#e0913a'},
   {id:'kiru',   name:'切る係', short:'切る', desc:'まな板で切る',     color:'#3a87d4'},
+  {id:'mazeru', name:'混ぜる係', short:'混ぜる', desc:'ボウルで混ぜる', color:'#8a5cc8', from:3},
   {id:'yaku',   name:'焼く係', short:'焼く', desc:'焼いて取り出す',   color:'#df5546'},
-  {id:'recipe', name:'渡す係', short:'渡す', desc:'盛り付けて渡す',   color:'#2e9a6b'}
+  {id:'recipe', name:'渡す係', short:'渡す', desc:'盛り付けて渡す',   color:'#2e9a6b'},
+  {id:'kazaru', name:'飾る係', short:'飾る', desc:'なぞって仕上げる', color:'#d4508f', from:7},
+  {id:'arau',   name:'洗う係', short:'洗う', desc:'お皿を洗う',       color:'#2a9fb8', from:5}
 ];
+const BASE_ROLES = ['zairyo', 'kiru', 'yaku', 'recipe'];
+const STEP_ROLE = {cut:'kiru', cook:'yaku', mix:'mazeru'};
+/* そのステージで使う係（ステージが進むと増える。ホストが止めた係は使わない） */
+const enabledRoles = (n, off = []) => ROLES.filter(r => (r.from || 1) <= n && !off.includes(r.id)).map(r => r.id);
+/* その材料の作業（使わない係の作業はとばす） */
+function stepsOf(st, c){
+  const en = st && st.enabled || BASE_ROLES;
+  return ING[c].steps.filter(s => en.includes(STEP_ROLE[s]));
+}
 const ROLE_IDS = ROLES.map(r => r.id);
 const roleOf = id => ROLES.find(r => r.id === id);
 
@@ -874,53 +998,54 @@ const ING = {
   tomato:  {name:'トマト',       raw:'tomato',   ready:'tomato_cut',   steps:['cut'], chop:4},
   lettuce: {name:'レタス',       raw:'lettuce',  ready:'lettuce_cut',  steps:['cut'], chop:5},
   cheese:  {name:'チーズ',       raw:'cheese',   ready:'cheese_ready', steps:[]},
-  kiji:    {name:'パン生地',     raw:'kiji',     mid:'kiji_mid', ready:'kiji_ready',   steps:['cut', 'cook'], cook:5000, chop:3},
+  kiji:    {name:'パン生地',     raw:'kiji',     mid:'kiji_mid', ready:'kiji_ready',   steps:['mix', 'cut', 'cook'], art:{mix:'kiji'}, cook:5000, chop:3},
   shokupan:{name:'食パン',   raw:'shokupan', ready:'shokupan_cut', steps:['cut'], chop:4},
   ham:     {name:'ハム',         raw:'ham',      ready:'ham_cut',      steps:['cut'], chop:4},
   crois:   {name:'クロワッサン', raw:'crois',    ready:'crois_ready',  steps:['cook'], cook:5500},
-  kome:    {name:'米',       raw:'kome',     ready:'kome_ready',   steps:['cook'], cook:5000},
+  kome:    {name:'米',       raw:'kome',     ready:'kome_ready',   steps:['cook', 'mix'], art:{cook:'kome_ready'}, cook:5000},
   maguro:  {name:'まぐろ',       raw:'maguro',   ready:'maguro_cut',   steps:['cut'], chop:5},
   salmon:  {name:'サーモン',     raw:'salmon',   ready:'salmon_cut',   steps:['cut'], chop:5},
   tamago:  {name:'たまご',       raw:'tamago',   mid:'tamago_mid', ready:'tamago_ready', steps:['cook', 'cut'], cook:4000, chop:3},
   kyuri:   {name:'きゅうり',     raw:'kyuri',    ready:'kyuri_cut',    steps:['cut'], chop:6},
   nori:    {name:'のり',         raw:'nori',     ready:'nori',         steps:[]},
-  sponge:  {name:'スポンジ',     raw:'sponge',   ready:'sponge_ready', steps:['cook'], cook:6000},
-  cream:   {name:'クリーム',     raw:'cream',    ready:'cream_ready',  steps:[]},
+  sponge:  {name:'スポンジ',     raw:'sponge',   ready:'sponge_ready', steps:['mix', 'cook'], art:{mix:'sponge'}, cook:6000},
+  cream:   {name:'クリーム',     raw:'cream',    ready:'cream_ready',  steps:['mix']},
   ichigo:  {name:'いちご',       raw:'ichigo',   ready:'ichigo_cut',   steps:['cut'], chop:3},
   choco:   {name:'チョコ',       raw:'choco',    ready:'choco_cut',    steps:['cut'], chop:6},
   banana:  {name:'バナナ',       raw:'banana',   ready:'banana_cut',   steps:['cut'], chop:4},
   cookie:  {name:'クッキー',     raw:'cookie',   ready:'cookie_ready', steps:['cook'], cook:4500},
   bun:     {name:'バンズ',       raw:'bun',      ready:'bun_ready',    steps:['cook'], cook:3500},
-  patty:   {name:'パティ',       raw:'patty',    ready:'patty_ready',  steps:['cook'], cook:5000},
+  patty:   {name:'パティ',       raw:'patty',    ready:'patty_ready',  steps:['mix', 'cook'], art:{mix:'patty'}, cook:5000},
   potato:  {name:'じゃがいも',   raw:'potato',   mid:'potato_mid', ready:'potato_ready', steps:['cut', 'cook'], cook:4500, chop:6}
 };
 /* いまの状態（s＝終わった作業の数）の絵 */
 function ingArt(c, s){
   const g = ING[c]; if (!g) return '';
-  const key = s >= g.steps.length ? g.ready : s === 0 ? g.raw : (g.mid || g.ready);
+  const steps = stepsOf(typeof NET !== 'undefined' ? NET.st : null, c), last = steps[s - 1];
+  const key = s >= steps.length ? g.ready : s === 0 ? g.raw : (g.art && g.art[last]) || g.mid || g.ready;
   return (A[key] || A[g.raw])();
 }
 
 const SHOPS = [
-  {id:'pan', name:'パン屋', cooker:'oven', cookName:'オーブン', bgm:0,
+  {id:'pan', name:'パン屋', cooker:'oven', cookName:'オーブン', bgm:0, sauce:'#f2c94c', sauceName:'マヨ',
    pal:{wall:'#fff3df', wall2:'#ffe2b8', floor:'#f2c79a', accent:'#e39a45', sign:'#c8743a'},
    ings:['kiji', 'shokupan', 'ham', 'lettuce', 'tomato', 'cheese', 'crois'],
    dishes:[{id:'roll', name:'ロールパン', comps:['kiji']}, {id:'hamsand', name:'ハムサンド', comps:['shokupan', 'ham']},
      {id:'crois', name:'クロワッサン', comps:['crois']}, {id:'vegsand', name:'野菜サンド', comps:['shokupan', 'lettuce', 'tomato']},
      {id:'mixsand', name:'ミックスサンド', comps:['shokupan', 'ham', 'cheese', 'lettuce']}]},
-  {id:'sushi', name:'すし屋', cooker:'stove', cookName:'コンロ', bgm:1,
+  {id:'sushi', name:'すし屋', cooker:'stove', cookName:'コンロ', bgm:1, sauce:'#6b3a22', sauceName:'たれ',
    pal:{wall:'#f4f1e6', wall2:'#e3ddc8', floor:'#cfae7f', accent:'#2e6b8a', sign:'#9b3b2a'},
    ings:['kome', 'maguro', 'salmon', 'tamago', 'kyuri', 'nori'],
    dishes:[{id:'maguro', name:'まぐろにぎり', comps:['kome', 'maguro']}, {id:'salmon', name:'サーモンにぎり', comps:['kome', 'salmon']},
      {id:'kappa', name:'かっぱまき', comps:['nori', 'kome', 'kyuri']}, {id:'tamago', name:'たまごにぎり', comps:['kome', 'tamago']},
      {id:'moriawase', name:'すし盛り合わせ', comps:['kome', 'maguro', 'salmon', 'tamago']}]},
-  {id:'cake', name:'ケーキ屋', cooker:'oven', cookName:'オーブン', bgm:2,
+  {id:'cake', name:'ケーキ屋', cooker:'oven', cookName:'オーブン', bgm:2, sauce:'#5a3222', sauceName:'チョコ',
    pal:{wall:'#fff0f4', wall2:'#ffd9e4', floor:'#f3c6d3', accent:'#e2456f', sign:'#c23a65'},
    ings:['cookie', 'sponge', 'cream', 'ichigo', 'choco', 'banana'],
    dishes:[{id:'cookie', name:'クッキー', comps:['cookie']}, {id:'short', name:'いちごショート', comps:['sponge', 'cream', 'ichigo']},
      {id:'chococake', name:'チョコケーキ', comps:['sponge', 'choco']}, {id:'banacake', name:'バナナケーキ', comps:['sponge', 'cream', 'banana']},
      {id:'fruitcake', name:'フルーツケーキ', comps:['sponge', 'cream', 'ichigo', 'banana']}]},
-  {id:'burger', name:'バーガー屋', cooker:'grill', cookName:'鉄板', bgm:3,
+  {id:'burger', name:'バーガー屋', cooker:'grill', cookName:'鉄板', bgm:3, sauce:'#d9342b', sauceName:'ケチャップ',
    pal:{wall:'#fff6e0', wall2:'#ffe6a8', floor:'#d9a26a', accent:'#e8413a', sign:'#d0342c'},
    ings:['bun', 'patty', 'cheese', 'lettuce', 'tomato', 'potato'],
    dishes:[{id:'fries', name:'ポテト', comps:['potato']}, {id:'burger', name:'ハンバーガー', comps:['bun', 'patty']},
@@ -1005,6 +1130,15 @@ function stageConfig(shopId, week, n, players){
   return {total, maxActive, patience, gap, queue, newDish, rush, hurry, dishes:pool.map(d => d.id)};
 }
 
+/* 飾りのお手本（0〜100 の座標。順番になぞる） */
+const DECOS = [
+  {id:'zig', pts:[[18, 40], [34, 62], [50, 40], [66, 62], [82, 40]]},
+  {id:'wave', pts:[[16, 52], [30, 40], [44, 52], [58, 64], [72, 52], [86, 40]]},
+  {id:'ring', pts:Array.from({length:10}, (_, i) => { const a = -Math.PI / 2 + i / 9 * Math.PI * 2 * .92; return [50 + Math.cos(a) * 26, 52 + Math.sin(a) * 22]; })},
+  {id:'hook', pts:[[22, 36], [50, 36], [78, 36], [70, 52], [50, 64], [30, 64]]}
+];
+const decoOf = oid => DECOS[hashStr(oid) % DECOS.length];
+
 /* =====================================================================
    ゲームのしくみ（ホストの端末だけが進めます。ほかの端末は結果を表示します）
    ===================================================================== */
@@ -1013,9 +1147,13 @@ const BURN = 9000;          // できあがりから こげるまで
 const isEasy = st => !!st && st.diff === 'easy';
 const chopN = (c, st) => { const n = ING[c].chop || 4; return isEasy(st) ? Math.max(2, Math.ceil(n * .6)) : n; };   // 何回たたくと切れるか
 const burnMs = st => isEasy(st) ? BURN * 1.8 : BURN;
+const mixN = st => isEasy(st) ? 2 : 3;       // 何周まぜるか
+const washN = st => isEasy(st) ? 4 : 7;      // 何往復こするか
+const BOWLS = 2;
+const on = (st, r) => !!st && (st.enabled || BASE_ROLES).includes(r);
 const BOARDS = 2;           // まないたの数
 const PANS = 3;             // オーブン・コンロの数
-const CAP = {cutq:4, cookq:4, tray:8};
+const CAP = {cutq:4, cookq:4, mixq:4, tray:8};
 const ACTIVE_STATES = ['wait'];
 /* 仲間に送るひとこと */
 const STAMPS = {thx:{t:'ありがとう', c:'#e2456f'}, nice:{t:'ナイス', c:'#2e9a6b'}, fast:{t:'急いで', c:'#e0913a'}, help:{t:'手伝って', c:'#3a87d4'}, wait:{t:'待って', c:'#8a7a6a'}, ok:{t:'了解', c:'#2b2520'}};
@@ -1025,16 +1163,18 @@ function newRoomState(code, hostPid){
   return {v:1, code, host:hostPid, phase:'lobby', now:Date.now(), seq:0,
     week:wk.w, shop:wk.shop.id, theme:wk.theme.id, stage:1,
     players:{}, orders:[], items:[], queue:[], cfg:null, fx:[], fxSeq:0,
-    coins:0, served:0, missed:0, result:null, uid:1, diff:LSJ.get('nk:diff', 'normal')};
+    coins:0, served:0, missed:0, result:null, uid:1, diff:LSJ.get('nk:diff', 'normal'), off:LSJ.get('nk:off', [])};
 }
 const nid = st => 'i' + (st.uid++).toString(36);
-const nextLoc = (c, s) => { const st = ING[c].steps[s]; return st === 'cut' ? 'cutq' : st === 'cook' ? 'cookq' : 'tray'; };
+const nextLoc = (st, c, s) => { const k = stepsOf(st, c)[s]; return k === 'cut' ? 'cutq' : k === 'cook' ? 'cookq' : k === 'mix' ? 'mixq' : 'tray'; };
 const locCount = (st, loc) => st.items.filter(i => i.loc === loc).length;
 function bump(st, pid, k){ if (!pid) return; st.stats = st.stats || {}; const s = st.stats[pid] = st.stats[pid] || {}; s[k] = (s[k] || 0) + 1; }
 function fx(st, type, data = {}){ st.fx.push(Object.assign({id:++st.fxSeq, type, at:st.now}, data)); if (st.fx.length > 14) st.fx.splice(0, st.fx.length - 14); }
 const activeOrders = st => st.orders.filter(o => o.state === 'wait').sort((a, b) => a.at - b.at);
 const orderNeeds = (st, o) => { const d = dishOf(st.shop, o.dish), left = [...d.comps]; o.plate.forEach(c => { const i = left.indexOf(c); if (i >= 0) left.splice(i, 1); }); return left; };
 const orderDone = (st, o) => orderNeeds(st, o).length === 0;
+/* 料理ができて、飾りも終わっている（飾る係がいるとき） */
+const orderReady = (st, o) => orderDone(st, o) && (!on(st, 'kazaru') || !!o.deco);
 
 /* いま必要な材料の数（作っているとちゅうのものは差し引きます） */
 function needCounts(st){
@@ -1046,17 +1186,26 @@ function needCounts(st){
 }
 
 function balanceRoles(st){
+  st.extra = {};
   const ids = Object.keys(st.players).sort((a, b) => (st.players[a].joined || 0) - (st.players[b].joined || 0));
   if (ids.length <= 1) return;
-  const cnt = r => ids.filter(id => (st.players[id].roles || []).includes(r)).length;
+  const en = st.enabled;
+  const mine = id => (st.players[id].roles || []).filter(r => en.includes(r)).concat(st.extra[id] || []);
+  const cnt = r => ids.filter(id => mine(id).includes(r)).length;
+  /* 係を選んでいない（または今は使わない係だけの）人に、少ない係をわりあて */
   ids.forEach(id => {
-    const p = st.players[id];
-    if ((p.roles || []).length) return;
-    const r = ROLE_IDS.slice().sort((a, b) => cnt(a) - cnt(b))[0];
-    p.roles = [r]; p.auto = true;
+    if (mine(id).length) return;
+    const r = en.slice().sort((a, b) => cnt(a) - cnt(b))[0];
+    st.extra[id] = [r];
+  });
+  /* だれも持っていない係は、受け持ちが少ない人へ */
+  en.filter(r => !cnt(r)).forEach(r => {
+    const id = ids.slice().sort((a, b) => mine(a).length - mine(b).length)[0];
+    st.extra[id] = (st.extra[id] || []).concat(r);
   });
 }
 function startStage(st, n){
+  st.enabled = enabledRoles(n, st.off || []);
   balanceRoles(st);
   const players = Math.max(1, Object.keys(st.players).length);
   const wk = weekInfo();
@@ -1065,7 +1214,8 @@ function startStage(st, n){
   st.cfg = stageConfig(st.shop, st.week, n, players);
   if (isEasy(st)){ st.cfg.patience = Math.round(st.cfg.patience * 1.4); st.cfg.gap = Math.round(st.cfg.gap * 1.15); }
   st.queue = st.cfg.queue.slice(); delete st.cfg.queue;
-  st.orders = []; st.items = []; st.streak = 0; st.lastServe = 0; st.stats = {}; st.maxStreak = 0; st.hurryServed = 0; st.rushOn = false; st.coins = 0; st.served = 0; st.missed = 0; st.result = null;
+  st.orders = []; st.items = []; st.streak = 0; st.lastServe = 0; st.stats = {}; st.maxStreak = 0; st.hurryServed = 0;
+  st.clean = on(st, 'arau') ? st.cfg.maxActive + 1 : null; st.sink = []; st.rushOn = false; st.coins = 0; st.served = 0; st.missed = 0; st.result = null;
   st.phase = 'intro'; st.introUntil = st.now + (st.cfg.newDish ? 6500 : 3500);
   fx(st, 'intro');
 }
@@ -1086,7 +1236,7 @@ function tick(st, now){
     if (!q.rush) st.rushOn = false;
   }
   for (const o of st.orders){
-    if (o.state === 'wait' && now > o.until){ o.state = 'left'; o.leaveAt = now + 1800; st.missed++; fx(st, 'left', {o:o.id}); ch = true; }
+    if (o.state === 'wait' && now > o.until){ o.state = 'left'; o.leaveAt = now + 1800; st.missed++; fx(st, 'left', {o:o.id}); dirty(st, o); ch = true; }
   }
   const before = st.orders.length;
   st.orders = st.orders.filter(o => o.state === 'wait' || now < o.leaveAt);
@@ -1104,7 +1254,16 @@ function tick(st, now){
   }
   return ch;
 }
-/* まないたが空いたら、待っているものを自動でのせます */
+function dirty(st, o){ if (o.pl && st.clean != null){ st.sink.push({id:nid(st), n:0}); o.pl = 0; } }
+/* まないた・ボウルが空いたら、待っているものを自動でのせます */
+function fillAll(st){ fillBoards(st); fillBowls(st); }
+function fillBowls(st){
+  for (let b = 0; b < BOWLS; b++){
+    if (st.items.some(i => i.loc === 'bowl' && i.slot === b)) continue;
+    const it = st.items.find(i => i.loc === 'mixq'); if (!it) return;
+    it.loc = 'bowl'; it.slot = b; it.mix = 0;
+  }
+}
 function fillBoards(st){
   for (let b = 0; b < BOARDS; b++){
     if (st.items.some(i => i.loc === 'board' && i.slot === b)) continue;
@@ -1113,9 +1272,8 @@ function fillBoards(st){
   }
 }
 function moveNext(st, it){
-  it.s++; delete it.slot; delete it.chop; delete it.cs; delete it.done; delete it.burnt;
-  it.loc = nextLoc(it.c, it.s);
-  if (it.loc !== 'tray' && it.loc !== 'cutq' && it.loc !== 'cookq') it.loc = 'tray';
+  it.s++; delete it.slot; delete it.chop; delete it.mix; delete it.cs; delete it.done; delete it.burnt;
+  it.loc = nextLoc(st, it.c, it.s);
 }
 
 /* プレイヤーの操作を反映します。結果 {ok, why} */
@@ -1123,6 +1281,7 @@ function apply(st, a, pid){
   const P = st.players[pid];
   if (a.t === 'roles' && P){ P.roles = (a.roles || []).filter(r => ROLE_IDS.includes(r)); return {ok:true}; }
   if (a.t === 'start' && pid === st.host && (st.phase === 'lobby' || st.phase === 'result')){ startStage(st, Math.max(1, a.stage | 0 || st.stage)); return {ok:true}; }
+  if (a.t === 'off' && pid === st.host && st.phase !== 'play' && st.phase !== 'intro'){ const s = new Set(st.off || []); if (s.has(a.r)) s.delete(a.r); else if (!BASE_ROLES.includes(a.r)) s.add(a.r); st.off = [...s]; return {ok:true}; }
   if (a.t === 'diff' && pid === st.host && st.phase !== 'play' && st.phase !== 'intro'){ st.diff = a.v === 'easy' ? 'easy' : 'normal'; return {ok:true}; }
   if (a.t === 'lobby' && pid === st.host){ st.phase = 'lobby'; st.orders = []; st.items = []; st.result = null; return {ok:true}; }
   if (a.t === 'stamp' && P && STAMPS[a.k]){ if (st.now - (P.lastStamp || 0) < 900) return {ok:false}; P.lastStamp = st.now; fx(st, 'stamp', {k:a.k, p:pid}); return {ok:true}; }
@@ -1132,16 +1291,35 @@ function apply(st, a, pid){
   switch (a.t){
     case 'take': {
       if (!shop.ings.includes(a.c)) return {ok:false};
-      const loc = nextLoc(a.c, 0);
+      const loc = nextLoc(st, a.c, 0);
       if (locCount(st, loc) >= CAP[loc]){ fx(st, 'full', {loc, p:pid}); return {ok:false, why:'full', loc}; }
       st.items.push({id:nid(st), c:a.c, s:0, loc, by:pid});
-      fillBoards(st); fx(st, 'take', {c:a.c, p:pid}); bump(st, pid, 'take');
+      fillAll(st); fx(st, 'take', {c:a.c, p:pid}); bump(st, pid, 'take');
       return {ok:true, loc};
     }
     case 'chop': {
       if (!item || item.loc !== 'board') return {ok:false};
       item.chop = (item.chop || 0) + 1;
-      if (item.chop >= chopN(item.c, st)){ moveNext(st, item); fx(st, 'cut', {c:item.c, p:pid}); bump(st, pid, 'cut'); fillBoards(st); }
+      if (item.chop >= chopN(item.c, st)){ moveNext(st, item); fx(st, 'cut', {c:item.c, p:pid}); bump(st, pid, 'cut'); fillAll(st); }
+      return {ok:true};
+    }
+    case 'stir': {
+      if (!item || item.loc !== 'bowl') return {ok:false};
+      item.mix = (item.mix || 0) + 1;
+      if (item.mix >= mixN(st)){ moveNext(st, item); fx(st, 'mixed', {c:item.c, p:pid}); bump(st, pid, 'mix'); fillAll(st); }
+      return {ok:true};
+    }
+    case 'scrub': {
+      const d = st.sink && st.sink[0]; if (!d || d.id !== a.d) return {ok:false};
+      d.n++;
+      if (d.n >= washN(st)){ st.sink.shift(); st.clean++; fx(st, 'washed', {p:pid}); bump(st, pid, 'wash'); }
+      return {ok:true};
+    }
+    case 'deco': {
+      const o = st.orders.find(x => x.id === a.o);
+      if (!o || o.state !== 'wait' || !orderDone(st, o) || o.deco) return {ok:false};
+      o.deco = 1; o.decoQ = Math.max(0, Math.min(1, +a.q || 0));
+      fx(st, 'deco', {o:o.id, p:pid}); bump(st, pid, 'deco');
       return {ok:true};
     }
     case 'cook': {
@@ -1156,7 +1334,7 @@ function apply(st, a, pid){
     case 'out': {
       if (!item || item.loc !== 'pan' || st.now < item.cs + ING[item.c].cook) return {ok:false};
       if (item.burnt){ st.items = st.items.filter(i => i !== item); fx(st, 'toss', {p:pid}); return {ok:true, burnt:true}; }
-      moveNext(st, item); fillBoards(st); fx(st, 'out', {c:item.c, p:pid}); bump(st, pid, 'cook');
+      moveNext(st, item); fillAll(st); fx(st, 'out', {c:item.c, p:pid}); bump(st, pid, 'cook');
       return {ok:true};
     }
     case 'plate': {
@@ -1164,25 +1342,29 @@ function apply(st, a, pid){
       let o = a.o ? st.orders.find(x => x.id === a.o && x.state === 'wait' && orderNeeds(st, x).includes(item.c)) : null;
       if (!o) o = activeOrders(st).find(x => orderNeeds(st, x).includes(item.c));
       if (!o){ fx(st, 'nope', {i:item.id, p:pid}); return {ok:false, why:'nope'}; }
+      if (st.clean != null && !o.pl){
+        if (st.clean <= 0){ fx(st, 'noplate', {p:pid}); return {ok:false, why:'noplate'}; }
+        st.clean--; o.pl = 1;
+      }
       o.plate.push(item.c); st.items = st.items.filter(i => i !== item);
       fx(st, 'plate', {o:o.id, c:item.c, p:pid}); bump(st, pid, 'plate');
       return {ok:true, o:o.id};
     }
     case 'serve': {
       const o = st.orders.find(x => x.id === a.o);
-      if (!o || o.state !== 'wait' || !orderDone(st, o)) return {ok:false};
+      if (!o || o.state !== 'wait' || !orderReady(st, o)) return {ok:false};
       const d = dishOf(st.shop, o.dish), left = Math.max(0, (o.until - st.now) / (o.pat || st.cfg.patience));
       /* 続けて出すと連続ボーナス */
       st.streak = st.now - (st.lastServe || 0) < 12000 ? (st.streak || 0) + 1 : 1; st.lastServe = st.now;
-      const coins = Math.round((d.comps.length * 10 + Math.round(left * 10) * 2) * (o.hurry ? 1.5 : 1)) + (st.streak >= 2 ? Math.min(5, st.streak - 1) * 5 : 0);
+      const coins = Math.round((d.comps.length * 10 + Math.round(left * 10) * 2 + (o.deco ? 5 + Math.round(o.decoQ * 10) : 0)) * (o.hurry ? 1.5 : 1)) + (st.streak >= 2 ? Math.min(5, st.streak - 1) * 5 : 0);
       o.state = 'happy'; o.leaveAt = st.now + 1800; o.coins = coins;
       st.coins += coins; st.served++;
       st.maxStreak = Math.max(st.maxStreak || 0, st.streak); if (o.hurry) st.hurryServed = (st.hurryServed || 0) + 1;
-      fx(st, 'serve', {o:o.id, coins, p:pid, streak:st.streak}); bump(st, pid, 'serve');
+      fx(st, 'serve', {o:o.id, coins, p:pid, streak:st.streak}); bump(st, pid, 'serve'); dirty(st, o);
       return {ok:true};
     }
     case 'trash': {
-      if (!item || !['tray', 'cutq', 'cookq', 'pan'].includes(item.loc)) return {ok:false};
+      if (!item || !['tray', 'cutq', 'cookq', 'mixq', 'pan'].includes(item.loc)) return {ok:false};
       st.items = st.items.filter(i => i !== item); fx(st, 'trash', {p:pid});
       return {ok:true};
     }
@@ -1190,13 +1372,15 @@ function apply(st, a, pid){
   return {ok:false};
 }
 
-/* その人の画面に出す係（自分で選んだ係＋だれも選んでいない係） */
+/* その人の画面に出す係（自分で選んだ係＋わりあてられた係＋だれも持っていない係） */
 function myStations(st, pid){
-  const ps = Object.values(st.players), me = st.players[pid];
-  const owned = new Set(); ps.forEach(p => (p.roles || []).forEach(r => owned.add(r)));
-  const mine = new Set(me && me.roles || []);
-  ROLE_IDS.forEach(r => { if (!owned.has(r)) mine.add(r); });
-  if (!mine.size) ROLE_IDS.forEach(r => mine.add(r));
+  const en = st.enabled || BASE_ROLES, ids = Object.keys(st.players);
+  const has = id => ((st.players[id].roles || []).filter(r => en.includes(r))).concat((st.extra || {})[id] || []);
+  if (ids.length <= 1) return en.slice();
+  const owned = new Set(); ids.forEach(id => has(id).forEach(r => owned.add(r)));
+  const mine = new Set(st.players[pid] ? has(pid) : []);
+  en.forEach(r => { if (!owned.has(r)) mine.add(r); });
+  if (!mine.size) en.forEach(r => mine.add(r));
   return ROLE_IDS.filter(r => mine.has(r));
 }
 
@@ -1462,12 +1646,12 @@ function bgmStop(){ clearInterval(SND.bgmT); SND.bgmT = null; SND.song = -1; }
 /* =====================================================================
    画面
    ===================================================================== */
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const $ = (s, r = document) => r ? r.querySelector(s) : null;
+const $$ = (s, r = document) => r ? [...r.querySelectorAll(s)] : [];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
 const elm = html => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
 const LSJ = {get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } }, set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }};
-const HOW = {zairyo:'ドラッグ', kiru:'連打', yaku:'ドラッグ・長押し', recipe:'ドラッグ'};
+const HOW = {zairyo:'ドラッグ', kiru:'連打', mazeru:'ぐるぐる', yaku:'ドラッグ・長押し', recipe:'ドラッグ', kazaru:'なぞる', arau:'ゴシゴシ'};
 
 /* ---------- 自分（着せ替え・記録） ---------- */
 let ME = Object.assign({name:'コック', color:COLORS[Math.floor(Math.random() * 8)], hat:'chef', skin:0, roles:[]}, LSJ.get('nk:me', {}));
@@ -1578,8 +1762,11 @@ function showHelp(){
     ['zairyo', '材料の箱を「送り口」へドラッグ。数字の出ている箱が今いる材料。', A.tomato],
     ['kiru', 'まな板をトントン連打。速くたたくとコンボ。', A.tomato_cut],
     ['yaku', '待っている材料を空きへドラッグ。焼けたら長押しで取り出す。放置すると焦げる。', A.kiji_ready],
-    ['recipe', '完成品をお皿へドラッグ。料理ができたら、お客へドラッグして渡す。', () => D.hamsand()]];
-  const tips = [['急ぎ', '待てる時間が短い。コイン1.5倍。'], ['ラッシュ', 'お客が続けて来る。'], ['連続', '12秒以内に続けて渡すとコインが増える。'], ['チャレンジ', '今週のお題。達成で★3。'], ['ひとこと', 'みんなで遊ぶとき、仲間に一言送れる。']];
+    ['recipe', '完成品をお皿へドラッグ。料理ができたら、お客へドラッグして渡す。', () => D.hamsand()],
+    ['mazeru', 'ボウルの上を指でぐるぐる回して混ぜる。ステージ3から。', A.cream_ready],
+    ['arau', '汚れたお皿を左右にゴシゴシ。お皿がないと盛り付けできない。ステージ5から。', A.plate_dirty],
+    ['kazaru', 'できた料理に、大きい丸から点を順になぞって仕上げる。ステージ7から。', () => D.cheeseburger ? D.cheeseburger() : D.hamsand()]];
+  const tips = [['係の数', 'ステージ3・5・7で係が増える。部屋で使わない係を選べる。'], ['急ぎ', '待てる時間が短い。コイン1.5倍。'], ['ラッシュ', 'お客が続けて来る。'], ['連続', '12秒以内に続けて渡すとコインが増える。'], ['チャレンジ', '今週のお題。達成で★3。'], ['ひとこと', 'みんなで遊ぶとき、仲間に一言送れる。']];
   const o = overlay(`<h3>遊び方</h3><div class="lead">4つの係で協力して、お客に料理を渡す。係は自分で選ぶ（複数可）。</div>
     <div class="help">${rows.map(([id, t, art]) => `<div class="hrow" style="--rc:${R(id).color}"><i class="hr">${ROLE_ART[id]()}</i><div><b>${esc(R(id).name)}<span>${esc(HOW[id])}</span></b><small>${esc(t)}</small></div><i class="ha">${art()}</i></div>`).join('')}</div>
     <div class="tips">${tips.map(([k, t]) => `<div><b>${esc(k)}</b><small>${esc(t)}</small></div>`).join('')}</div>
@@ -1661,7 +1848,9 @@ function renderLobby(){
   const maxStage = nextStageFor(st.week);
   if (!lobbyStage || lobbyStage > maxStage) lobbyStage = Math.min(st.stage || maxStage, maxStage);
   const owners = r => ps.filter(([, p]) => (p.roles || []).includes(r));
-  const mine = solo ? ROLE_IDS : (st.players[PID] && st.players[PID].roles) || [];
+  const off = st.off || [], en = enabledRoles(lobbyStage, off);
+  const mine = solo ? en : (st.players[PID] && st.players[PID].roles) || [];
+  const tagOf = r => off.includes(r.id) ? '使わない' : (r.from || 1) > lobbyStage ? `ステージ${r.from}から` : '';
   const shop = shopOf(st.shop), th = THEMES.find(t => t.id === st.theme);
   $('#lobby').innerHTML = `<div class="topbar"><button class="btn round" data-a="leave" aria-label="戻る"><span class="ic mono">${ICON.back()}</span></button><h2>${solo ? 'ひとりで' : '部屋'}</h2><span class="hud" style="min-height:0"><span class="sign">${esc((th ? th.name : '') + shop.name)}</span></span></div>
     <div class="lobby">
@@ -1670,9 +1859,10 @@ function renderLobby(){
         <div class="card players"><h4>参加者 ${ps.length}人</h4>${ps.map(([id, p]) => `<div class="pl"><div class="av">${pArt(p, id === PID ? 'happy' : 'normal')}</div><b>${esc(p.name)}${id === st.host ? '<small>ホスト</small>' : ''}</b>
           <span class="rs">${(p.roles || []).map(r => `<i>${ROLE_ART[r]()}</i>`).join('')}</span></div>`).join('')}</div>`}</div>
       <div class="lb-right"><h4>${solo ? '全部の係を担当' : '係を選ぶ（複数可）'}</h4>
-        <div class="roles">${ROLES.map(r => `<button class="rolecard ${mine.includes(r.id) ? 'on' : ''}" data-role="${r.id}" style="--rc:${r.color}" ${solo ? 'disabled' : ''}>
-          <div class="art">${ROLE_ART[r.id]()}</div><div><b>${esc(r.name)}</b><small>${esc(r.desc)}</small><span class="how">${esc(HOW[r.id])}</span>${solo ? '' : `<div class="who">${owners(r.id).map(([, p]) => `<i>${pArt(p)}</i>`).join('')}</div>`}</div><div class="chk">${CHECK_W()}</div></button>`).join('')}</div>
-        <div class="lb-hint">${solo ? 'ステージを選んで開始。' : '同じ係に複数人も可。誰も選ばない係は全員の画面に表示。未選択の人には自動で係を割り当て。'}</div>
+        <div class="roles">${ROLES.map(r => `<button class="rolecard ${mine.includes(r.id) ? 'on' : ''} ${tagOf(r) ? 'later' : ''}" data-role="${r.id}" style="--rc:${r.color}" ${solo ? 'disabled' : ''}>
+          <div class="art">${ROLE_ART[r.id]()}</div><div><b>${esc(r.name)}${tagOf(r) ? `<em class="from">${tagOf(r)}</em>` : ''}</b><small>${esc(r.desc)}</small><span class="how">${esc(HOW[r.id])}</span>${solo ? '' : `<div class="who">${owners(r.id).map(([, p]) => `<i>${pArt(p)}</i>`).join('')}</div>`}</div><div class="chk">${CHECK_W()}</div></button>`).join('')}</div>
+        ${host ? `<div class="usebar"><small>使う係</small>${ROLES.filter(r => r.from).map(r => `<button data-a="off" data-r="${r.id}" class="${off.includes(r.id) ? '' : 'on'}" style="--rc:${r.color}">${esc(r.short)}<i>${off.includes(r.id) ? 'OFF' : 'ON'}</i></button>`).join('')}</div>` : ''}
+        <div class="lb-hint">${solo ? '係はステージ3・5・7で増える。ステージを選んで開始。' : '同じ係に複数人も可。誰も選ばない係は、係の少ない人へ自動で割り当て。係はステージ3・5・7で増える。'}</div>
         <div class="lb-start">${host ? `<div class="seg" role="group"><button data-a="diff" data-v="easy" class="${st.diff === 'easy' ? 'on' : ''}">やさしい</button><button data-a="diff" data-v="normal" class="${st.diff !== 'easy' ? 'on' : ''}">ふつう</button></div><div class="stagepick"><button class="btn sm round" data-a="sp-" ${lobbyStage <= 1 ? 'disabled' : ''}>‹</button><b>ステージ ${lobbyStage}<small class="spbest">${BESTS[`${st.week}:${lobbyStage}`] ? '★'.repeat(BESTS[`${st.week}:${lobbyStage}`]) + '　' : ''}${COINBEST[`${st.week}:${lobbyStage}`] ? '最高 ' + COINBEST[`${st.week}:${lobbyStage}`] : '未プレイ'}</small></b><button class="btn sm round" data-a="sp+" ${lobbyStage >= maxStage ? 'disabled' : ''}>›</button></div>
           <span class="spacer"></span><button class="btn big green" data-a="start">開始</button>` : `<div class="waitmsg">${st.diff === 'easy' ? 'やさしい・' : ''}ホストの開始待ち</div>`}</div>
       </div></div>`;
@@ -1686,6 +1876,7 @@ $('#lobby').addEventListener('click', async e => {
   if (b.dataset.a === 'sp-'){ lobbyStage = Math.max(1, lobbyStage - 1); renderLobby(); }
   if (b.dataset.a === 'sp+'){ lobbyStage = Math.min(nextStageFor(NET.st.week), lobbyStage + 1); renderLobby(); }
   if (b.dataset.a === 'start') send({t:'start', stage:lobbyStage});
+  if (b.dataset.a === 'off'){ const s = new Set(NET.st.off || []); if (s.has(b.dataset.r)) s.delete(b.dataset.r); else s.add(b.dataset.r); LSJ.set('nk:off', [...s]); send({t:'off', r:b.dataset.r}); if (NET.isHost) renderLobby(); return; }
   if (b.dataset.a === 'diff'){ LSJ.set('nk:diff', b.dataset.v); send({t:'diff', v:b.dataset.v}); if (NET.isHost) renderLobby(); }
   if (b.dataset.role){
     const r = b.dataset.role, set = new Set(ME.roles || []);
@@ -1728,6 +1919,10 @@ function handleFx(st){
     lastFx = f.id;
     if (f.type === 'arrive') sfx('arrive');
     if (f.type === 'serve'){ sfx('serve'); burstOrder(f.o, f.coins); if (f.streak >= 2) banner(`連続 ${f.streak}`, 'small'); }
+    if (f.type === 'mixed') sfx('cut');
+    if (f.type === 'washed'){ sfx('plate'); }
+    if (f.type === 'deco') sfx('serve');
+    if (f.type === 'noplate' && f.p === PID){ sfx('nope'); toastMsg('お皿がない'); }
     if (f.type === 'host'){ const p = st.players[f.p]; toastMsg(f.p === PID ? 'ホストを引き継ぎ' : `${p ? p.name : '次の人'}がホストに`); }
     if (f.type === 'stamp'){ sfx(f.p === PID ? 'tap' : 'arrive'); showStamp(f); }
     if (f.type === 'rush'){ sfx('start'); banner('ラッシュ'); }
@@ -1745,15 +1940,14 @@ function handleFx(st){
 /* =========================================================
    プレイ画面
    ========================================================= */
-let layoutKey = '', tabSel = '', localChop = {}, combo = {n:0, t:0};
+let layoutKey = '', tabSel = '', viewList = [], localChop = {}, localMix = {}, localScrub = {}, combo = {n:0, t:0};
 function layoutInfo(n){
   const w = innerWidth, h = innerHeight, land = w > h;
   const maxV = land ? (h >= 600 ? 4 : 2) : (w >= 700 ? 4 : 1);
   const v = Math.min(n, maxV);
   let cols = 1, rows = 1;
-  if (n > v){ cols = 1; rows = 1; }
-  else if (land){ cols = v === 4 ? 2 : v; rows = v === 4 ? 2 : 1; }
-  else { cols = v >= 3 ? 2 : 1; rows = v >= 3 ? 2 : v; }
+  if (v === 2){ cols = land ? 2 : 1; rows = land ? 1 : 2; }
+  else if (v >= 3){ cols = 2; rows = 2; }
   const oh = land ? (h >= 600 ? 124 : 84) : (w >= 700 ? 132 : 96);
   return {v, cols, rows, oh, tabs:n > v, compact:h < 600 || w < 600};
 }
@@ -1761,20 +1955,24 @@ function buildPlay(force){
   const st = NET.st; if (!st) return;
   const mine = myStations(st, PID), L = layoutInfo(mine.length);
   if (!tabSel || !mine.includes(tabSel)) tabSel = mine[0];
-  const vis = L.tabs ? [tabSel] : mine;
+  /* 表示しきれないときは、最近さわった係を表示（タブで入れかえ） */
+  viewList = [tabSel, ...viewList.filter(r => r !== tabSel && mine.includes(r))];
+  mine.forEach(r => { if (viewList.length < L.v && !viewList.includes(r)) viewList.push(r); });
+  viewList = viewList.slice(0, L.v);
+  const vis = L.tabs ? mine.filter(r => viewList.includes(r)) : mine;
   const key = [st.shop, vis.join(','), L.cols, L.rows, L.oh, innerWidth > innerHeight].join('|');
   if (!force && key === layoutKey) return;
   layoutKey = key;
   const p = $('#play');
-  p.style.setProperty('--oh', L.oh + 'px'); p.classList.toggle('compact', L.compact); p.classList.toggle('side', L.tabs && innerWidth > innerHeight && innerHeight < 600);
+  p.style.setProperty('--oh', L.oh + 'px'); p.classList.toggle('compact', L.compact); p.classList.toggle('side', L.tabs && innerWidth > innerHeight && innerHeight < 600); p.classList.toggle('many', mine.length > 4);
   p.style.setProperty('--fs', L.compact ? '24px' : '52px'); p.style.setProperty('--ds', L.compact ? '46px' : '64px'); p.style.setProperty('--cs', L.compact ? '16px' : '22px');
   const S = $('#stations');
   S.style.setProperty('--cols', L.cols); S.style.setProperty('--rows', L.rows);
   S.innerHTML = vis.map((r, i) => { const R = roleOf(r);
-    return `<section class="panel" data-st="${r}" style="--rc:${R.color};${!L.tabs && vis.length === 3 && i === 2 && L.cols === 2 ? 'grid-column:1/-1' : ''}">
+    return `<section class="panel" data-st="${r}" style="--rc:${R.color};${vis.length === 3 && i === 2 && L.cols === 2 ? 'grid-column:1/-1' : ''}">
       <div class="ph">${esc(R.name)}<span class="tip">${esc(HOW[r])}</span></div><div class="pb">${stationShell(r, st)}</div></section>`; }).join('');
   const T = $('#tabs'); T.hidden = !L.tabs;
-  if (L.tabs) T.innerHTML = mine.map(r => `<button data-tab="${r}" class="${r === tabSel ? 'on' : ''}" style="--rc:${roleOf(r).color}"><i>${ROLE_ART[r]()}</i>${esc(roleOf(r).short)}<span class="bd" hidden></span></button>`).join('');
+  if (L.tabs) T.innerHTML = mine.map(r => `<button data-tab="${r}" class="${vis.includes(r) ? 'on' : ''}" style="--rc:${roleOf(r).color}"><i>${ROLE_ART[r]()}</i>${esc(roleOf(r).short)}<span class="bd" hidden></span></button>`).join('');
   $('#orders').innerHTML = '';
   requestAnimationFrame(fitCrates);
 }
@@ -1788,7 +1986,11 @@ function stationShell(r, st){
     <div class="boards">${[0, 1].map(b => `<div class="board" data-board="${b}"><div class="crumbs"></div></div>`).join('')}</div>`;
   if (r === 'yaku') return `<div class="queue"><span class="ql">待ち</span><div class="qbox" style="display:flex;gap:6px"></div></div>
     <div class="cooker ${shop.cooker}">${[0, 1, 2].map(s => `<div class="slot" data-slot="${s}"></div>`).join('')}</div>`;
-  if (r === 'recipe') return `<div class="tray"><span class="ql">完成品</span><div class="tbox" style="display:flex;gap:8px"></div></div><div class="plates"></div>`;
+  if (r === 'mazeru') return `<div class="queue"><span class="ql">待ち</span><div class="qbox" style="display:flex;gap:6px"></div></div>
+    <div class="bowls">${[0, 1].map(b => `<div class="bowl" data-bowl="${b}"></div>`).join('')}</div>`;
+  if (r === 'arau') return `<div class="shelf"><span class="ql">きれいなお皿</span><div class="cleanbox"></div></div><div class="sink"><div class="dish-w" data-sink></div><div class="stack"></div></div>`;
+  if (r === 'kazaru') return `<div class="queue"><span class="ql">飾り待ち</span><div class="qbox" style="display:flex;gap:6px"></div></div><div class="decoboard" data-deco></div>`;
+  if (r === 'recipe') return `<div class="tray"><span class="ql">完成品</span><div class="tbox" style="display:flex;gap:8px"></div><span class="platecnt" hidden></span></div><div class="plates"></div>`;
   return '';
 }
 function fitCrates(){
@@ -1845,13 +2047,16 @@ function renderPlay(){
   }
   const need = needCounts(st);
   $$('#stations .panel').forEach(pn => renderStation(pn.dataset.st, pn, st, need));
-  if (!$('#tabs').hidden) $$('#tabs button').forEach(b => { const n = badgeFor(b.dataset.tab, st, need), bd = $('.bd', b); bd.hidden = !n || b.dataset.tab === tabSel; bd.textContent = n; });
+  if (!$('#tabs').hidden) $$('#tabs button').forEach(b => { const n = badgeFor(b.dataset.tab, st, need), bd = $('.bd', b); bd.hidden = !n || b.classList.contains('on'); bd.textContent = n; });
 }
 function badgeFor(r, st, need){
   if (r === 'zairyo') return Object.values(need).reduce((a, b) => a + b, 0);
   if (r === 'kiru') return st.items.filter(i => i.loc === 'cutq' || i.loc === 'board').length;
   if (r === 'yaku') return st.items.filter(i => i.loc === 'cookq').length + st.items.filter(i => i.loc === 'pan' && hostNow() >= i.cs + ING[i.c].cook).length;
-  if (r === 'recipe') return st.items.filter(i => i.loc === 'tray').length + st.orders.filter(o => o.state === 'wait' && orderDone(st, o)).length;
+  if (r === 'recipe') return st.items.filter(i => i.loc === 'tray').length + st.orders.filter(o => o.state === 'wait' && orderReady(st, o)).length;
+  if (r === 'mazeru') return st.items.filter(i => i.loc === 'mixq' || i.loc === 'bowl').length;
+  if (r === 'arau') return (st.sink || []).length;
+  if (r === 'kazaru') return st.orders.filter(o => o.state === 'wait' && orderDone(st, o) && !o.deco).length;
   return 0;
 }
 function faceMood(e, o){
@@ -1862,11 +2067,11 @@ function faceMood(e, o){
 function renderStation(r, pn, st, need){
   const pb = $('.pb', pn);
   if (r === 'zairyo'){
-    const full = {cutq:st.items.filter(i => i.loc === 'cutq').length >= CAP.cutq, cookq:st.items.filter(i => i.loc === 'cookq').length >= CAP.cookq, tray:st.items.filter(i => i.loc === 'tray').length >= CAP.tray};
+    const full = {mixq:st.items.filter(i => i.loc === 'mixq').length >= CAP.mixq, cutq:st.items.filter(i => i.loc === 'cutq').length >= CAP.cutq, cookq:st.items.filter(i => i.loc === 'cookq').length >= CAP.cookq, tray:st.items.filter(i => i.loc === 'tray').length >= CAP.tray};
     $$('.crate', pb).forEach(c => {
       const k = c.dataset.take, n = need[k] || 0, b = $('.need', c);
       b.hidden = !n; b.textContent = n; c.classList.toggle('want', !!n);
-      c.classList.toggle('full', !!full[nextLoc(k, 0)]);
+      c.classList.toggle('full', !!full[nextLoc(st, k, 0)]);
     });
   }
   if (r === 'kiru'){
@@ -1898,7 +2103,52 @@ function renderStation(r, pn, st, need){
       }
     });
   }
+  if (r === 'mazeru'){
+    const q = st.items.filter(i => i.loc === 'mixq'), qb = $('.qbox', pb);
+    keyed(qb, q, i => i.id, i => elm(`<div class="qi">${ingArt(i.c, i.s)}<button class="x" data-trash="${i.id}" aria-label="捨てる">×</button></div>`));
+    noneMark(qb, !q.length, 'なし');
+    $$('.bowl', pb).forEach(bw => {
+      const it = st.items.find(i => i.loc === 'bowl' && i.slot === +bw.dataset.bowl), id = it ? it.id : '';
+      if (bw.dataset.i !== id){
+        bw.dataset.i = id;
+        bw.innerHTML = it ? `<svg class="ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" stroke="rgba(138,92,200,.15)"/><circle class="pr" cx="50" cy="50" r="45" stroke="var(--rc)" stroke-dasharray="282.7" stroke-dashoffset="282.7" transform="rotate(-90 50 50)"/></svg>
+          <div class="bw">${BOWL()}<div class="it">${ingArt(it.c, it.s)}</div></div><div class="whisk">${WHISK()}</div><div class="tapme">ぐるぐる</div>`
+          : `<div class="bw empty">${BOWL()}</div><div class="emp">材料待ち</div>`;
+      }
+      if (it){ const n = Math.max(it.mix || 0, localMix[it.id] || 0); $('.pr', bw).setAttribute('stroke-dashoffset', 282.7 * (1 - Math.min(1, n / mixN(st)))); }
+    });
+  }
+  if (r === 'arau'){
+    const cb = $('.cleanbox', pb), n = st.clean || 0;
+    if (cb.dataset.n !== String(n)){ cb.dataset.n = n; cb.innerHTML = n ? Array.from({length:Math.min(n, 8)}, () => `<i>${A.plate_clean()}</i>`).join('') + `<b>${n}</b>` : '<span class="none">なし</span>'; }
+    const d = st.sink && st.sink[0], w = $('[data-sink]', pb), id = d ? d.id : '';
+    if (w.dataset.d !== id){
+      w.dataset.d = id;
+      w.innerHTML = d ? `<div class="pl">${A.plate_dirty()}</div><div class="suds"></div><div class="tapme">ゴシゴシ</div><div class="bar"><b></b></div>` : `<div class="emp">洗い物なし</div>`;
+    }
+    if (d){ const k = Math.max(d.n, localScrub[d.id] || 0), p = Math.min(1, k / washN(st)); $('.bar b', w).style.width = p * 100 + '%'; const pl = $('.pl', w); if (pl) pl.style.setProperty('--clean', p); }
+    const sk = $('.stack', pb), m = Math.max(0, (st.sink || []).length - 1);
+    if (sk.dataset.n !== String(m)){ sk.dataset.n = m; sk.innerHTML = m ? `<span>あと ${m}</span>` : ''; }
+  }
+  if (r === 'kazaru'){
+    const act = st.orders.filter(o => o.state === 'wait' && orderDone(st, o) && !o.deco).sort((a, b) => a.at - b.at), qb = $('.qbox', pb);
+    keyed(qb, act.slice(1), o => o.id, o => elm(`<div class="qi">${D[o.dish]()}</div>`));
+    noneMark(qb, act.length <= 1, 'なし');
+    const db = $('[data-deco]', pb), o = act[0], id = o ? o.id : '';
+    if (db.dataset.o !== id && !(DECO && DECO.el === db)){
+      db.dataset.o = id;
+      const shop = shopOf(st.shop);
+      if (o){
+        const pts = decoOf(o.id).pts;
+        db.style.setProperty('--sauce', shop.sauce);
+        db.innerHTML = `<div class="dish">${D[o.dish]()}</div><svg class="pat" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+          <polyline points="${pts.map(p => p.join(',')).join(' ')}" class="guide"/>${pts.map((p, i) => `<circle cx="${p[0]}" cy="${p[1]}" r="${i ? 3 : 5}" class="cp ${i ? '' : 'start'}" data-n="${i}"/>`).join('')}
+          <polyline points="" class="ink"/></svg><div class="tapme">${esc(shop.sauceName)}でなぞる</div>`;
+      } else db.innerHTML = `<div class="emp">料理待ち</div>`;
+    }
+  }
   if (r === 'recipe'){
+    const pcnt = $('.platecnt', pb); if (pcnt){ pcnt.hidden = st.clean == null; pcnt.textContent = `お皿 ${st.clean || 0}`; pcnt.classList.toggle('zero', st.clean === 0); }
     const tray = st.items.filter(i => i.loc === 'tray'), act = st.orders.filter(o => o.state === 'wait').sort((a, b) => a.at - b.at);
     const needSet = new Set(); act.forEach(o => orderNeeds(st, o).forEach(c => needSet.add(c)));
     const tb = $('.tbox', pb);
@@ -1911,24 +2161,30 @@ function renderStation(r, pn, st, need){
     else {
       $$('.none', pl).forEach(x => x.remove());
       keyed(pl, act, o => o.id, o => elm(`<div class="platecard" data-order="${o.id}"></div>`), (e, o) => {
-        const done = orderDone(st, o), comps = dishOf(st.shop, o.dish).comps, placed = [...o.plate];
+        const done = orderReady(st, o), wait = orderDone(st, o) && !done, comps = dishOf(st.shop, o.dish).comps, placed = [...o.plate];
         const slots = comps.map(c => { const i = placed.indexOf(c), ok = i >= 0; if (ok) placed.splice(i, 1); return `<i class="${ok ? 'ok' : ''}">${A[ING[c].ready]()}</i>`; }).join('');
-        const sig = (done ? 'D' : 'W') + o.plate.join(',');
+        const sig = (done ? 'D' : wait ? 'K' : 'W') + o.plate.join(',');
         if (e.dataset.sig === sig) return; e.dataset.sig = sig;
         e.classList.toggle('done', done); e.dataset.done = done ? '1' : '';
         e.innerHTML = `<div class="top"><div class="face">${animalFace(o.animal, done ? 'happy' : 'normal')}</div><b>${esc(dishOf(st.shop, o.dish).name)}</b></div>
-          ${done ? `<div class="dishbig"><div>${D[o.dish]()}</div></div><div class="go">${ARROW_UP()}お客へドラッグ</div>` : `<div class="slots">${slots}</div>`}`;
+          ${done || wait ? `<div class="dishbig"><div>${D[o.dish]()}</div></div>${done ? `<div class="go">${ARROW_UP()}お客へドラッグ</div>` : '<div class="go wait">飾り待ち</div>'}` : `<div class="slots">${slots}</div>`}`;
       });
     }
   }
 }
+const BOWL = () => svg(`<path d="M4 30 h56 c0 15 -12 26 -28 26 c-16 0 -28 -11 -28 -26z" fill="#e7def6" ${L}/><ellipse cx="32" cy="30" rx="28" ry="7" fill="#f6f1ff" ${L}/>`);
+const WHISK = () => svg(`<path d="M14 54 l18 -26" stroke="${INK}" stroke-width="3" stroke-linecap="round"/><path d="M32 28 c-8 -6 -6 -20 4 -22 c10 -2 14 10 6 20z" fill="none" ${LT}/><path d="M33 27 c-2 -6 0 -16 5 -19" fill="none" ${LT}/>`);
 const KNIFE = () => svg(`<path d="M10 46 l30 -30 c5 -5 11 1 6 6 l-24 30z" fill="#e8edf3" ${L}/><path d="M22 52 l-8 8 c-3 3 -7 -1 -4 -4 l8 -8" fill="#3b3f47" ${L}/>${hl(32, 26, 9, 1.6, -45, .8)}`);
 
 /* 毎フレーム：待ち時間・焼け具合 */
 /* はじめての人向けガイド：次にやることを指でさし示します（ステージ1〜2、星を3つ取るまで） */
 let guideT = 0;
-function guideTarget(st){
+function guideTarget(st, onlyNew){
   const c = el => el && el.offsetParent !== null ? el : null;
+  const dk = c($('[data-deco]:not([data-o=""])')); if (dk && dk.dataset.o && dk.dataset.o !== '__') return [dk, 'なぞって飾る'];
+  const bw = c([...$$('.bowl')].find(b => b.dataset.i)); if (bw) return [bw, 'ぐるぐる混ぜる'];
+  const sk = c($('[data-sink]')); if (sk && sk.dataset.d) return [sk, 'ゴシゴシこする'];
+  if (onlyNew) return null;
   const pc = c($('.platecard[data-done="1"]')); if (pc) return [pc, 'お客へドラッグ'];
   const act = st.orders.filter(o => o.state === 'wait');
   for (const it of st.items.filter(i => i.loc === 'tray')){
@@ -1944,10 +2200,11 @@ function guideTarget(st){
 }
 function guide(st, now){
   let g = $('#guide');
-  const on = st.phase === 'play' && st.stage <= 2 && totalStars() < 3 && !DRAG.on && LSJ.get('nk:guide', true);
-  if (!on){ if (g) g.remove(); return; }
+  const basic = st.stage <= 2 && totalStars() < 3, fresh = ROLES.some(r => r.from === st.stage && (st.enabled || []).includes(r.id));
+  const show = st.phase === 'play' && (basic || fresh) && !DRAG.on && !GEST && !DECO && LSJ.get('nk:guide', true);
+  if (!show){ if (g) g.remove(); return; }
   if (now - guideT < 250) return; guideT = now;
-  const t = guideTarget(st);
+  const t = guideTarget(st, !basic);
   if (!t){ if (g) g.hidden = true; return; }
   if (!g){ g = document.createElement('div'); g.id = 'guide'; g.innerHTML = '<i class="ring"></i><span></span>'; document.body.append(g); }
   const r = t[0].getBoundingClientRect();
@@ -2024,16 +2281,80 @@ function endDrag(cancel){
     if (!cancel && DRAG.onMiss) DRAG.onMiss();
   }
 }
+/* ---------- ぐるぐる・ゴシゴシ・なぞる ---------- */
+let GEST = null, DECO = null;
+function gestMove(e){
+  const g = GEST; if (!g) return;
+  if (g.k === 'mix'){
+    const dx = e.clientX - g.cx, dy = e.clientY - g.cy; if (Math.hypot(dx, dy) < 10) return;
+    const a = Math.atan2(dy, dx); let d = a - g.a; if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; g.a = a;
+    g.acc += Math.abs(d);
+    const turns = g.acc / (Math.PI * 2); localMix[g.id] = g.base + turns;
+    const wk = $('.whisk', g.el); if (wk){ const r = g.el.getBoundingClientRect(); wk.style.left = (e.clientX - r.left) + 'px'; wk.style.top = (e.clientY - r.top) + 'px'; wk.classList.add('on'); }
+    const it = $('.it', g.el); if (it) it.style.transform = `rotate(${g.acc * 20}deg)`;
+    const pr = $('.pr', g.el); if (pr) pr.setAttribute('stroke-dashoffset', 282.7 * (1 - Math.min(1, localMix[g.id] / mixN(NET.st))));
+    while (Math.floor(turns) > g.sent){ g.sent++; sfx('chop'); send({t:'stir', i:g.id}); }
+  }
+  if (g.k === 'scrub'){
+    const dx = e.clientX - g.x, dy = e.clientY - g.y; g.x = e.clientX; g.y = e.clientY;
+    const m = Math.abs(dx) >= Math.abs(dy) ? dx : dy, s = Math.sign(m); if (!s) return;
+    if (s !== g.dir){ if (g.run > 22 && g.dir){ localScrub[g.d] = (localScrub[g.d] || 0) + 1; sfx('chop'); bubbles(g.el, e); send({t:'scrub', d:g.d}); const w = NET.st.sink && NET.st.sink[0]; if (w && w.id === g.d){ const p = Math.min(1, Math.max(w.n, localScrub[g.d]) / washN(NET.st)); $('.bar b', g.el).style.width = p * 100 + '%'; const pl = $('.pl', g.el); if (pl) pl.style.setProperty('--clean', p); } } g.dir = s; g.run = 0; }
+    g.run += Math.abs(m);
+  }
+}
+function bubbles(el, e){
+  const r = el.getBoundingClientRect(), s = $('.suds', el); if (!s) return;
+  for (let k = 0; k < 3; k++){ const b = document.createElement('i'); b.style.left = (e.clientX - r.left + (Math.random() - .5) * 40) + 'px'; b.style.top = (e.clientY - r.top + (Math.random() - .5) * 30) + 'px'; b.style.setProperty('--s', (8 + Math.random() * 12) + 'px'); s.append(b); setTimeout(() => b.remove(), 900); }
+}
+function decoGeom(db){
+  const sv = $('.pat', db), r = sv.getBoundingClientRect(), s = Math.min(r.width, r.height) / 100;
+  return {s, x0:r.left + (r.width - 100 * s) / 2, y0:r.top + (r.height - 100 * s) / 2};
+}
+function decoStart(db, e){
+  const o = NET.st.orders.find(x => x.id === db.dataset.o); if (!o) return;
+  const G = decoGeom(db), pts = decoOf(o.id).pts, u = [(e.clientX - G.x0) / G.s, (e.clientY - G.y0) / G.s];
+  if (Math.hypot(u[0] - pts[0][0], u[1] - pts[0][1]) > 16){ sfx('tap'); toastMsg('大きい丸からなぞる'); return; }
+  DECO = {el:db, o:o.id, G, pts, next:1, path:[u], off:0, n:0};
+  $$('.cp', db).forEach(c => c.classList.toggle('hit', c.dataset.n === '0'));
+  const tm = $('.tapme', db); if (tm) tm.hidden = true;
+  sfx('tap');
+}
+const segDist = (p, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], l = dx * dx + dy * dy, t = l ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / l)) : 0; return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy); };
+function decoMove(e){
+  const D0 = DECO; if (!D0) return;
+  const u = [(e.clientX - D0.G.x0) / D0.G.s, (e.clientY - D0.G.y0) / D0.G.s];
+  D0.path.push(u); D0.n++;
+  let dmin = 1e9; for (let i = 1; i < D0.pts.length; i++) dmin = Math.min(dmin, segDist(u, D0.pts[i - 1], D0.pts[i]));
+  if (dmin > 11) D0.off++;
+  if (D0.next < D0.pts.length && Math.hypot(u[0] - D0.pts[D0.next][0], u[1] - D0.pts[D0.next][1]) < 11){ const c = $(`.cp[data-n="${D0.next}"]`, D0.el); if (c) c.classList.add('hit'); D0.next++; sfx('tap'); }
+  const ink = $('.ink', D0.el); if (ink) ink.setAttribute('points', D0.path.map(p => p.map(v => v.toFixed(1)).join(',')).join(' '));
+}
+function decoEnd(){
+  const D0 = DECO; if (!D0) return; DECO = null;
+  if (D0.next >= D0.pts.length){
+    const q = Math.max(0, 1 - D0.off / Math.max(1, D0.n) * 1.6);
+    sfx('plate'); toastMsg(q >= .85 ? 'きれい' : q >= .5 ? 'いい感じ' : '完成');
+    send({t:'deco', o:D0.o, q}); D0.el.classList.add('done');
+    setTimeout(() => { D0.el.classList.remove('done'); D0.el.dataset.o = '__'; if (NET.st) renderPlay(); }, 450);
+  } else {
+    sfx('nope'); toastMsg('最後までなぞる');
+    const ink = $('.ink', D0.el); if (ink) ink.setAttribute('points', ''); $$('.cp', D0.el).forEach(c => c.classList.remove('hit'));
+    const tm = $('.tapme', D0.el); if (tm) tm.hidden = false;
+  }
+}
 window.addEventListener('pointermove', e => {
+  if (GEST || DECO){ e.preventDefault(); gestMove(e); decoMove(e); return; }
   if (DRAG.pending && Math.hypot(e.clientX - DRAG.pending.x, e.clientY - DRAG.pending.y) > 8) beginDrag();
   if (DRAG.on){ e.preventDefault(); moveDrag(e.clientX, e.clientY); }
 }, {passive:false});
 window.addEventListener('pointerup', e => {
+  if (GEST){ const g = GEST; GEST = null; const wk = $('.whisk', g.el); if (wk) wk.classList.remove('on'); }
+  if (DECO) decoEnd();
   if (DRAG.pending){ const p = DRAG.pending; DRAG.pending = null; if (p.onTap) p.onTap(); }
   else if (DRAG.on){ moveDrag(e.clientX, e.clientY); endDrag(false); }
   holdCancel();
 });
-window.addEventListener('pointercancel', () => { endDrag(true); holdCancel(); });
+window.addEventListener('pointercancel', () => { endDrag(true); holdCancel(); GEST = null; if (DECO){ DECO.next = 0; decoEnd(); } });
 
 /* 長押し */
 let HOLD = null;
@@ -2102,6 +2423,21 @@ $('#play').addEventListener('pointerdown', e => {
     const tm = $('.tapme', bd); if (tm) tm.hidden = true;
     send({t:'chop', i:id}); return;
   }
+  /* 混ぜる：ぐるぐる */
+  const bw = t.closest('.bowl');
+  if (bw && bw.dataset.i){
+    const it = st.items.find(i => i.id === bw.dataset.i); if (!it) return;
+    const r = bw.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    GEST = {k:'mix', el:bw, id:it.id, cx, cy, a:Math.atan2(e.clientY - cy, e.clientX - cx), base:Math.max(it.mix || 0, localMix[it.id] || 0), acc:0, sent:0};
+    const tm = $('.tapme', bw); if (tm) tm.hidden = true;
+    return;
+  }
+  /* 洗う：ゴシゴシ */
+  const sk = t.closest('[data-sink]');
+  if (sk && sk.dataset.d){ GEST = {k:'scrub', el:sk, d:sk.dataset.d, x:e.clientX, y:e.clientY, dir:0, run:0}; const tm = $('.tapme', sk); if (tm) tm.hidden = true; return; }
+  /* 飾る：なぞる */
+  const db = t.closest('[data-deco]');
+  if (db && db.dataset.o){ decoStart(db, e); return; }
   /* 焼く：待ちからドラッグして入れる */
   const ck = t.closest('[data-cookq]');
   if (ck){
@@ -2179,21 +2515,25 @@ function burstOrder(oid, coins){
 
 /* ---------- ステージ紹介・結果 ---------- */
 function recipeHTML(d){
-  const stepIcons = c => ING[c].steps.map(s => `<span class="arrow">›</span><div class="step"><div class="r">${ROLE_ART[s === 'cut' ? 'kiru' : 'yaku']()}</div>${s === 'cut' ? '切る' : '焼く'}</div>`).join('');
+  const stepIcons = c => stepsOf(NET.st, c).map(s => `<span class="arrow">›</span><div class="step"><div class="r">${ROLE_ART[STEP_ROLE[s]]()}</div>${{cut:'切る', cook:'焼く', mix:'混ぜる'}[s]}</div>`).join('');
   return `<div class="newdish"><div class="nm">${esc(d.name)}</div>${d.comps.map((c, i) => `${i ? '<span class="plus">＋</span>' : ''}<div class="recipe-row"><div class="step"><div class="a">${A[ING[c].raw]()}</div>${esc(ING[c].name)}</div>${stepIcons(c)}</div>`).join('')}
     <span class="plus">＝</span><div class="step eq"><div class="a">${D[d.id]()}</div></div></div>`;
 }
 function showIntro(){
   const st = NET.st, shop = shopOf(st.shop), th = THEMES.find(t => t.id === st.theme) || THEMES[0];
   const list = st.stage === 1 && st.cfg ? st.cfg.dishes.map(id => dishOf(st.shop, id)) : st.cfg && st.cfg.newDish ? [dishOf(st.shop, st.cfg.newDish)] : [];
+  const nr = ROLES.filter(r => r.from === st.stage && (st.enabled || []).includes(r.id));
+  const mineSt = myStations(st, PID);
   overlay(`<div class="sign">${esc(th.name + shop.name)}</div><h3>ステージ ${st.stage}</h3>
+    ${nr.map(r => `<div class="newrole" style="--rc:${r.color}"><i>${ROLE_ART[r.id]()}</i><div><small>新しい係</small><b>${esc(r.name)}</b></div><span>${esc(HOW[r.id])}</span></div>`).join('')}
+    ${Object.keys(st.players).length > 1 ? `<div class="myroles"><small>担当</small>${mineSt.map(r => `<span style="--rc:${roleOf(r).color}">${esc(roleOf(r).short)}</span>`).join('')}</div>` : ''}
     ${list.length ? `<div class="lead">${st.stage === 1 ? 'メニュー' : '新メニュー'}</div><div class="menus">${list.map(recipeHTML).join('')}</div>` : ''}
     <div class="lead">${isEasy(st) ? 'やさしい・' : ''}お客 ${st.cfg ? st.cfg.total : ''}人${st.cfg && st.cfg.hurry ? `・急ぎ ${st.cfg.hurry}人` : ''}${st.cfg && st.cfg.rush ? '・ラッシュあり' : ''}</div><div class="countdown" id="cd"></div>`);
 }
 function statsHTML(st, r){
   const ids = Object.keys(st.players).filter(id => r.stats && r.stats[id]);
   if (ids.length < 2) return '';
-  const K = [['take', '材料'], ['cut', '切る'], ['cook', '焼く'], ['plate', '盛る'], ['serve', '渡す']];
+  const K = [['take', '材料'], ['cut', '切る'], ['mix', '混ぜる'], ['cook', '焼く'], ['plate', '盛る'], ['deco', '飾る'], ['serve', '渡す'], ['wash', '洗う']];
   const score = id => K.reduce((a, [k]) => a + (r.stats[id][k] || 0), 0), best = ids.reduce((a, b) => score(b) > score(a) ? b : a);
   return `<div class="stats">${ids.map(id => { const p = st.players[id], s = r.stats[id];
     return `<div class="srow ${id === best ? 'mvp' : ''}"><i>${pArt(p, 'happy')}</i><b>${esc(p.name)}</b>${id === best ? '<em>大活躍</em>' : ''}<span>${K.filter(([k]) => s[k]).map(([k, t]) => `${t} ${s[k]}`).join('　')}</span></div>`; }).join('')}</div>`;
