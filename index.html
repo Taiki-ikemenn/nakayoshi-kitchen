@@ -1082,10 +1082,10 @@ const challengeOf = w => CHALLENGES[mod(w * 3 + 1, CHALLENGES.length)];
 /* ---------- ステージ（番号から自動で作ります） ---------- */
 function hashStr(s){ let h = 2166136261; for (let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 function rngOf(seed){ let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-const dishCount = n => Math.min(5, 2 + Math.floor((n - 1) / 2));
+const dishCount = (n, len = 7) => Math.min(len, 2 + Math.floor((n - 1) / 2));
 function stageConfig(shopId, week, n, players){
   const shop = shopOf(shopId), rnd = rngOf(hashStr(`${shopId}:${week}:${n}`));
-  const solo = players <= 1, cnt = dishCount(n);
+  const solo = players <= 1, cnt = dishCount(n, shop.dishes.length);
   const pool = shop.dishes.slice(0, cnt);
   /* 人数が多いほど お客も多く、間かくも短くなります */
   const total = Math.min(32, 5 + Math.ceil(n * 1.2) + (players - 1) * 2);
@@ -1120,7 +1120,7 @@ function stageConfig(shopId, week, n, players){
   let rush = 0;
   if (n >= 3){ rush = Math.min(6, 3 + Math.floor(n / 4)); const r0 = Math.floor(total * .45); for (let i = r0; i < Math.min(total, r0 + rush); i++) queue[i].rush = 1; }
   const hurry = queue.filter(q => q.hurry).length;
-  const newDish = n === 1 ? pool[pool.length - 1].id : dishCount(n) > dishCount(n - 1) ? pool[pool.length - 1].id : '';
+  const newDish = n === 1 ? pool[pool.length - 1].id : dishCount(n, shop.dishes.length) > dishCount(n - 1, shop.dishes.length) ? pool[pool.length - 1].id : '';
   return {total, maxActive, patience, gap, queue, newDish, rush, hurry, dishes:pool.map(d => d.id)};
 }
 
@@ -1132,6 +1132,282 @@ const DECOS = [
   {id:'hook', pts:[[22, 36], [50, 36], [78, 36], [70, 52], [50, 64], [30, 64]]}
 ];
 const decoOf = oid => DECOS[hashStr(oid) % DECOS.length];
+
+/* =====================================================================
+   新しいお店（ラーメン・ピザ・カレー・パンケーキ・たこ焼き・ぎょうざ）
+   と、今までのお店に足したメニュー
+   ===================================================================== */
+/* ---------- 材料の絵 ---------- */
+const flourBag = (c = '#f4efe6', lab = '#e0913a') => svg(`${shadow()}<path d="M18 16 h28 l4 34 c0 2 -2 3 -4 3 h-28 c-2 0 -4 -1 -4 -3z" fill="${c}" ${L}/><path d="M18 16 l4 -5 h20 l4 5" fill="${c}" ${L}/><rect x="22" y="28" width="20" height="12" rx="3" fill="${lab}" ${LT}/>`);
+const batterBowl = (c) => svg(`${shadow()}<path d="M8 30 h48 c0 13 -10 22 -24 22 c-14 0 -24 -9 -24 -22z" fill="#e9eef5" ${L}/><ellipse cx="32" cy="30" rx="24" ry="6.5" fill="${c}" ${L}/>${hl(24, 29, 6, 1.8, 0, .6)}`);
+const cubes = (c, pts) => pts.map(([x, y]) => `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" rx="2.5" fill="${c}" ${LT}/>`).join('');
+const rings = (c, c2, pts, r = 6) => pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${c2}" stroke="${c}" stroke-width="3"/>`).join('');
+const P5 = [[20, 40], [32, 36], [44, 40], [26, 47], [39, 47]];
+
+A.men = () => svg(`${shadow()}<rect x="10" y="24" width="44" height="22" rx="9" fill="#f7e2a4" ${L}/>${[29, 35, 41].map(y => `<path d="M15 ${y} q4 -3 8 0 t8 0 t8 0 t8 0" fill="none" stroke="#dcb760" stroke-width="2"/>`).join('')}<rect x="28" y="22" width="8" height="26" rx="2" fill="#e8413a" ${LT}/>`);
+A.men_ready = () => svg(`${shadow()}<ellipse cx="32" cy="40" rx="22" ry="11" fill="#ffe07a" ${L}/>${[34, 39, 44].map(y => `<path d="M14 ${y} q4 -4 8 0 t8 0 t8 0 t8 0" fill="none" stroke="#e3b93c" stroke-width="2.2" stroke-linecap="round"/>`).join('')}`);
+A.soup = () => svg(`${shadow()}<rect x="18" y="18" width="28" height="34" rx="6" fill="#c8874a" ${L}/><rect x="20" y="11" width="24" height="9" rx="3" fill="#6b4a33" ${L}/><rect x="22" y="30" width="20" height="10" rx="2" fill="#fff4dc" ${LT}/>`);
+A.soup_ready = () => batterBowl('#c98a3c');
+A.negi = () => svg(`${shadow()}<path d="M12 48 l20 -20" stroke="${INK}" stroke-width="10" stroke-linecap="round"/><path d="M12 48 l20 -20" stroke="#fbfbf2" stroke-width="6" stroke-linecap="round"/><path d="M30 30 l18 -18 M33 33 l20 -14" stroke="${INK}" stroke-width="8" stroke-linecap="round"/><path d="M30 30 l18 -18 M33 33 l20 -14" stroke="#5fb447" stroke-width="4.4" stroke-linecap="round"/>`);
+A.negi_cut = () => svg(`${shadow()}${rings('#5fb447', '#e9f7d8', [[20, 38], [32, 34], [44, 38], [26, 46], [39, 46]], 5)}`);
+A.chashu = () => svg(`${shadow()}<rect x="10" y="22" width="44" height="26" rx="13" fill="#b8673d" ${L}/><ellipse cx="46" cy="35" rx="7" ry="11" fill="#f2c9a6" ${L}/><path d="M46 29 c-3 2 -3 9 0 11 c3 -2 2 -7 0 -8" fill="none" stroke="#b8673d" stroke-width="2"/>`);
+A.chashu_cut = () => svg(`${shadow()}${[[24, 38], [40, 36]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="13" fill="#b8673d" ${L}/><circle cx="${x}" cy="${y}" r="9" fill="#f2c9a6"/><path d="M${x - 4} ${y} c0 -4 7 -4 7 0 c0 3 -4 3 -4 0" fill="none" stroke="#b8673d" stroke-width="2"/>`).join('')}`);
+A.yudetama = () => svg(`${shadow()}<ellipse cx="32" cy="34" rx="15" ry="19" fill="#f3e3cf" ${L}/>${hl(26, 26, 4, 6)}`);
+A.yudetama_mid = () => svg(`${shadow()}<ellipse cx="32" cy="34" rx="15" ry="19" fill="#fffdf6" ${L}/>${hl(26, 26, 4, 6, -25, .9)}`);
+A.yudetama_ready = () => svg(`${shadow()}<ellipse cx="22" cy="38" rx="12" ry="15" fill="#fffdf6" ${L}/><circle cx="22" cy="38" r="7" fill="#ffb02e"/><ellipse cx="42" cy="38" rx="12" ry="15" fill="#fffdf6" ${L}/><circle cx="42" cy="38" r="7" fill="#ffb02e"/>`);
+A.moyashi = () => svg(`${shadow()}${[16, 22, 28, 34, 40, 46].map((x, i) => `<path d="M${x} 50 c-2 -10 2 -20 ${i % 2 ? 4 : -2} -28" fill="none" stroke="${INK}" stroke-width="4" stroke-linecap="round"/><path d="M${x} 50 c-2 -10 2 -20 ${i % 2 ? 4 : -2} -28" fill="none" stroke="#fffbe8" stroke-width="2" stroke-linecap="round"/><circle cx="${x + (i % 2 ? 4 : -2)}" cy="22" r="3" fill="#f7e07a" ${LT}/>`).join('')}`);
+A.moyashi_ready = () => svg(`${shadow()}<ellipse cx="32" cy="42" rx="20" ry="8" fill="#f6efd0" ${L}/>${[18, 24, 30, 36, 42].map(x => `<path d="M${x} 44 c4 -6 8 -6 10 -10" fill="none" stroke="#e2d49a" stroke-width="2" stroke-linecap="round"/>`).join('')}`);
+
+A.flour = () => flourBag();
+A.batter = () => batterBowl('#f7dc9c');
+A.pbase = () => svg(`${shadow()}<ellipse cx="32" cy="38" rx="25" ry="13" fill="#e8b46a" ${L}/><ellipse cx="32" cy="37" rx="19" ry="9" fill="#f6d9a0"/>${dots([[24, 36], [36, 34], [40, 40]], 1.4, '#d99a4a')}`);
+A.tsauce = () => svg(`${shadow()}<rect x="16" y="18" width="32" height="34" rx="5" fill="#d8dde4" ${L}/><rect x="16" y="26" width="32" height="18" fill="#e8413a" ${LT}/>${berryless()}<ellipse cx="32" cy="18" rx="16" ry="4" fill="#eef1f5" ${L}/>`);
+function berryless(){ return `<circle cx="32" cy="35" r="5" fill="#ff8a76" ${LT}/>`; }
+A.tsauce_ready = () => batterBowl('#e0473a');
+A.piman = () => svg(`${shadow()}<path d="M18 26 c-6 6 -4 22 4 24 c4 1 6 -2 10 -2 c4 0 6 3 10 2 c8 -2 10 -18 4 -24 c-4 -4 -10 -2 -14 -2 c-4 0 -10 -2 -14 2z" fill="#4fa84a" ${L}/><path d="M32 24 v-8 l5 -3" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>${hl(24, 32, 3, 6)}`);
+A.piman_cut = () => svg(`${shadow()}${rings('#4fa84a', 'transparent', P5, 6)}`);
+A.salami = () => svg(`${shadow()}<rect x="8" y="26" width="48" height="18" rx="9" fill="#c9343a" ${L}/>${dots([[18, 32], [28, 38], [36, 31], [46, 37]], 1.8, '#ffd9d0')}`);
+A.salami_cut = () => svg(`${shadow()}${[[22, 38], [42, 38], [32, 30]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="10" fill="#c9343a" ${L}/>${dots([[x - 3, y - 2], [x + 3, y + 3], [x + 2, y - 4]], 1.5, '#ffd9d0')}`).join('')}`);
+A.kinoko = () => svg(`${shadow()}<path d="M26 34 h12 v14 c0 3 -12 3 -12 0z" fill="#f7efe2" ${L}/><path d="M12 36 c0 -14 10 -22 20 -22 c10 0 20 8 20 22z" fill="#b98a5a" ${L}/>${hl(24, 24, 5, 2.5)}`);
+A.kinoko_cut = () => svg(`${shadow()}${[[22, 40], [42, 40]].map(([x, y]) => `<path d="M${x - 10} ${y} c0 -8 4 -12 10 -12 c6 0 10 4 10 12 c-3 0 -5 -1 -6 -1 v8 h-8 v-8 c-1 0 -3 1 -6 1z" fill="#f7efe2" ${L}/><path d="M${x - 10} ${y} c0 -8 4 -12 10 -12 c6 0 10 4 10 12" fill="none" stroke="#b98a5a" stroke-width="3"/>`).join('')}`);
+A.corn = () => svg(`${shadow()}<path d="M12 36 h40 c0 9 -8 15 -20 15 c-12 0 -20 -6 -20 -15z" fill="#e9eef5" ${L}/>${dots([[18, 34], [24, 32], [30, 34], [36, 32], [42, 34], [46, 32], [21, 30], [27, 29], [33, 30], [39, 29]], 3.2, '#ffd34d')}`);
+
+A.roux = () => svg(`${shadow()}<rect x="12" y="24" width="40" height="24" rx="4" fill="#8a5a2b" ${L}/><path d="M12 32 h40 M12 40 h40 M25 24 v24 M38 24 v24" stroke="#6b4420" stroke-width="2"/>`);
+A.roux_ready = () => svg(`${shadow()}<path d="M8 30 h48 c0 13 -10 22 -24 22 c-14 0 -24 -9 -24 -22z" fill="#e9eef5" ${L}/><ellipse cx="32" cy="30" rx="24" ry="6.5" fill="#b8742a" ${L}/>${cubes('#f08a3c', [[24, 29]])}${cubes('#ffe59a', [[38, 30]])}`);
+A.ninjin = () => svg(`${shadow()}<path d="M14 46 l30 -26 c4 -3 9 2 6 6 l-26 30 c-4 3 -12 -2 -10 -10z" fill="#f08a3c" ${L}/><path d="M44 20 l6 -8 M46 22 l10 -4 M42 18 l0 -8" stroke="#4fa84a" stroke-width="3.4" stroke-linecap="round"/>`);
+A.ninjin_cut = () => svg(`${shadow()}${cubes('#f08a3c', P5)}`);
+A.ninjin_ready = () => svg(`${shadow()}${cubes('#d9672a', P5)}`);
+A.jaga_cut = () => svg(`${shadow()}${cubes('#fff0b8', P5)}`);
+A.jaga_ready = () => svg(`${shadow()}${cubes('#ffd86a', P5)}`);
+A.katsu = () => svg(`${shadow()}<path d="M10 38 c0 -10 10 -16 24 -16 c12 0 20 6 20 14 c0 8 -10 12 -22 12 c-12 0 -22 -2 -22 -10z" fill="#f4a7a7" ${L}/>${hl(22, 30, 6, 2.4)}`);
+A.katsu_mid = () => svg(`${shadow()}<path d="M10 38 c0 -10 10 -16 24 -16 c12 0 20 6 20 14 c0 8 -10 12 -22 12 c-12 0 -22 -2 -22 -10z" fill="#e3a043" ${L}/>${dots([[18, 34], [26, 30], [34, 32], [42, 30], [22, 40], [32, 40], [44, 38]], 1.6, '#c27a24')}`);
+A.katsu_ready = () => svg(`${shadow()}${[14, 25, 36].map((x, i) => `<rect x="${x}" y="${26 + i}" width="12" height="20" rx="3" fill="#e3a043" ${L}/><rect x="${x + 2}" y="${30 + i}" width="8" height="12" rx="2" fill="#fbe2d0"/>`).join('')}`);
+A.pancake = () => svg(`${shadow()}${[42, 34, 26].map(y => `<ellipse cx="32" cy="${y}" rx="22" ry="7" fill="#e3a043" ${L}/><path d="M10 ${y} c4 2 14 3 22 3 c8 0 18 -1 22 -3" fill="none" stroke="#fff2d6" stroke-width="2.4"/>`).join('')}`);
+A.butter = () => svg(`${shadow()}<path d="M14 38 l12 -12 h24 l-12 12z" fill="#fff3a8" ${L}/><path d="M14 38 h24 v10 h-24z" fill="#ffe46a" ${L}/><path d="M38 38 l12 -12 v10 l-12 12z" fill="#f2cf4a" ${L}/>`);
+A.blueberry = () => svg(`${shadow()}${[[22, 40], [34, 36], [44, 42], [28, 48], [40, 49]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="7" fill="#4a5bb8" ${L}/><path d="M${x - 2} ${y - 5} l2 2 l2 -2" stroke="#2b3570" stroke-width="1.6" fill="none"/>`).join('')}`);
+A.takoball = () => svg(`${shadow()}${[[20, 40], [32, 36], [44, 40]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="10" fill="#d9903a" ${L}/>${hl(x - 3, y - 4, 3, 2)}`).join('')}`);
+A.tako = () => svg(`${shadow()}<path d="M12 46 c0 -18 10 -30 22 -30 c10 0 16 8 12 16 c-3 6 -10 4 -10 10 c0 6 6 4 6 8" fill="none" stroke="${INK}" stroke-width="12" stroke-linecap="round"/><path d="M12 46 c0 -18 10 -30 22 -30 c10 0 16 8 12 16 c-3 6 -10 4 -10 10 c0 6 6 4 6 8" fill="none" stroke="#e0485a" stroke-width="7.5" stroke-linecap="round"/>${dots([[20, 30], [28, 21], [40, 22]], 1.8, '#ffd0d6')}`);
+A.tako_cut = () => svg(`${shadow()}${[[20, 40], [32, 34], [44, 40], [26, 48], [39, 48]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5.5" fill="#e0485a" ${LT}/><circle cx="${x}" cy="${y}" r="2.4" fill="#fff0f2"/>`).join('')}`);
+A.ebi = () => svg(`${shadow()}<path d="M14 30 c4 -12 22 -16 32 -6 c6 6 6 16 -2 20 c-6 3 -12 0 -14 -4" fill="none" stroke="${INK}" stroke-width="12" stroke-linecap="round"/><path d="M14 30 c4 -12 22 -16 32 -6 c6 6 6 16 -2 20 c-6 3 -12 0 -14 -4" fill="none" stroke="#ff8a76" stroke-width="7.5" stroke-linecap="round"/><path d="M26 42 l-6 6 l2 -8" fill="#e8413a" ${LT}/>`);
+A.ebi_cut = () => svg(`${shadow()}${[[22, 40], [42, 38]].map(([x, y]) => `<path d="M${x - 8} ${y} c0 -8 14 -10 16 0 c0 4 -4 6 -8 6" fill="none" stroke="${INK}" stroke-width="9" stroke-linecap="round"/><path d="M${x - 8} ${y} c0 -8 14 -10 16 0 c0 4 -4 6 -8 6" fill="none" stroke="#ff8a76" stroke-width="5" stroke-linecap="round"/>`).join('')}`);
+A.katsuo = () => svg(`${shadow()}${[[20, 40], [30, 34], [40, 38], [26, 46], [38, 46]].map(([x, y], i) => `<path d="M${x - 6} ${y} c2 -5 10 -6 12 -1 c-3 3 -9 4 -12 1z" fill="${i % 2 ? '#f0c3a0' : '#e2a27a'}" ${LT}/>`).join('')}`);
+A.gyoza_tane = () => batterBowl('#f2a6a0');
+A.gyoza_raw = () => svg(`${shadow()}${[[22, 40], [42, 40]].map(([x, y]) => `<path d="M${x - 14} ${y + 4} c0 -10 6 -16 14 -16 c8 0 14 6 14 16z" fill="#fbf6ea" ${L}/><path d="M${x - 8} ${y - 6} l2 4 M${x - 2} ${y - 9} l1 4 M${x + 4} ${y - 8} l-1 4 M${x + 9} ${y - 5} l-2 4" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>`).join('')}`);
+A.gyoza = () => svg(`${shadow()}${[[22, 40], [42, 40]].map(([x, y]) => `<path d="M${x - 14} ${y + 4} c0 -10 6 -16 14 -16 c8 0 14 6 14 16z" fill="#fbf0d6" ${L}/><path d="M${x - 13} ${y + 4} h26 c-1 -4 -4 -6 -13 -6 c-9 0 -12 2 -13 6z" fill="#d9903a"/>`).join('')}`);
+A.kyabetsu = () => svg(`${shadow()}<circle cx="32" cy="35" r="19" fill="#bfe39a" ${L}/><path d="M32 18 c-8 6 -8 26 0 34 M20 24 c6 6 8 18 4 26 M44 24 c-6 6 -8 18 -4 26" fill="none" stroke="#8cc663" stroke-width="2.2"/>`);
+A.kyabetsu_cut = () => svg(`${shadow()}<ellipse cx="32" cy="42" rx="20" ry="8" fill="#e6f5d2" ${L}/>${[16, 22, 28, 34, 40, 46].map(x => `<path d="M${x} 46 c2 -6 6 -8 8 -14" fill="none" stroke="#8cc663" stroke-width="2.4" stroke-linecap="round"/>`).join('')}`);
+A.tokitama = () => batterBowl('#ffd84a');
+A.tokitama_ready = () => svg(`${shadow()}<path d="M12 42 c-2 -8 6 -10 10 -8 c0 -6 8 -8 12 -4 c4 -5 12 -2 12 3 c6 0 8 8 2 10 c-6 4 -30 4 -36 -1z" fill="#ffd84a" ${L}/>${hl(26, 34, 4, 2)}`);
+A.harumaki = () => svg(`${shadow()}<rect x="10" y="28" width="44" height="16" rx="8" fill="#fbf2dc" ${L}/><path d="M18 28 v16 M44 28 v16" stroke="#e8d8b4" stroke-width="2"/>`);
+A.harumaki_ready = () => svg(`${shadow()}${[[30, 0], [36, 8]].map(([y0, dx]) => `<rect x="${8 + dx}" y="${y0}" width="40" height="15" rx="7.5" fill="#e0a046" ${L} transform="rotate(-10 32 36)"/>`).join('')}`);
+A.melon = () => svg(`${shadow()}<path d="M10 42 c-2 -14 8 -22 22 -22 c14 0 24 8 22 22 c-1 5 -10 7 -22 7 c-12 0 -21 -2 -22 -7z" fill="#fff0b0" ${L}/><path d="M18 28 l20 18 M28 22 l18 18 M14 38 l12 -14 M24 46 l20 -22 M36 46 l14 -14" stroke="#e3c96a" stroke-width="1.8"/>`);
+A.melon_ready = () => svg(`${shadow()}<path d="M10 42 c-2 -14 8 -22 22 -22 c14 0 24 8 22 22 c-1 5 -10 7 -22 7 c-12 0 -21 -2 -22 -7z" fill="#f2c45a" ${L}/><path d="M18 28 l20 18 M28 22 l18 18 M14 38 l12 -14 M24 46 l20 -22 M36 46 l14 -14" stroke="#d99a2a" stroke-width="1.8"/>${hl(22, 28, 5, 2.4)}`);
+
+/* ---------- 料理の絵 ---------- */
+const tp = {   // のせるもの
+  chashu:(x, y) => `<ellipse cx="${x}" cy="${y}" rx="8" ry="5" fill="#b8673d" ${LT}/><ellipse cx="${x}" cy="${y}" rx="5" ry="3" fill="#f2c9a6"/>`,
+  egg:(x, y) => `<ellipse cx="${x}" cy="${y}" rx="6.5" ry="4.5" fill="#fffdf6" ${LT}/><circle cx="${x}" cy="${y}" r="2.8" fill="#ffb02e"/>`,
+  negi:(x, y) => [[0, 0], [5, 2], [-4, 3], [2, -3]].map(([a, b]) => `<circle cx="${x + a}" cy="${y + b}" r="2" fill="#e9f7d8" stroke="#5fb447" stroke-width="1.4"/>`).join(''),
+  nori:(x, y) => `<rect x="${x - 4}" y="${y - 12}" width="9" height="14" rx="1" fill="#2e4a3a" ${LT} transform="rotate(8 ${x} ${y})"/>`,
+  moyashi:(x, y) => [0, 4, 8].map(a => `<path d="M${x - 6 + a} ${y + 2} c2 -3 4 -3 6 -6" stroke="#f1e6b8" stroke-width="2" fill="none" stroke-linecap="round"/>`).join(''),
+  salami:(x, y) => `<ellipse cx="${x}" cy="${y}" rx="5" ry="3.4" fill="#c9343a" ${LT}/>`,
+  piman:(x, y) => `<ellipse cx="${x}" cy="${y}" rx="4.6" ry="3" fill="none" stroke="#4fa84a" stroke-width="2.2"/>`,
+  kinoko:(x, y) => `<path d="M${x - 5} ${y} c0 -4 2 -6 5 -6 c3 0 5 2 5 6z" fill="#b98a5a" ${LT}/>`,
+  corn:(x, y) => `<circle cx="${x}" cy="${y}" r="2.2" fill="#ffd34d" stroke="#d9a520" stroke-width="1"/>`,
+  basil:(x, y) => `<path d="M${x - 4} ${y} c2 -5 7 -5 8 0 c-3 3 -6 3 -8 0z" fill="#3f8f3a"/>`,
+  cheese:(x, y) => `<path d="M${x - 5} ${y + 2} l5 -6 l5 6z" fill="#ffd34d" ${LT}/>`,
+  katsu:(x, y) => [0, 7, 14].map(a => `<rect x="${x - 10 + a}" y="${y - 6}" width="6" height="12" rx="2" fill="#e3a043" ${LT}/>`).join(''),
+  ninjin:(x, y) => `<rect x="${x - 3}" y="${y - 3}" width="6" height="6" rx="1.5" fill="#f08a3c" ${LT}/>`,
+  jaga:(x, y) => `<rect x="${x - 3.5}" y="${y - 3.5}" width="7" height="7" rx="2" fill="#ffe59a" ${LT}/>`,
+  berry:(x, y) => `<path d="M${x} ${y + 4} c-4 -2 -5 -5 -4 -7 c1 -2 7 -2 8 0 c1 2 0 5 -4 7z" fill="#ee3b52" ${LT}/>`,
+  banana:(x, y) => `<circle cx="${x}" cy="${y}" r="4" fill="#fff3b8" ${LT}/>`,
+  choco:(x, y) => `<rect x="${x - 3.5}" y="${y - 3}" width="7" height="6" rx="1" fill="#6b3e2e" ${LT}/>`,
+  whip:(x, y) => `<path d="M${x - 7} ${y + 2} c-1 -4 3 -6 5 -4 c0 -4 6 -4 6 0 c3 -2 6 1 4 4z" fill="#fff" ${LT}/>`,
+  butter:(x, y) => `<rect x="${x - 5}" y="${y - 3}" width="10" height="6" rx="1" fill="#ffe46a" ${LT}/>`,
+  blue:(x, y) => `<circle cx="${x}" cy="${y}" r="3" fill="#4a5bb8" ${LT}/>`,
+  tako:(x, y) => `<circle cx="${x}" cy="${y}" r="2.6" fill="#e0485a"/>`,
+  ebi:(x, y) => `<path d="M${x - 5} ${y} c0 -5 9 -6 10 0" fill="none" stroke="#ff8a76" stroke-width="3" stroke-linecap="round"/>`,
+  katsuo:(x, y) => `<path d="M${x - 4} ${y} c1 -3 6 -4 8 -1 c-2 2 -6 3 -8 1z" fill="#e2a27a"/>`,
+  egg2:(x, y) => `<path d="M${x - 5} ${y} c0 -3 3 -4 5 -2 c2 -3 6 -1 5 2 c-2 2 -8 2 -10 0z" fill="#ffd84a" ${LT}/>`
+};
+const put = (list) => list.map(([k, x, y]) => tp[k](x, y)).join('');
+function ramen(tops, broth = '#d9a25a'){
+  return svg(`${shadow(32, 57, 26)}<path d="M5 30 h54 c0 14 -12 24 -27 24 c-15 0 -27 -10 -27 -24z" fill="#e8413a" ${L}/><path d="M8 37 c6 6 14 9 24 9 c10 0 18 -3 24 -9" fill="none" stroke="#fff" stroke-width="2.4" stroke-dasharray="4 3"/>
+    <ellipse cx="32" cy="30" rx="27" ry="8.5" fill="${broth}" ${L}/><path d="M12 31 q4 -3 8 0 t8 0 t8 0 t8 0 t8 0" fill="none" stroke="#ffe07a" stroke-width="2.4"/>${put(tops)}`);
+}
+function pizza(tops){
+  return svg(`${shadow(32, 56, 27)}<ellipse cx="32" cy="42" rx="28" ry="12" fill="#c58a4f" ${L}/><ellipse cx="32" cy="38" rx="26" ry="12" fill="#e8b46a" ${L}/><ellipse cx="32" cy="38" rx="21" ry="9" fill="#e0473a"/><ellipse cx="32" cy="38" rx="19" ry="8" fill="#ffe08a" opacity=".85"/>${put(tops)}`);
+}
+function curry(tops){
+  return svg(`${shadow(32, 56, 27)}<ellipse cx="32" cy="44" rx="28" ry="10" fill="#e9eef5" ${L}/><ellipse cx="32" cy="43" rx="22" ry="7.5" fill="#fff"/>
+    <path d="M10 42 c0 -10 8 -16 16 -16 c6 0 8 4 8 8 v10 c-8 3 -18 2 -24 -2z" fill="#fffdf6" ${L}/><path d="M30 34 c4 -4 14 -4 20 -2 c6 2 6 10 2 12 c-6 3 -16 3 -22 0z" fill="#b8742a" ${L}/>${put(tops)}`);
+}
+function pancakes(tops){
+  return svg(`${shadow(32, 56, 26)}${plate()}${[44, 37, 30].map(y => `<ellipse cx="32" cy="${y}" rx="18" ry="6" fill="#e3a043" ${L}/><path d="M14 ${y} c4 2 10 3 18 3 c8 0 14 -1 18 -3" fill="none" stroke="#fff2d6" stroke-width="2"/>`).join('')}${put(tops)}`);
+}
+function takoyaki(tops, sauce = true){
+  return svg(`${shadow(32, 56, 26)}<path d="M6 36 h52 l-6 14 h-40z" fill="#e8c98e" ${L}/>${[[16, 36], [26, 33], [38, 33], [48, 36], [22, 41], [42, 41]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="7.5" fill="#d9903a" ${LT}/>`).join('')}
+    ${sauce ? `<path d="M12 34 c8 -5 32 -6 40 0" fill="none" stroke="#6b3a22" stroke-width="4" stroke-linecap="round"/><path d="M14 36 l6 -5 l6 5 l6 -5 l6 5 l6 -5 l6 5" fill="none" stroke="#fff6c8" stroke-width="1.6"/>` : ''}${put(tops)}`);
+}
+function gyozaPlate(n = 5, extra = ''){
+  return svg(`${shadow(32, 56, 26)}${plate()}${Array.from({length:n}, (_, i) => { const x = 14 + i * (36 / Math.max(1, n - 1)); return `<path d="M${x - 7} 46 c0 -8 3 -12 7 -12 c4 0 7 4 7 12z" fill="#fbf0d6" ${LT}/><path d="M${x - 6.5} 46 h13 c-1 -3 -2 -4 -6.5 -4 c-4.5 0 -5.5 1 -6.5 4z" fill="#d9903a"/>`; }).join('')}${extra}`);
+}
+function chahan(tops){
+  return svg(`${shadow(32, 56, 26)}${plate()}<path d="M12 44 c0 -12 9 -18 20 -18 c11 0 20 6 20 18 c-6 3 -34 3 -40 0z" fill="#f6dc7a" ${L}/>${dots([[22, 36], [30, 32], [38, 36], [26, 41], [40, 41], [33, 38]], 1.8, '#e3b23c')}${put(tops)}`);
+}
+/* ラーメン */
+D.r_shoyu = () => ramen([['nori', 46, 30], ['negi', 24, 30]]);
+D.r_negi = () => ramen([['negi', 22, 29], ['negi', 32, 31], ['negi', 42, 29]]);
+D.r_chashu = () => ramen([['chashu', 22, 30], ['chashu', 34, 31], ['chashu', 44, 29]]);
+D.r_ajitama = () => ramen([['egg', 24, 30], ['egg', 38, 30], ['negi', 46, 32]]);
+D.r_moyashi = () => ramen([['moyashi', 28, 28], ['moyashi', 36, 30], ['negi', 44, 32]], '#e7c58a');
+D.r_nori = () => ramen([['nori', 22, 29], ['nori', 30, 27], ['nori', 38, 29], ['negi', 46, 32]]);
+D.r_zenbu = () => ramen([['chashu', 20, 30], ['egg', 34, 31], ['nori', 46, 29], ['negi', 40, 33]]);
+/* ピザ */
+D.z_cheese = () => pizza([['cheese', 24, 36], ['cheese', 38, 34], ['cheese', 32, 41]]);
+D.z_marghe = () => pizza([['basil', 26, 36], ['basil', 38, 37], ['cheese', 32, 41], ['cheese', 30, 33]]);
+D.z_salami = () => pizza([['salami', 22, 37], ['salami', 32, 33], ['salami', 42, 37], ['salami', 32, 42]]);
+D.z_yasai = () => pizza([['piman', 22, 36], ['piman', 34, 33], ['piman', 42, 39], ['corn', 28, 42], ['corn', 36, 41]]);
+D.z_kinoko = () => pizza([['kinoko', 24, 38], ['kinoko', 36, 35], ['kinoko', 40, 42], ['basil', 30, 42]]);
+D.z_corn = () => pizza([['corn', 22, 36], ['corn', 28, 33], ['corn', 36, 34], ['corn', 42, 38], ['corn', 30, 41], ['cheese', 36, 42]]);
+D.z_mix = () => pizza([['salami', 22, 37], ['piman', 32, 33], ['kinoko', 42, 38], ['salami', 34, 42], ['piman', 26, 42]]);
+/* カレー */
+D.c_plain = () => curry([]);
+D.c_ninjin = () => curry([['ninjin', 36, 36], ['ninjin', 44, 38]]);
+D.c_yasai = () => curry([['ninjin', 36, 36], ['jaga', 44, 37], ['ninjin', 40, 41]]);
+D.c_katsu = () => curry([['katsu', 38, 36]]);
+D.c_egg = () => curry([['egg', 40, 37]]);
+D.c_cheese = () => curry([['cheese', 36, 36], ['cheese', 44, 38]]);
+D.c_zenbu = () => curry([['katsu', 38, 35], ['egg', 46, 40], ['ninjin', 34, 41]]);
+/* パンケーキ */
+D.p_plain = () => pancakes([['butter', 32, 27]]);
+D.p_whip = () => pancakes([['whip', 32, 26]]);
+D.p_ichigo = () => pancakes([['whip', 32, 26], ['berry', 26, 24], ['berry', 38, 25]]);
+D.p_banana = () => pancakes([['whip', 32, 26], ['banana', 24, 28], ['banana', 40, 28]]);
+D.p_choco = () => pancakes([['whip', 32, 26], ['choco', 25, 28], ['choco', 39, 28]]);
+D.p_blue = () => pancakes([['whip', 32, 26], ['blue', 24, 28], ['blue', 40, 28], ['blue', 34, 23]]);
+D.p_fruit = () => pancakes([['whip', 32, 26], ['berry', 24, 25], ['banana', 40, 28], ['blue', 32, 22]]);
+/* たこ焼き */
+D.t_plain = () => takoyaki([], false);
+D.t_sauce = () => takoyaki([]);
+D.t_negi = () => takoyaki([['negi', 24, 32], ['negi', 40, 32]]);
+D.t_cheese = () => takoyaki([['cheese', 22, 32], ['cheese', 38, 31]]);
+D.t_katsuo = () => takoyaki([['katsuo', 22, 31], ['katsuo', 34, 29], ['katsuo', 44, 32]]);
+D.t_ebi = () => takoyaki([['ebi', 26, 30], ['ebi', 40, 30]]);
+D.t_mori = () => takoyaki([['negi', 22, 32], ['katsuo', 34, 29], ['cheese', 44, 32]]);
+/* ぎょうざ */
+D.g_gyoza = () => gyozaPlate(5);
+D.g_chahan = () => chahan([['negi', 28, 34], ['egg2', 38, 36]]);
+D.g_ebichahan = () => chahan([['ebi', 26, 35], ['ebi', 38, 34], ['egg2', 32, 40]]);
+D.g_yasai = () => svg(`${shadow(32, 56, 26)}${plate()}<ellipse cx="32" cy="40" rx="18" ry="7" fill="#e6f5d2" ${L}/>${put([['moyashi', 26, 38], ['moyashi', 36, 38], ['negi', 30, 40], ['negi', 40, 41]])}${[16, 22, 28, 34, 40, 46].map(x => `<path d="M${x} 44 c2 -4 4 -5 6 -9" fill="none" stroke="#8cc663" stroke-width="2" stroke-linecap="round"/>`).join('')}`);
+D.g_harumaki = () => svg(`${shadow(32, 56, 26)}${plate()}<g transform="translate(4 6) scale(.85)">${inner(A.harumaki_ready)}</g>`);
+const gz = (x, y, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})"><path d="M-7 0 c0 -8 3 -12 7 -12 c4 0 7 4 7 12z" fill="#fbf0d6" ${LT}/><path d="M-6.5 0 h13 c-1 -3 -2 -4 -6.5 -4 c-4.5 0 -5.5 1 -6.5 4z" fill="#d9903a"/></g>`;
+const mound = (x, y, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})"><path d="M-14 0 c0 -9 6 -13 14 -13 c8 0 14 4 14 13 c-4 2 -24 2 -28 0z" fill="#f6dc7a" ${LT}/>${dots([[-6, -6], [2, -8], [7, -4], [-2, -3]], 1.4, '#e3b23c')}</g>`;
+D.g_set = () => svg(`${shadow(32, 56, 28)}${plate(28)}${gz(14, 47)}${gz(24, 48)}${mound(42, 44)}`);
+D.g_chuka = () => svg(`${shadow(32, 56, 28)}${plate(28)}${gz(13, 47, .9)}${gz(22, 48, .9)}${mound(42, 44, .9)}<rect x="22" y="27" width="22" height="8" rx="4" fill="#e0a046" ${LT} transform="rotate(-12 33 31)"/>${tp.ebi(44, 34)}`);
+/* 今までのお店に足す料理 */
+D.tamasand = () => svg(`${shadow(32, 56, 26)}${plate()}${sandwich(['#ffe08a', '#fffdf6'])}`);
+D.melonpan = () => svg(`${shadow(32, 56, 26)}${plate()}${onPlate(A.melon_ready, [[22, 47, .55], [42, 47, .55]])}`);
+D.tekka = () => svg(`${shadow(32, 57, 26)}${geta()}${[[16, 36], [32, 34], [48, 36]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9" fill="#2e4a3a" ${L}/><circle cx="${x}" cy="${y}" r="6.6" fill="#fffdf6"/><circle cx="${x}" cy="${y}" r="3" fill="#e0485a"/>`).join('')}`);
+D.ebinigiri = () => svg(`${shadow(32, 57, 26)}${geta()}<g transform="translate(-10 0) scale(.7) translate(10 16)">${nigiri('#ff8a76', '#fff', false)}</g><g transform="translate(14 0) scale(.7) translate(10 16)">${nigiri('#ff8a76', '#fff', false)}</g>`);
+D.tart = () => svg(`${shadow(32, 56, 26)}${plate()}<path d="M12 40 l4 8 h32 l4 -8z" fill="#e3a043" ${L}/><ellipse cx="32" cy="40" rx="20" ry="5" fill="#fff" ${L}/>${tp.berry(24, 34)}${tp.berry(32, 32)}${tp.berry(40, 34)}`);
+D.chocobana = () => svg(`${shadow(32, 56, 26)}${plate()}<g transform="translate(0 -2)">${cakeSlice('#8a5236', '#fff', tp.banana(26, 25) + tp.banana(38, 22) + tp.choco(32, 20))}</g>`);
+D.ebiburger = () => svg(`${shadow(32, 57, 24)}${burger(`<path d="M10 34 c4 -3 7 3 11 0 c4 -3 7 3 11 0 c4 -3 7 3 11 0 c4 -3 7 3 11 0" fill="none" stroke="#5fb447" stroke-width="4" stroke-linecap="round"/><rect x="14" y="30" width="36" height="5" rx="2.5" fill="#f2a05a" ${LT}/>`).replace('fill="#8a4b2f"', 'fill="#e8a05a"')}`);
+D.double = () => svg(`${shadow(32, 57, 24)}<g transform="translate(0 2)">${burger(`<path d="M12 34 h40 l-6 6 l-4 -3 l-6 5 l-5 -4 l-6 5 l-4 -4 z" fill="#ffd34d" ${LT}/><ellipse cx="32" cy="32" rx="22" ry="5" fill="#8a4b2f" ${L}/>`)}</g>`);
+
+/* ---------- 材料のデータ ---------- */
+Object.assign(ING, {
+  men:      {name:'麺',         raw:'men',      ready:'men_ready',      steps:['cook'], cook:4000},
+  soup:     {name:'スープ',     raw:'soup',     ready:'soup_ready',     steps:['mix']},
+  negi:     {name:'ねぎ',       raw:'negi',     ready:'negi_cut',       steps:['cut'], chop:4},
+  chashu:   {name:'チャーシュー', raw:'chashu', ready:'chashu_cut',     steps:['cut'], chop:5},
+  yudetama: {name:'たまご',     raw:'yudetama', mid:'yudetama_mid', ready:'yudetama_ready', steps:['cook', 'cut'], cook:4500, chop:2},
+  moyashi:  {name:'もやし',     raw:'moyashi',  ready:'moyashi_ready',  steps:['cook'], cook:3000},
+  pdough:   {name:'ピザ生地',   raw:'flour',    ready:'pbase',          steps:['mix', 'cook'], art:{mix:'kiji'}, cook:5500},
+  tsauce:   {name:'トマトソース', raw:'tsauce', ready:'tsauce_ready',   steps:['mix']},
+  piman:    {name:'ピーマン',   raw:'piman',    ready:'piman_cut',      steps:['cut'], chop:4},
+  salami:   {name:'サラミ',     raw:'salami',   ready:'salami_cut',     steps:['cut'], chop:4},
+  kinoko:   {name:'きのこ',     raw:'kinoko',   ready:'kinoko_cut',     steps:['cut'], chop:3},
+  corn:     {name:'コーン',     raw:'corn',     ready:'corn',           steps:[]},
+  gohan:    {name:'ごはん',     raw:'kome',     ready:'kome_ready',     steps:['cook'], cook:5000},
+  roux:     {name:'カレールー', raw:'roux',     ready:'roux_ready',     steps:['mix', 'cook'], art:{mix:'roux_ready'}, cook:4500},
+  ninjin:   {name:'にんじん',   raw:'ninjin',   mid:'ninjin_cut', ready:'ninjin_ready', steps:['cut', 'cook'], chop:5, cook:4000},
+  jaga:     {name:'じゃがいも', raw:'potato',   mid:'jaga_cut', ready:'jaga_ready',     steps:['cut', 'cook'], chop:5, cook:4000},
+  katsu:    {name:'カツ',       raw:'katsu',    mid:'katsu_mid', ready:'katsu_ready',   steps:['cook', 'cut'], cook:5000, chop:3},
+  pcdough:  {name:'生地',       raw:'flour',    ready:'pancake',        steps:['mix', 'cook'], art:{mix:'batter'}, cook:4500},
+  butter:   {name:'バター',     raw:'butter',   ready:'butter',         steps:[]},
+  blueberry:{name:'ブルーベリー', raw:'blueberry', ready:'blueberry',   steps:[]},
+  tdough:   {name:'生地',       raw:'flour',    ready:'takoball',       steps:['mix', 'cook'], art:{mix:'batter'}, cook:5000},
+  tako:     {name:'たこ',       raw:'tako',     ready:'tako_cut',       steps:['cut'], chop:5},
+  ebi:      {name:'えび',       raw:'ebi',      ready:'ebi_cut',        steps:['cut'], chop:3},
+  katsuo:   {name:'かつお節',   raw:'katsuo',   ready:'katsuo',         steps:[]},
+  gyoza:    {name:'ぎょうざ',   raw:'gyoza_tane', ready:'gyoza',        steps:['mix', 'cook'], art:{mix:'gyoza_raw'}, cook:5000},
+  kyabetsu: {name:'キャベツ',   raw:'kyabetsu', ready:'kyabetsu_cut',   steps:['cut'], chop:6},
+  tokitama: {name:'たまご',     raw:'tamago',   ready:'tokitama_ready', steps:['mix', 'cook'], art:{mix:'tokitama'}, cook:3500},
+  harumaki: {name:'春巻き',     raw:'harumaki', ready:'harumaki_ready', steps:['cook'], cook:4500},
+  melon:    {name:'メロンパン', raw:'kiji',     ready:'melon_ready',    steps:['mix', 'cook'], art:{mix:'melon'}, cook:5000}
+});
+
+/* ---------- 今までのお店に料理を足す ---------- */
+(function(){
+  const add = (id, ings, dishes) => { const s = SHOPS.find(x => x.id === id); ings.forEach(c => { if (!s.ings.includes(c)) s.ings.push(c); }); s.dishes.push(...dishes); };
+  add('pan', ['yudetama', 'melon'], [{id:'tamasand', name:'たまごサンド', comps:['shokupan', 'yudetama']}, {id:'melonpan', name:'メロンパン', comps:['melon']}]);
+  add('sushi', ['ebi'], [{id:'tekka', name:'鉄火巻き', comps:['nori', 'kome', 'maguro']}, {id:'ebinigiri', name:'えびにぎり', comps:['kome', 'ebi']}]);
+  add('cake', [], [{id:'tart', name:'いちごタルト', comps:['cookie', 'cream', 'ichigo']}, {id:'chocobana', name:'チョコバナナ', comps:['sponge', 'cream', 'choco', 'banana']}]);
+  add('burger', ['ebi'], [{id:'ebiburger', name:'えびバーガー', comps:['bun', 'ebi', 'lettuce']}, {id:'double', name:'ダブルバーガー', comps:['bun', 'patty', 'patty', 'cheese']}]);
+})();
+
+/* ---------- 新しいお店 ---------- */
+const NEW_SHOPS = {
+  ramen:{id:'ramen', name:'ラーメン屋', cooker:'stove', cookName:'鍋', bgm:1, sauce:'#d9442b', sauceName:'ラー油',
+    pal:{wall:'#fff1e6', wall2:'#ffd9c2', floor:'#d9a26a', accent:'#d9442b', sign:'#b8342a'},
+    ings:['men', 'soup', 'negi', 'chashu', 'yudetama', 'moyashi', 'nori'],
+    dishes:[{id:'r_shoyu', name:'しょうゆラーメン', comps:['men', 'soup']}, {id:'r_negi', name:'ねぎラーメン', comps:['men', 'soup', 'negi']},
+      {id:'r_chashu', name:'チャーシュー麺', comps:['men', 'soup', 'chashu']}, {id:'r_ajitama', name:'味玉ラーメン', comps:['men', 'soup', 'yudetama']},
+      {id:'r_moyashi', name:'もやしラーメン', comps:['men', 'soup', 'moyashi', 'negi']}, {id:'r_nori', name:'のりラーメン', comps:['men', 'soup', 'nori', 'negi']},
+      {id:'r_zenbu', name:'全部のせ', comps:['men', 'soup', 'chashu', 'yudetama']}]},
+  pizza:{id:'pizza', name:'ピザ屋', cooker:'oven', cookName:'石窯', bgm:3, sauce:'#3f8f3a', sauceName:'バジル',
+    pal:{wall:'#fff6ea', wall2:'#ffe1c0', floor:'#c9905a', accent:'#3f8f3a', sign:'#c0392b'},
+    ings:['pdough', 'tsauce', 'cheese', 'salami', 'piman', 'kinoko', 'corn'],
+    dishes:[{id:'z_cheese', name:'チーズピザ', comps:['pdough', 'cheese']}, {id:'z_salami', name:'サラミピザ', comps:['pdough', 'tsauce', 'salami']},
+      {id:'z_marghe', name:'マルゲリータ', comps:['pdough', 'tsauce', 'cheese']}, {id:'z_yasai', name:'野菜ピザ', comps:['pdough', 'tsauce', 'piman', 'corn']},
+      {id:'z_kinoko', name:'きのこピザ', comps:['pdough', 'tsauce', 'kinoko']}, {id:'z_corn', name:'コーンピザ', comps:['pdough', 'corn', 'cheese']},
+      {id:'z_mix', name:'ミックスピザ', comps:['pdough', 'tsauce', 'salami', 'piman']}]},
+  curry:{id:'curry', name:'カレー屋', cooker:'stove', cookName:'鍋', bgm:0, sauce:'#8a4b1f', sauceName:'ソース',
+    pal:{wall:'#fff7e2', wall2:'#ffe7a8', floor:'#d6a35e', accent:'#d98a1f', sign:'#b86a12'},
+    ings:['gohan', 'roux', 'ninjin', 'jaga', 'katsu', 'yudetama', 'cheese'],
+    dishes:[{id:'c_plain', name:'カレーライス', comps:['gohan', 'roux']}, {id:'c_ninjin', name:'にんじんカレー', comps:['gohan', 'roux', 'ninjin']},
+      {id:'c_katsu', name:'カツカレー', comps:['gohan', 'roux', 'katsu']}, {id:'c_yasai', name:'野菜カレー', comps:['gohan', 'roux', 'ninjin', 'jaga']},
+      {id:'c_egg', name:'たまごカレー', comps:['gohan', 'roux', 'yudetama']}, {id:'c_cheese', name:'チーズカレー', comps:['gohan', 'roux', 'cheese']},
+      {id:'c_zenbu', name:'全部のせカレー', comps:['gohan', 'roux', 'katsu', 'yudetama']}]},
+  pancake:{id:'pancake', name:'パンケーキ屋', cooker:'stove', cookName:'フライパン', bgm:2, sauce:'#c98a2b', sauceName:'シロップ',
+    pal:{wall:'#fff5f0', wall2:'#ffe0d2', floor:'#e9b892', accent:'#e2786a', sign:'#c95a4a'},
+    ings:['pcdough', 'butter', 'cream', 'ichigo', 'banana', 'choco', 'blueberry'],
+    dishes:[{id:'p_plain', name:'プレーン', comps:['pcdough', 'butter']}, {id:'p_ichigo', name:'いちごパンケーキ', comps:['pcdough', 'cream', 'ichigo']},
+      {id:'p_whip', name:'ホイップパンケーキ', comps:['pcdough', 'cream']}, {id:'p_banana', name:'バナナパンケーキ', comps:['pcdough', 'cream', 'banana']},
+      {id:'p_choco', name:'チョコパンケーキ', comps:['pcdough', 'cream', 'choco']}, {id:'p_blue', name:'ベリーパンケーキ', comps:['pcdough', 'cream', 'blueberry']},
+      {id:'p_fruit', name:'フルーツパンケーキ', comps:['pcdough', 'cream', 'ichigo', 'banana']}]},
+  tako:{id:'tako', name:'たこ焼き屋', cooker:'grill', cookName:'たこ焼き器', bgm:1, sauce:'#6b3a22', sauceName:'ソース',
+    pal:{wall:'#fff4e0', wall2:'#ffe0a8', floor:'#c98f55', accent:'#e8413a', sign:'#1f5a8a'},
+    ings:['tdough', 'tako', 'negi', 'cheese', 'katsuo', 'ebi'],
+    dishes:[{id:'t_plain', name:'たこ焼き', comps:['tdough', 'tako']}, {id:'t_negi', name:'ねぎたこ', comps:['tdough', 'tako', 'negi']},
+      {id:'t_ebi', name:'えび焼き', comps:['tdough', 'ebi']}, {id:'t_cheese', name:'チーズたこ焼き', comps:['tdough', 'tako', 'cheese']},
+      {id:'t_katsuo', name:'かつおたこ焼き', comps:['tdough', 'tako', 'katsuo']}, {id:'t_sauce', name:'ソースたこ焼き', comps:['tdough', 'tako', 'katsuo', 'negi']},
+      {id:'t_mori', name:'もりもりたこ焼き', comps:['tdough', 'tako', 'cheese', 'negi']}]},
+  gyoza:{id:'gyoza', name:'ぎょうざ屋', cooker:'grill', cookName:'中華鍋', bgm:3, sauce:'#d9442b', sauceName:'ラー油',
+    pal:{wall:'#fff2ea', wall2:'#ffd6c4', floor:'#b8784a', accent:'#c0392b', sign:'#a8261c'},
+    ings:['gyoza', 'gohan', 'tokitama', 'negi', 'ebi', 'kyabetsu', 'moyashi', 'harumaki'],
+    dishes:[{id:'g_gyoza', name:'焼きぎょうざ', comps:['gyoza', 'kyabetsu']}, {id:'g_chahan', name:'チャーハン', comps:['gohan', 'tokitama', 'negi']},
+      {id:'g_harumaki', name:'春巻き', comps:['harumaki']}, {id:'g_ebichahan', name:'えびチャーハン', comps:['gohan', 'tokitama', 'ebi']},
+      {id:'g_yasai', name:'野菜いため', comps:['kyabetsu', 'moyashi', 'negi']}, {id:'g_set', name:'ぎょうざセット', comps:['gyoza', 'gohan', 'tokitama']},
+      {id:'g_chuka', name:'中華セット', comps:['gyoza', 'harumaki', 'gohan', 'ebi']}]}
+};
+/* お店の順番（3日ごとに次へ） */
+(function(){
+  const old = Object.fromEntries(SHOPS.map(s => [s.id, s]));
+  const order = ['pan', 'ramen', 'sushi', 'pizza', 'cake', 'curry', 'burger', 'pancake', 'tako', 'gyoza'];
+  SHOPS.length = 0; order.forEach(id => SHOPS.push(old[id] || NEW_SHOPS[id]));
+})();
 
 /* =====================================================================
    ゲームのしくみ（ホストの端末だけが進めます。ほかの端末は結果を表示します）
