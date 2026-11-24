@@ -1054,13 +1054,7 @@ const SHOPS = [
 ];
 const shopOf = id => SHOPS.find(s => s.id === id) || SHOPS[0];
 const dishOf = (shop, id) => shopOf(shop).dishes.find(d => d.id === id);
-/* ひと回りするごとに、お店のふんいきが変わります */
-const THEMES = [
-  {id:'day', name:'', sky:'#bfe6ff'},
-  {id:'night', name:'夜の', sky:'#2b3566'},
-  {id:'fes', name:'祭りの', sky:'#ffcf8a'},
-  {id:'snow', name:'雪の', sky:'#dfeaf5'}
-];
+const THEMES = [{id:'day', name:'', sky:'#bfe6ff'}];   // ふんいき違い（夜・祭り・雪）はなし
 
 /* ---------- 週がわり（月曜日に お店が かわります） ---------- */
 const EPOCH = new Date(2026, 10, 23).getTime();   // 2026年11月23日（月）
