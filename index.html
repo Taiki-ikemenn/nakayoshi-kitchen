@@ -748,6 +748,16 @@ body[data-theme=night] .sink{background:linear-gradient(180deg,#3d5a66,#2d4752)}
 .qopts .btn.ng{background:var(--bad);color:#fff;border-color:var(--bad)}
 .newrec{font-size:13px;font-weight:700;color:#fff;background:var(--bad);border-radius:999px;padding:3px 12px}
 @media (max-width:520px){ .qopts{grid-template-columns:1fr} .qopts .btn.withart{flex-direction:row;min-height:56px} }
+.qseg{display:flex;flex-direction:column;gap:3px}
+.qseg .est{font-size:11px;color:var(--sub);padding-left:6px;white-space:nowrap}
+.endopts{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;width:100%}
+.endopts .btn{flex-direction:column;gap:0;min-height:60px;padding:4px}
+.endopts .btn b{font-size:20px;font-variant-numeric:tabular-nums}
+.endopts .btn small{font-size:11px;color:var(--sub)}
+.endpick{display:flex;gap:8px;align-items:center}
+.endpick input{min-height:48px;font-size:18px;border:1px solid var(--line);border-radius:12px;padding:4px 10px;background:var(--card2);color:var(--ink)}
+.hud .eta{font-size:12px;font-weight:700;color:var(--sub);white-space:nowrap;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 10px}
+#play.compact .hud .eta{font-size:11px;padding:3px 8px}
 
 </style>
 </head>
@@ -1883,7 +1893,7 @@ function newRoomState(code, hostPid){
   return {v:1, code, host:hostPid, phase:'lobby', now:Date.now(), seq:0,
     week:wk.w, shop:wk.shop.id, theme:wk.theme.id, stage:1,
     players:{}, orders:[], items:[], queue:[], cfg:null, fx:[], fxSeq:0,
-    coins:0, served:0, missed:0, result:null, uid:1, diff:LSJ.get('nk:diff', 'normal'), off:LSJ.get('nk:off', []), quick:LSJ.get('nk:quick', false)};
+    coins:0, served:0, missed:0, result:null, uid:1, diff:LSJ.get('nk:diff', 'normal'), off:LSJ.get('nk:off', []), quickN:LSJ.get('nk:quickN', 0), endAt:''};
 }
 const nid = st => 'i' + (st.uid++).toString(36);
 const nextLoc = (st, c, s) => { const k = stepsOf(st, c)[s]; return k === 'cut' ? 'cutq' : k === 'cook' ? 'cookq' : k === 'mix' ? 'mixq' : 'tray'; };
@@ -1936,7 +1946,8 @@ function startStage(st, n){
   st.cfg = stageConfig(st.shop, st.week, n, players, ev);
   st.cfg.patience = Math.round(st.cfg.patience * (1 + .12 * upLv(st, 'chair')));
   if (isEasy(st)){ st.cfg.patience = Math.round(st.cfg.patience * 1.4); st.cfg.gap = Math.round(st.cfg.gap * 1.15); }
-  if (st.quick){ st.cfg.queue = st.cfg.queue.slice(0, 5); st.cfg.total = 5; st.cfg.rush = 0; }
+  const qn = st.quickN != null ? st.quickN : (st.quick ? 5 : 0);
+  if (qn > 0 && qn < st.cfg.total){ st.cfg.queue = st.cfg.queue.slice(0, qn); st.cfg.total = qn; if (qn <= 6) st.cfg.rush = 0; }
   st.queue = st.cfg.queue.slice(); delete st.cfg.queue;
   st.orders = []; st.items = []; st.streak = 0; st.lastServe = 0; st.stats = {}; st.maxStreak = 0; st.hurryServed = 0;
   st.clean = on(st, 'arau') ? st.cfg.maxActive + 1 + 2 * upLv(st, 'plate') : null; st.fast = null; st.dishN = {}; st.sink = []; st.rushOn = false; st.coins = 0; st.served = 0; st.missed = 0; st.result = null;
@@ -2006,7 +2017,7 @@ function apply(st, a, pid){
   if (a.t === 'roles' && P){ P.roles = (a.roles || []).filter(r => ROLE_IDS.includes(r)); return {ok:true}; }
   if (a.t === 'start' && pid === st.host && (st.phase === 'lobby' || st.phase === 'result')){ startStage(st, Math.max(1, a.stage | 0 || st.stage)); return {ok:true}; }
   if (a.t === 'off' && pid === st.host && st.phase !== 'play' && st.phase !== 'intro'){ const s = new Set(st.off || []); if (s.has(a.r)) s.delete(a.r); else if (!BASE_ROLES.includes(a.r)) s.add(a.r); st.off = [...s]; return {ok:true}; }
-  if (a.t === 'quick' && pid === st.host && st.phase !== 'play' && st.phase !== 'intro'){ st.quick = !!a.v; return {ok:true}; }
+  if (a.t === 'quick' && pid === st.host && st.phase !== 'play' && st.phase !== 'intro'){ st.quickN = Math.max(0, Math.min(40, a.n | 0)); st.endAt = a.end || ''; return {ok:true}; }
   if (a.t === 'diff' && pid === st.host && st.phase !== 'play' && st.phase !== 'intro'){ st.diff = a.v === 'easy' ? 'easy' : 'normal'; return {ok:true}; }
   if (a.t === 'lobby' && pid === st.host){ st.phase = 'lobby'; st.orders = []; st.items = []; st.result = null; return {ok:true}; }
   if (a.t === 'stamp' && P && STAMPS[a.k]){ if (st.now - (P.lastStamp || 0) < 900) return {ok:false}; P.lastStamp = st.now; fx(st, 'stamp', {k:a.k, p:pid}); return {ok:true}; }
@@ -2591,8 +2602,8 @@ function renderLobby(){
           <div class="art">${ROLE_ART[r.id]()}</div><div><b>${esc(r.name)}${tagOf(r) ? `<em class="from">${tagOf(r)}</em>` : ''}</b><small>${esc(r.desc)}</small><span class="how">${esc(HOW[r.id])}</span>${solo ? '' : `<div class="who">${owners(r.id).map(([, p]) => `<i>${pArt(p)}</i>`).join('')}</div>`}</div><div class="chk">${CHECK_W()}</div></button>`).join('')}</div>
         ${host ? `<div class="usebar"><small>使う係</small>${ROLES.filter(r => r.from).map(r => `<button data-a="off" data-r="${r.id}" class="${off.includes(r.id) ? '' : 'on'}" style="--rc:${r.color}">${esc(r.short)}<i>${off.includes(r.id) ? 'OFF' : 'ON'}</i></button>`).join('')}</div>` : ''}
         <div class="lb-hint">${solo ? '係はステージ3・5・7で増える。ステージを選んで開始。' : '同じ係に複数人も可。誰も選ばない係は、係の少ない人へ自動で割り当て。係はステージ3・5・7で増える。'}</div>
-        <div class="lb-start">${host ? `<div class="seg" role="group"><button data-a="diff" data-v="easy" class="${st.diff === 'easy' ? 'on' : ''}">やさしい</button><button data-a="diff" data-v="normal" class="${st.diff !== 'easy' ? 'on' : ''}">ふつう</button></div><div class="seg"><button data-a="quick" data-v="1" class="${st.quick ? 'on' : ''}">お客5人</button><button data-a="quick" data-v="" class="${!st.quick ? 'on' : ''}">全部</button></div><div class="stagepick"><button class="btn sm round" data-a="sp-" ${lobbyStage <= 1 ? 'disabled' : ''}>‹</button><b>ステージ ${lobbyStage}<small class="spbest">${BESTS[`${st.week}:${lobbyStage}`] ? '★'.repeat(BESTS[`${st.week}:${lobbyStage}`]) + '　' : ''}${COINBEST[`${st.week}:${lobbyStage}`] ? '最高 ' + COINBEST[`${st.week}:${lobbyStage}`] : '未プレイ'}</small></b><button class="btn sm round" data-a="sp+" ${lobbyStage >= maxStage ? 'disabled' : ''}>›</button></div>
-          <span class="spacer"></span><button class="btn big green" data-a="start">開始</button>` : `<div class="waitmsg">${st.diff === 'easy' ? 'やさしい・' : ''}${st.quick ? 'お客5人・' : ''}ホストの開始待ち</div>`}</div>
+        <div class="lb-start">${host ? `<div class="seg" role="group"><button data-a="diff" data-v="easy" class="${st.diff === 'easy' ? 'on' : ''}">やさしい</button><button data-a="diff" data-v="normal" class="${st.diff !== 'easy' ? 'on' : ''}">ふつう</button></div>${quickSeg(st, lobbyStage)}<div class="stagepick"><button class="btn sm round" data-a="sp-" ${lobbyStage <= 1 ? 'disabled' : ''}>‹</button><b>ステージ ${lobbyStage}<small class="spbest">${BESTS[`${st.week}:${lobbyStage}`] ? '★'.repeat(BESTS[`${st.week}:${lobbyStage}`]) + '　' : ''}${COINBEST[`${st.week}:${lobbyStage}`] ? '最高 ' + COINBEST[`${st.week}:${lobbyStage}`] : '未プレイ'}</small></b><button class="btn sm round" data-a="sp+" ${lobbyStage >= maxStage ? 'disabled' : ''}>›</button></div>
+          <span class="spacer"></span><button class="btn big green" data-a="start">開始</button>` : `<div class="waitmsg">${st.diff === 'easy' ? 'やさしい・' : ''}${st.quickN ? `お客${st.quickN}人・` : ''}${st.endAt ? `${st.endAt}ごろ終了・` : ''}ホストの開始待ち</div>`}</div>
       </div></div>`;
   if (!solo) qrFor(st.code).then(u => { const q = $('#lbQR'); if (q && u) q.innerHTML = `<img src="${u}" alt="QRコード">`; });
   show('lobby');
@@ -2605,7 +2616,9 @@ $('#lobby').addEventListener('click', async e => {
   if (b.dataset.a === 'sp+'){ lobbyStage = Math.min(nextStageFor(NET.st.week), lobbyStage + 1); renderLobby(); }
   if (b.dataset.a === 'start') send({t:'start', stage:lobbyStage});
   if (b.dataset.a === 'off'){ const s = new Set(NET.st.off || []); if (s.has(b.dataset.r)) s.delete(b.dataset.r); else s.add(b.dataset.r); LSJ.set('nk:off', [...s]); send({t:'off', r:b.dataset.r}); if (NET.isHost) renderLobby(); return; }
-  if (b.dataset.a === 'quick'){ LSJ.set('nk:quick', !!b.dataset.v); send({t:'quick', v:!!b.dataset.v}); if (NET.isHost) renderLobby(); return; }
+  if (b.dataset.a === 'quick'){
+    if (b.dataset.v === 'time'){ askEndTime(); return; }
+    const n = +b.dataset.v || 0; LSJ.set('nk:quickN', n); send({t:'quick', n}); if (NET.isHost) renderLobby(); return; }
   if (b.dataset.a === 'diff'){ LSJ.set('nk:diff', b.dataset.v); send({t:'diff', v:b.dataset.v}); if (NET.isHost) renderLobby(); }
   if (b.dataset.role){
     const r = b.dataset.role, set = new Set(ME.roles || []);
@@ -3585,6 +3598,58 @@ renderTitle = function(){
 };
 $('#title').addEventListener('click', e => { const b = e.target.closest('[data-x="mini"]'); if (b){ sfx('tap'); renderMini(); } });
 if (typeof curScreen !== 'undefined' && curScreen === 'title') renderTitle();
+
+/* =========================================================
+   終わる時間：お客の人数・○時○分に終わる人数・あと約○分
+   ========================================================= */
+const hhmm = t => { const d = new Date(t); return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; };
+function nextCfg(st, n){
+  const players = Math.max(1, Object.keys(st.players).length);
+  const c = stageConfig(st.shop, st.week, n, players, eventAt());
+  if (isEasy(st)) c.gap *= 1.15;
+  return c;
+}
+/* 1ステージのだいたいの時間（ミリ秒） */
+const estMs = (count, gap) => 9000 + Math.max(0, count - 1) * gap * .85 + 26000;
+function countFor(ms, cfg){ return Math.max(2, Math.min(cfg.total, Math.floor((ms - 35000) / (cfg.gap * .85)) + 1)); }
+function quickSeg(st, n){
+  const cfg = nextCfg(st, n), q = st.quickN || 0, cnt = q ? Math.min(q, cfg.total) : cfg.total, ms = estMs(cnt, cfg.gap);
+  const isTime = !!st.endAt;
+  return `<div class="qseg"><div class="seg"><button data-a="quick" data-v="5" class="${q === 5 && !isTime ? 'on' : ''}">お客5人</button><button data-a="quick" data-v="time" class="${isTime ? 'on' : ''}">${isTime ? `${esc(st.endAt)}まで` : '時間で'}</button><button data-a="quick" data-v="0" class="${!q ? 'on' : ''}">全部</button></div>
+    <small class="est">${isTime ? `${esc(st.endAt)}までに終わる人数：お客${cnt}人` : `お客${cnt}人・約${Math.max(1, Math.round(ms / 60000))}分（${hhmm(Date.now() + ms)}ごろ終了）`}</small></div>`;
+}
+function askEndTime(){
+  const st = NET.st, cfg = nextCfg(st, lobbyStage), now = Date.now();
+  const opts = [3, 5, 8, 10, 15].map(m => ({m, t:now + m * 60000}));
+  const o = overlay(`<h3>何時に終わる？</h3><div class="lead">終わる時間に合わせて、お客の人数を決める。</div>
+    <div class="endopts">${opts.map(x => { const n = countFor(x.m * 60000, cfg); return `<button class="btn" data-end="${x.m}"><b>${hhmm(x.t)}</b><small>${x.m}分・お客${n}人${n >= cfg.total ? "（全部）" : ""}</small></button>`; }).join('')}</div>
+    <div class="endpick"><input type="time" id="endTime" value="${hhmm(now + 10 * 60000).padStart(5, '0')}"><button class="btn green" data-end="pick">この時間</button></div>
+    <button class="btn sm" data-end="x">やめる</button>`, 'dialog');
+  o.onclick = e => {
+    const b = e.target.closest('[data-end]'); if (!b) return; sfx('tap');
+    if (b.dataset.end === 'x'){ closeOv(); return; }
+    let mins;
+    if (b.dataset.end === 'pick'){
+      const v = $('#endTime').value; if (!v) return;
+      const [h, m] = v.split(':').map(Number), t = new Date(); t.setHours(h, m, 0, 0); if (t < Date.now()) t.setDate(t.getDate() + 1);
+      mins = (t - Date.now()) / 60000;
+    } else mins = +b.dataset.end;
+    const n = countFor(mins * 60000, cfg), end = hhmm(Date.now() + mins * 60000);
+    if (mins * 60000 < estMs(2, cfg.gap)) toastMsg('短すぎるので最少人数');
+    LSJ.set('nk:quickN', n); send({t:'quick', n, end}); closeOv(); if (NET.isHost) renderLobby();
+  };
+}
+/* プレイ中：あと約○分 */
+const _renderPlay3 = renderPlay;
+renderPlay = function(){
+  _renderPlay3();
+  const st = NET.st; if (!st || !st.cfg || st.phase !== 'play') return;
+  const act = st.orders.filter(o => o.state === 'wait').length, left = st.queue.length * st.cfg.gap * .85 + (act || st.queue.length ? 20000 : 0);
+  const m = left / 60000, txt = m < 1 ? 'あと1分以内' : `あと約${Math.round(m)}分`;
+  const hud = $('#hud'); if (!hud) return;
+  let e = $('.eta', hud); if (!e){ e = elm('<span class="eta"></span>'); const c = $('.coins', hud); hud.insertBefore(e, c); }
+  e.textContent = txt;
+};
 
 </script>
 </body>
