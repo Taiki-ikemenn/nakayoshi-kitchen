@@ -778,6 +778,17 @@ body[data-theme=night] .sink{background:linear-gradient(180deg,#3d5a66,#2d4752)}
 .mg-gauge .zone{position:absolute;top:-4px;bottom:-4px;border-radius:8px;border:3px solid var(--ok);background:color-mix(in srgb,var(--ok) 25%,transparent)}
 .mg-gauge .ptr{position:absolute;top:-10px;bottom:-10px;width:6px;margin-left:-3px;border-radius:3px;background:var(--ink)}
 body:has(#mini.on) #toast{bottom:auto;top:calc(var(--safe-t) + 70px)}
+.memrow{display:flex;gap:10px;justify-content:center}
+.memrow i{width:64px;height:64px;display:block;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:6px;animation:pin .3s}
+.memcount{font-size:32px;font-weight:900;color:var(--sub);min-height:40px}
+.qtext.sub{font-size:15px;color:var(--sub)}
+.qopts.six{grid-template-columns:repeat(3,minmax(0,1fr))}
+.qopts .btn.sel{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.ordsel{display:flex;gap:6px;min-height:52px;justify-content:center}
+.ordsel i{width:50px;height:50px;display:block;animation:pin .3s}
+.ordsel i.ng{filter:grayscale(1);opacity:.5}
+@media (max-width:520px){ .qopts.six{grid-template-columns:repeat(2,minmax(0,1fr))} .qopts.six .btn.withart{flex-direction:column;min-height:84px} }
+@media (max-width:560px){ .minilist{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px} .minicard{padding:12px 8px;border-radius:18px} .minicard i{width:46px;height:46px} .minicard b{font-size:14px} .minicard small{font-size:11px} }
 
 </style>
 </head>
@@ -1920,6 +1931,102 @@ addMenu('tako', [], [{id:'t_sausagenegi', name:'ソーセージねぎ焼き', co
   {id:'t_mochikatsuo', name:'もちかつお焼き', comps:['tdough', 'mochi', 'katsuo']}]);
 addMenu('gyoza', [], [{id:'g_moyashigyoza', name:'もやしぎょうざ', comps:['gyoza', 'moyashi']}, {id:'g_ebiharumaki', name:'えび春巻き', comps:['harumaki', 'ebi']},
   {id:'g_kyabetsusoup', name:'キャベツたまごスープ', comps:['soup', 'kyabetsu', 'tokitama']}]);
+
+/* =====================================================================
+   メニュー追加（その6）：全部のお店に3品＋新しい材料
+   ===================================================================== */
+A.jam = () => svg(`${shadow()}<path d="M18 22 h28 v24 c0 4 -4 6 -8 6 h-12 c-4 0 -8 -2 -8 -6z" fill="#e8415a" ${L}/><rect x="16" y="15" width="32" height="9" rx="3" fill="#fff" ${L}/><rect x="22" y="30" width="20" height="10" rx="2" fill="#fff4dc" ${LT}/>`);
+A.menma = () => svg(`${shadow()}${[16, 24, 32, 40, 48].map((x, i) => `<rect x="${x - 3}" y="${24 + (i % 2) * 4}" width="7" height="22" rx="2" fill="#d9a25a" ${LT} transform="rotate(${(i - 2) * 8} ${x} 36)"/>`).join('')}`);
+A.hotate = () => svg(`${shadow()}${[[22, 38], [42, 38]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="10" ry="7" fill="#fff6e8" ${L}/><ellipse cx="${x}" cy="${y - 2}" rx="6" ry="3" fill="#fffdf6"/>`).join('')}`);
+A.olive = () => svg(`${shadow()}${[[22, 40], [34, 34], [44, 42], [28, 48]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="7" ry="5.4" fill="#4a5a2a" ${LT}/><circle cx="${x}" cy="${y}" r="2" fill="#c9343a"/>`).join('')}`);
+A.matcha = () => svg(`${shadow()}<path d="M12 34 h40 c0 10 -9 17 -20 17 c-11 0 -20 -7 -20 -17z" fill="#e9eef5" ${L}/><ellipse cx="32" cy="34" rx="20" ry="5" fill="#7ab648" ${L}/>`);
+A.nasu = () => svg(`${shadow()}<path d="M14 40 c-4 -12 12 -24 26 -18 c8 3 12 10 8 18 c-4 8 -14 12 -22 10 c-6 -1 -10 -5 -12 -10z" fill="#6a3d8a" ${L}/><path d="M40 22 c2 -4 8 -6 12 -4 c-2 4 -6 6 -12 4z" fill="#4fa84a" ${LT}/>${hl(24, 34, 5, 2.4)}`);
+A.nasu_cut = () => svg(`${shadow()}${[[20, 40], [32, 36], [44, 40], [26, 47], [39, 47]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6" fill="#f5efd8" stroke="#6a3d8a" stroke-width="2.4"/>`).join('')}`);
+A.nasu_ready = () => svg(`${shadow()}${[[20, 40], [32, 36], [44, 40], [26, 47], [39, 47]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6" fill="#c9a06a" stroke="#4a2a5a" stroke-width="2.4"/>`).join('')}`);
+A.onion = () => svg(`${shadow()}<path d="M32 14 c-2 6 -16 12 -16 24 c0 8 7 13 16 13 c9 0 16 -5 16 -13 c0 -12 -14 -18 -16 -24z" fill="#e8b46a" ${L}/><path d="M32 18 v32 M24 26 c-2 8 -2 18 2 24 M40 26 c2 8 2 18 -2 24" fill="none" stroke="#c98a3c" stroke-width="1.6"/>`);
+A.onion_cut = () => svg(`${shadow()}${[[24, 38], [40, 38]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="10" fill="none" stroke="#f5efd8" stroke-width="5"/><circle cx="${x}" cy="${y}" r="10" fill="none" stroke="${INK}" stroke-width="1.2"/>`).join('')}`);
+A.onion_ready = () => svg(`${shadow()}${[[24, 38], [40, 38], [32, 30]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9" fill="none" stroke="#e3a043" stroke-width="6"/>`).join('')}`);
+A.momo = () => svg(`${shadow()}<circle cx="32" cy="36" r="17" fill="#ffb8b0" ${L}/><path d="M32 20 c-4 6 -4 26 0 32" fill="none" stroke="#f08a8a" stroke-width="2"/><path d="M32 20 c2 -4 8 -6 12 -4 c-2 4 -6 5 -12 4z" fill="#4fa84a" ${LT}/>${hl(24, 30, 5, 3)}`);
+A.momo_cut = () => svg(`${shadow()}${[[22, 40], [42, 40], [32, 32]].map(([x, y]) => `<path d="M${x - 9} ${y + 3} c0 -8 4 -11 9 -11 c5 0 9 3 9 11z" fill="#ffd9c0" ${LT}/><path d="M${x - 9} ${y + 3} h18" stroke="#ffb8b0" stroke-width="2"/>`).join('')}`);
+A.ika = () => svg(`${shadow()}<path d="M24 14 l8 -6 l8 6 v20 h-16z" fill="#fff6ee" ${L}/>${[22, 27, 32, 37, 42].map(x => `<path d="M${x} 34 c-1 6 2 10 0 16" fill="none" stroke="${INK}" stroke-width="4.4" stroke-linecap="round"/><path d="M${x} 34 c-1 6 2 10 0 16" fill="none" stroke="#fff6ee" stroke-width="2.4" stroke-linecap="round"/>`).join('')}`);
+A.ika_cut = () => svg(`${shadow()}${[[20, 40], [32, 36], [44, 40], [26, 47], [39, 47]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5.4" fill="none" stroke="#fff6ee" stroke-width="3.4"/><circle cx="${x}" cy="${y}" r="5.4" fill="none" stroke="${INK}" stroke-width="1"/>`).join('')}`);
+A.nira = () => svg(`${shadow()}${[18, 24, 30, 36, 42, 48].map((x, i) => `<path d="M${x} 52 c0 -12 ${i % 2 ? 4 : -4} -22 ${i % 2 ? 2 : -2} -36" fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round"/><path d="M${x} 52 c0 -12 ${i % 2 ? 4 : -4} -22 ${i % 2 ? 2 : -2} -36" fill="none" stroke="#3f9a3a" stroke-width="2.6" stroke-linecap="round"/>`).join('')}`);
+A.nira_cut = () => svg(`${shadow()}<ellipse cx="32" cy="42" rx="18" ry="7" fill="#e6f5d2" ${L}/>${[20, 26, 32, 38, 44].map(x => `<path d="M${x} 44 l4 -6" stroke="#3f9a3a" stroke-width="3" stroke-linecap="round"/>`).join('')}`);
+Object.assign(tp, {
+  jam:(x, y) => `<ellipse cx="${x}" cy="${y}" rx="6" ry="3.4" fill="#e8415a" ${LT}/>`,
+  menma:(x, y) => [-3, 1, 5].map(a => `<rect x="${x + a - 1.4}" y="${y - 4}" width="2.8" height="8" rx="1" fill="#d9a25a" ${LT}/>`).join(''),
+  hotate:(x, y) => `<ellipse cx="${x}" cy="${y}" rx="6" ry="4" fill="#fff6e8" ${LT}/>`,
+  olive:(x, y) => `<circle cx="${x}" cy="${y}" r="3.2" fill="#4a5a2a"/><circle cx="${x}" cy="${y}" r="1.2" fill="#c9343a"/>`,
+  matcha:(x, y) => `<ellipse cx="${x}" cy="${y}" rx="8" ry="3.6" fill="#7ab648" ${LT}/>`,
+  nasu:(x, y) => `<circle cx="${x}" cy="${y}" r="4" fill="#c9a06a" stroke="#4a2a5a" stroke-width="1.8"/>`,
+  onion:(x, y) => `<circle cx="${x}" cy="${y}" r="5" fill="none" stroke="#e3a043" stroke-width="3"/>`,
+  momo:(x, y) => `<path d="M${x - 5} ${y + 2} c0 -5 2 -7 5 -7 c3 0 5 2 5 7z" fill="#ffd9c0" ${LT}/>`,
+  ika:(x, y) => `<circle cx="${x}" cy="${y}" r="3.6" fill="none" stroke="#fff6ee" stroke-width="2.4"/>`,
+  nira:(x, y) => `<path d="M${x - 5} ${y + 2} l4 -6 M${x} ${y + 2} l4 -6" stroke="#3f9a3a" stroke-width="2.4" stroke-linecap="round"/>`
+});
+D.jampan = () => bread('#e39a45', [], `<path d="M22 30 c4 -4 16 -4 20 0 c-4 4 -16 4 -20 0z" fill="#e8415a" ${LT}/>`);
+D.jamcream = () => svg(`${shadow(32, 56, 26)}${plate()}${sandwich(['#e8415a', '#fff'])}`);
+D.baconcheesepan = () => bread('#e39a45', [['bacon', 32, 30], ['cheese', 24, 34], ['cheese', 40, 34]]);
+D.r_menma = () => ramen([['menma', 22, 30], ['menma', 32, 29], ['negi', 42, 31], ['nori', 46, 30]]);
+D.r_misozenbu = () => ramen([['chashu', 22, 30], ['egg', 34, 31], ['chashu', 44, 30]], '#c98a3c');
+D.r_negimisobutter = () => ramen([['butter', 30, 29], ['negi', 22, 31], ['negi', 40, 31], ['negi', 44, 29]], '#c98a3c');
+D.hotatenigiri = () => svg(`${shadow(32, 57, 26)}${geta()}<g transform="translate(-10 0) scale(.7) translate(10 16)">${nigiri('#fff6e8', '#f2e6cf', false)}</g><g transform="translate(14 0) scale(.7) translate(10 16)">${nigiri('#fff6e8', '#f2e6cf', false)}</g>`);
+D.hotategunkan = () => gunkan((x, y) => tp.hotate(x, y));
+D.ebiikuradon = () => donburi([['ebi', 24, 30], ['ikura', 34, 30], ['ebi', 42, 32], ['ikura', 28, 34]]);
+D.z_olive = () => pizza([['olive', 22, 37], ['olive', 32, 33], ['olive', 42, 38], ['olive', 30, 42], ['basil', 38, 42]]);
+D.z_seafood = () => pizza([['ebi', 24, 36], ['olive', 34, 33], ['ebi', 40, 41], ['olive', 28, 42]]);
+D.z_tomatocheese = () => pizza([['tomato', 22, 37], ['cheese', 30, 33], ['tomato', 42, 37], ['cheese', 36, 42], ['basil', 28, 42]]);
+D.matchacake = () => svg(`${shadow(32, 56, 26)}${plate()}<g transform="translate(0 -2)">${cakeSlice('#a8d07a', '#7ab648')}</g>`);
+D.matchaparfait = () => svg(`${shadow(32, 57, 16)}<path d="M20 18 h24 l-4 26 h-16z" fill="#fff" ${L}/><path d="M21 24 h22 l-1 6 h-20z" fill="#7ab648" opacity=".85"/><path d="M22 34 h20 l-1 6 h-18z" fill="#e3a043" opacity=".7"/><rect x="28" y="44" width="8" height="6" fill="#fff" ${LT}/><rect x="22" y="50" width="20" height="4" rx="2" fill="#fff" ${LT}/>${tp.whip(32, 18)}${tp.matcha(32, 13)}`);
+D.matchaichigo = () => svg(`${shadow(32, 56, 26)}${plate()}<g transform="translate(0 -2)">${cakeSlice('#a8d07a', '#fff', tp.berry(30, 18) + tp.berry(40, 16))}</g>`);
+D.c_nasu = () => curry([['nasu', 36, 36], ['nasu', 44, 38], ['nasu', 40, 41]]);
+D.c_natsu = () => curry([['nasu', 36, 36], ['ninjin', 44, 38], ['nasu', 40, 41]]);
+D.c_nasucheese = () => curry([['nasu', 36, 37], ['cheese', 44, 38], ['nasu', 42, 41]]);
+D.onionburger = () => svg(`${shadow(32, 57, 24)}${burger(`<path d="M14 33 h36" stroke="#e3a043" stroke-width="4" stroke-dasharray="6 3" stroke-linecap="round"/>`)}`);
+D.onionring = () => svg(`${shadow(32, 56, 26)}${plate()}${[[22, 40], [42, 40], [32, 33]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9" fill="none" stroke="${INK}" stroke-width="8"/><circle cx="${x}" cy="${y}" r="9" fill="none" stroke="#e3a043" stroke-width="5.6"/>`).join('')}`);
+D.baconion = () => svg(`${shadow(32, 57, 24)}${burger(`<path d="M12 33 c4 -3 7 3 10 0 c4 -3 7 3 10 0 c4 -3 7 3 10 0 c3 -2 6 1 8 0" fill="none" stroke="#b8573a" stroke-width="3.4" stroke-linecap="round"/><path d="M16 30 h32" stroke="#e3a043" stroke-width="3" stroke-dasharray="5 3" stroke-linecap="round"/>`)}`);
+D.p_momo = () => pancakes([['whip', 32, 26], ['momo', 24, 28], ['momo', 40, 28]]);
+D.p_momoice = () => pancakes([['ice', 32, 24], ['momo', 22, 29], ['momo', 42, 29]]);
+D.p_mixfruit = () => pancakes([['momo', 24, 28], ['kiwi', 34, 24], ['banana', 42, 28]]);
+D.t_ika = () => takoyaki([['ika', 24, 31], ['ika', 34, 29], ['ika', 42, 31]]);
+D.t_ikanegi = () => takoyaki([['ika', 24, 31], ['negi', 34, 29], ['ika', 42, 31]]);
+D.t_seafood = () => takoyaki([['ika', 24, 31], ['ebi', 34, 29], ['ika', 42, 31]]);
+D.g_nira = () => gyozaPlate(5, tp.nira(26, 36) + tp.nira(40, 36));
+D.g_niratama = () => svg(`${shadow(32, 56, 26)}${plate()}<path d="M12 44 c-2 -8 6 -14 20 -14 c14 0 22 6 20 14 c-2 3 -36 3 -40 0z" fill="#ffd84a" ${L}/>${put([['nira', 24, 38], ['nira', 36, 36], ['nira', 30, 41]])}`);
+D.g_niramoyashi = () => svg(`${shadow(32, 56, 26)}${plate()}<ellipse cx="32" cy="40" rx="18" ry="7" fill="#f6efd0" ${L}/>${put([['moyashi', 26, 38], ['nira', 34, 38], ['moyashi', 40, 40], ['nira', 26, 42]])}`);
+
+Object.assign(ING, {
+  jam:    {name:'ジャム',     raw:'jam',    ready:'jam',        steps:[]},
+  menma:  {name:'メンマ',     raw:'menma',  ready:'menma',      steps:[]},
+  hotate: {name:'ほたて',     raw:'hotate', ready:'hotate',     steps:[]},
+  olive:  {name:'オリーブ',   raw:'olive',  ready:'olive',      steps:[]},
+  matcha: {name:'抹茶',       raw:'matcha', ready:'matcha',     steps:['mix']},
+  nasu:   {name:'なす',       raw:'nasu',   mid:'nasu_cut', ready:'nasu_ready', steps:['cut', 'cook'], chop:4, cook:4000},
+  onion:  {name:'たまねぎ',   raw:'onion',  mid:'onion_cut', ready:'onion_ready', steps:['cut', 'cook'], chop:4, cook:3500},
+  momo:   {name:'もも',       raw:'momo',   ready:'momo_cut',   steps:['cut'], chop:4},
+  ika:    {name:'いか',       raw:'ika',    ready:'ika_cut',    steps:['cut'], chop:4},
+  nira:   {name:'にら',       raw:'nira',   ready:'nira_cut',   steps:['cut'], chop:5}
+});
+addMenu('pan', ['jam'], [{id:'jampan', name:'ジャムパン', comps:['kiji', 'jam']}, {id:'jamcream', name:'ジャムクリームサンド', comps:['shokupan', 'jam', 'cream']},
+  {id:'baconcheesepan', name:'ベーコンチーズパン', comps:['kiji', 'bacon', 'cheese']}]);
+addMenu('ramen', ['menma'], [{id:'r_menma', name:'メンマラーメン', comps:['men', 'soup', 'menma']}, {id:'r_misozenbu', name:'みそ全部のせ', comps:['men', 'miso', 'chashu', 'yudetama']},
+  {id:'r_negimisobutter', name:'ねぎみそバター', comps:['men', 'miso', 'negi', 'butter']}]);
+addMenu('sushi', ['hotate'], [{id:'hotatenigiri', name:'ほたてにぎり', comps:['kome', 'hotate']}, {id:'hotategunkan', name:'ほたて軍艦', comps:['nori', 'kome', 'hotate']},
+  {id:'ebiikuradon', name:'えびいくら丼', comps:['kome', 'ebi', 'ikura']}]);
+addMenu('pizza', ['olive'], [{id:'z_olive', name:'オリーブピザ', comps:['pdough', 'tsauce', 'olive']}, {id:'z_seafood', name:'シーフードピザ', comps:['pdough', 'tsauce', 'ebi', 'olive']},
+  {id:'z_tomatocheese', name:'トマトチーズピザ', comps:['pdough', 'tsauce', 'tomato', 'cheese']}]);
+addMenu('cake', ['matcha'], [{id:'matchacake', name:'抹茶ケーキ', comps:['sponge', 'matcha']}, {id:'matchaparfait', name:'抹茶パフェ', comps:['cookie', 'cream', 'matcha']},
+  {id:'matchaichigo', name:'抹茶いちごケーキ', comps:['sponge', 'matcha', 'ichigo']}]);
+addMenu('curry', ['nasu'], [{id:'c_nasu', name:'なすカレー', comps:['gohan', 'roux', 'nasu']}, {id:'c_natsu', name:'夏野菜カレー', comps:['gohan', 'roux', 'nasu', 'ninjin']},
+  {id:'c_nasucheese', name:'なすチーズカレー', comps:['gohan', 'roux', 'nasu', 'cheese']}]);
+addMenu('burger', ['onion'], [{id:'onionburger', name:'オニオンバーガー', comps:['bun', 'patty', 'onion']}, {id:'onionring', name:'オニオンリング', comps:['onion']},
+  {id:'baconion', name:'ベーコンオニオンバーガー', comps:['bun', 'patty', 'bacon', 'onion']}]);
+addMenu('pancake', ['momo'], [{id:'p_momo', name:'ももパンケーキ', comps:['pcdough', 'cream', 'momo']}, {id:'p_momoice', name:'ももアイス', comps:['pcdough', 'ice', 'momo']},
+  {id:'p_mixfruit', name:'ミックスフルーツ', comps:['pcdough', 'momo', 'kiwi', 'banana']}]);
+addMenu('tako', ['ika'], [{id:'t_ika', name:'いか焼き', comps:['tdough', 'ika']}, {id:'t_ikanegi', name:'いかねぎ焼き', comps:['tdough', 'ika', 'negi']},
+  {id:'t_seafood', name:'シーフード焼き', comps:['tdough', 'tako', 'ika', 'ebi']}]);
+addMenu('gyoza', ['nira'], [{id:'g_nira', name:'にらぎょうざ', comps:['gyoza', 'nira']}, {id:'g_niratama', name:'にらたま', comps:['nira', 'tokitama']},
+  {id:'g_niramoyashi', name:'にらもやし炒め', comps:['nira', 'moyashi']}]);
 
 /* =====================================================================
    お店の強化・季節のイベント（データ）
@@ -3919,6 +4026,77 @@ window.addEventListener('pointermove', e => {
   if (MG.next >= MG.pts.length){ MG.tr = null; MG.score++; $('#mgScore').textContent = MG.score; sfx('plate'); db.classList.add('done'); setTimeout(() => { db.classList.remove('done'); if (MG && MG.id === 'deco') decoNext(); }, 250); }
 });
 window.addEventListener('pointerup', () => { if (MG && MG.id === 'deco' && MG.tr){ MG.tr = null; const db = $('#mgDeco'); if (db){ const ink = $('.ink', db); if (ink) ink.setAttribute('points', ''); $$('.cp', db).forEach(c => c.classList.remove('hit')); } } });
+
+/* =========================================================
+   ミニゲーム追加：材料おぼえ・注文おぼえ
+   ========================================================= */
+MINI.push({id:'memory', name:'材料おぼえ', desc:'料理の材料を3秒で覚える（5問）', icon:() => ICON.star(), unit:'問', coin:20},
+  {id:'order', name:'注文おぼえ', desc:'注文の順番を覚える（4回）', icon:() => ICON.people(), unit:'回', coin:25});
+const _startMini4 = startMini;
+startMini = function(id){
+  if (id !== 'memory' && id !== 'order') return _startMini4(id);
+  stopMini();
+  const g = MINI.find(x => x.id === id);
+  MG = {id, score:0, round:0};
+  miniFrame(g, `<div class="mg-area quiz" id="mgMem"></div>`);
+  show('mini');
+  if (id === 'memory') memRound(); else ordRound();
+};
+const pickN = (arr, n) => { const a = arr.slice(), out = []; while (out.length < n && a.length) out.push(a.splice(Math.floor(Math.random() * a.length), 1)[0]); return out; };
+function memRound(){
+  const box = $('#mgMem'); if (!box || !MG) return;
+  $('#mgTime').textContent = `${MG.round + 1}/5`;
+  const ds = SHOPS.flatMap(s => s.dishes).filter(d => d.comps.length >= 2), d = ds[Math.floor(Math.random() * ds.length)];
+  const comps = [...new Set(d.comps)], other = pickN(Object.keys(ING).filter(c => !comps.includes(c) && A[ING[c].raw]), 6 - comps.length);
+  MG.d = d; MG.ans = comps; MG.sel = []; MG.lock = true;
+  box.innerHTML = `<div class="qtext">「${esc(d.name)}」の材料を覚える</div><div class="qart show small"><i>${D[d.id]()}</i></div><div class="memrow">${comps.map(c => `<i>${A[ING[c].raw]()}</i>`).join('')}</div><div class="memcount">3</div>`;
+  let n = 3; const t = setInterval(() => { n--; const c = $('.memcount', box); if (c) c.textContent = n || ''; if (n <= 0){ clearInterval(t); if (!MG || MG.id !== 'memory') return;
+    MG.lock = false; const opts = pickN(comps.concat(other), 6);
+    box.innerHTML = `<div class="qtext">「${esc(d.name)}」の材料は？（${comps.length}つ選ぶ）</div><div class="qart show small"><i>${D[d.id]()}</i></div><div class="qopts six">${opts.map(c => `<button class="btn withart" data-mem="${c}"><i>${A[ING[c].raw]()}</i>${esc(ING[c].name)}</button>`).join('')}</div>`; } }, 1000);
+  MG.timer = t;
+}
+function ordRound(){
+  const box = $('#mgMem'); if (!box || !MG) return;
+  $('#mgTime').textContent = `${MG.round + 1}/4`;
+  const ds = SHOPS.flatMap(s => s.dishes), len = 3 + Math.min(2, MG.round), pool = pickN(ds, 6), seq = pickN(pool, len);
+  MG.seq = seq.map(d => d.id); MG.sel = []; MG.lock = true;
+  let i = 0;
+  const showOne = () => {
+    if (!MG || MG.id !== 'order') return;
+    if (i < seq.length){ box.innerHTML = `<div class="qtext">注文 ${i + 1}/${seq.length}</div><div class="qart show"><i>${D[seq[i].id]()}</i></div><div class="qtext sub">${esc(seq[i].name)}</div>`; sfx('arrive'); i++; MG.timer = setTimeout(showOne, 1100); return; }
+    MG.lock = false;
+    box.innerHTML = `<div class="qtext">来た順にタップ（${seq.length}つ）</div><div class="ordsel"></div><div class="qopts six">${pickN(pool, pool.length).map(d => `<button class="btn withart" data-ord="${d.id}"><i>${D[d.id]()}</i>${esc(d.name)}</button>`).join('')}</div>`;
+  };
+  showOne();
+}
+function mgNext(ok){
+  sfx(ok ? 'serve' : 'nope'); if (ok){ MG.score++; $('#mgScore').textContent = MG.score; }
+  toastMsg(ok ? '正解' : 'ざんねん'); MG.lock = true; MG.round++;
+  const g = MINI.find(x => x.id === MG.id), max = MG.id === 'memory' ? 5 : 4;
+  setTimeout(() => { if (!MG) return; if (MG.round >= max) return miniEnd(g, MG.score); MG.id === 'memory' ? memRound() : ordRound(); }, 1100);
+}
+$('#mini').addEventListener('click', e => {
+  if (!MG || MG.lock) return;
+  const m = e.target.closest('[data-mem]');
+  if (m && MG.id === 'memory' && !m.classList.contains('sel')){
+    m.classList.add('sel'); MG.sel.push(m.dataset.mem); sfx('tap');
+    if (MG.sel.length >= MG.ans.length){
+      const ok = MG.sel.every(c => MG.ans.includes(c));
+      $$('[data-mem]', $('#mgMem')).forEach(b => { if (MG.ans.includes(b.dataset.mem)) b.classList.add('ok'); else if (b.classList.contains('sel')) b.classList.add('ng'); });
+      mgNext(ok);
+    }
+  }
+  const o = e.target.closest('[data-ord]');
+  if (o && MG.id === 'order'){
+    const want = MG.seq[MG.sel.length], ok = o.dataset.ord === want;
+    MG.sel.push(o.dataset.ord); sfx('tap');
+    const sel = $('.ordsel', $('#mgMem')); if (sel) sel.insertAdjacentHTML('beforeend', `<i class="${ok ? '' : 'ng'}">${D[o.dataset.ord]()}</i>`);
+    if (!ok){ const r = $(`[data-ord="${want}"]`, $('#mgMem')); if (r) r.classList.add('ok'); return mgNext(false); }
+    if (MG.sel.length >= MG.seq.length) mgNext(true);
+  }
+});
+const _stopMini4 = stopMini;
+stopMini = function(){ if (MG && MG.timer){ clearInterval(MG.timer); clearTimeout(MG.timer); } _stopMini4(); };
 
 </script>
 </body>
