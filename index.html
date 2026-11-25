@@ -719,6 +719,36 @@ body[data-theme=night] .sink{background:linear-gradient(180deg,#3d5a66,#2d4752)}
 .swatches button.locked{opacity:.35;position:relative}
 @media (max-width:560px){ .howto{display:none} }
 
+/* ===== ミニゲーム ===== */
+.minilist{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:12px;align-content:start;padding:2px}
+.minicard{display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px 14px;box-shadow:var(--sh2);text-align:center}
+.minicard:active{transform:scale(.98)}
+.minicard i{width:64px;height:64px;display:block;padding:8px;border-radius:18px;background:var(--card2)}
+.minicard b{font-size:18px}
+.minicard small{font-size:13px;color:var(--sub)}
+.minicard span{font-size:12px;font-weight:700;color:var(--ok);margin-top:4px}
+.mg-time{font-size:20px;font-weight:900;font-variant-numeric:tabular-nums;min-width:70px;text-align:right}
+.mg-score{text-align:center;font-size:clamp(40px,8vh,64px);font-weight:900;line-height:1;margin:4px 0 10px;font-variant-numeric:tabular-nums}
+.mg-area{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;container-type:size}
+.mg-board,.mg-bowl{width:min(92cqw,92cqh,560px);aspect-ratio:1;--rc:#3a87d4}
+.mg-bowl{--rc:#8a5cc8}
+.mg-board .it{width:46%}
+.mg-board .tapme,.mg-bowl .tapme{top:50%;left:50%;transform:translate(-50%,-50%);font-size:15px;background:var(--card);padding:6px 14px;border-radius:999px;color:var(--ink);z-index:5;top:12%}
+.quiz{flex-direction:column;gap:14px}
+.qtext{font-size:clamp(16px,2.6vh,20px);font-weight:900;text-align:center;padding:0 10px}
+.qart{width:min(60cqw,40cqh,240px);aspect-ratio:1}
+.qart.small{width:min(40cqw,26cqh,160px)}
+.qart i{display:block;width:100%;height:100%;filter:brightness(0);opacity:.22;transition:filter .3s,opacity .3s}
+.qart.show i{filter:none;opacity:1}
+.qopts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:min(100%,720px)}
+.qopts .btn{white-space:normal;min-height:56px;font-size:15px;line-height:1.3;padding:6px 10px}
+.qopts .btn.withart{flex-direction:column;gap:2px;min-height:96px}
+.qopts .btn.withart i{width:46px;height:46px;display:block}
+.qopts .btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.qopts .btn.ng{background:var(--bad);color:#fff;border-color:var(--bad)}
+.newrec{font-size:13px;font-weight:700;color:#fff;background:var(--bad);border-radius:999px;padding:3px 12px}
+@media (max-width:520px){ .qopts{grid-template-columns:1fr} .qopts .btn.withart{flex-direction:row;min-height:56px} }
+
 </style>
 </head>
 <body>
@@ -735,6 +765,7 @@ body[data-theme=night] .sink{background:linear-gradient(180deg,#3d5a66,#2d4752)}
 <!-- 強化・図鑑 -->
 <section class="screen" id="shopup"></section>
 <section class="screen" id="book"></section>
+<section class="screen" id="mini"></section>
 <!-- プレイ -->
 <section class="screen" id="play">
   <div class="hud" id="hud"></div>
@@ -1852,7 +1883,7 @@ function newRoomState(code, hostPid){
   return {v:1, code, host:hostPid, phase:'lobby', now:Date.now(), seq:0,
     week:wk.w, shop:wk.shop.id, theme:wk.theme.id, stage:1,
     players:{}, orders:[], items:[], queue:[], cfg:null, fx:[], fxSeq:0,
-    coins:0, served:0, missed:0, result:null, uid:1, diff:LSJ.get('nk:diff', 'normal'), off:LSJ.get('nk:off', [])};
+    coins:0, served:0, missed:0, result:null, uid:1, diff:LSJ.get('nk:diff', 'normal'), off:LSJ.get('nk:off', []), quick:LSJ.get('nk:quick', false)};
 }
 const nid = st => 'i' + (st.uid++).toString(36);
 const nextLoc = (st, c, s) => { const k = stepsOf(st, c)[s]; return k === 'cut' ? 'cutq' : k === 'cook' ? 'cookq' : k === 'mix' ? 'mixq' : 'tray'; };
@@ -1905,6 +1936,7 @@ function startStage(st, n){
   st.cfg = stageConfig(st.shop, st.week, n, players, ev);
   st.cfg.patience = Math.round(st.cfg.patience * (1 + .12 * upLv(st, 'chair')));
   if (isEasy(st)){ st.cfg.patience = Math.round(st.cfg.patience * 1.4); st.cfg.gap = Math.round(st.cfg.gap * 1.15); }
+  if (st.quick){ st.cfg.queue = st.cfg.queue.slice(0, 5); st.cfg.total = 5; st.cfg.rush = 0; }
   st.queue = st.cfg.queue.slice(); delete st.cfg.queue;
   st.orders = []; st.items = []; st.streak = 0; st.lastServe = 0; st.stats = {}; st.maxStreak = 0; st.hurryServed = 0;
   st.clean = on(st, 'arau') ? st.cfg.maxActive + 1 + 2 * upLv(st, 'plate') : null; st.fast = null; st.dishN = {}; st.sink = []; st.rushOn = false; st.coins = 0; st.served = 0; st.missed = 0; st.result = null;
@@ -1974,6 +2006,7 @@ function apply(st, a, pid){
   if (a.t === 'roles' && P){ P.roles = (a.roles || []).filter(r => ROLE_IDS.includes(r)); return {ok:true}; }
   if (a.t === 'start' && pid === st.host && (st.phase === 'lobby' || st.phase === 'result')){ startStage(st, Math.max(1, a.stage | 0 || st.stage)); return {ok:true}; }
   if (a.t === 'off' && pid === st.host && st.phase !== 'play' && st.phase !== 'intro'){ const s = new Set(st.off || []); if (s.has(a.r)) s.delete(a.r); else if (!BASE_ROLES.includes(a.r)) s.add(a.r); st.off = [...s]; return {ok:true}; }
+  if (a.t === 'quick' && pid === st.host && st.phase !== 'play' && st.phase !== 'intro'){ st.quick = !!a.v; return {ok:true}; }
   if (a.t === 'diff' && pid === st.host && st.phase !== 'play' && st.phase !== 'intro'){ st.diff = a.v === 'easy' ? 'easy' : 'normal'; return {ok:true}; }
   if (a.t === 'lobby' && pid === st.host){ st.phase = 'lobby'; st.orders = []; st.items = []; st.result = null; return {ok:true}; }
   if (a.t === 'stamp' && P && STAMPS[a.k]){ if (st.now - (P.lastStamp || 0) < 900) return {ok:false}; P.lastStamp = st.now; fx(st, 'stamp', {k:a.k, p:pid}); return {ok:true}; }
@@ -2558,8 +2591,8 @@ function renderLobby(){
           <div class="art">${ROLE_ART[r.id]()}</div><div><b>${esc(r.name)}${tagOf(r) ? `<em class="from">${tagOf(r)}</em>` : ''}</b><small>${esc(r.desc)}</small><span class="how">${esc(HOW[r.id])}</span>${solo ? '' : `<div class="who">${owners(r.id).map(([, p]) => `<i>${pArt(p)}</i>`).join('')}</div>`}</div><div class="chk">${CHECK_W()}</div></button>`).join('')}</div>
         ${host ? `<div class="usebar"><small>使う係</small>${ROLES.filter(r => r.from).map(r => `<button data-a="off" data-r="${r.id}" class="${off.includes(r.id) ? '' : 'on'}" style="--rc:${r.color}">${esc(r.short)}<i>${off.includes(r.id) ? 'OFF' : 'ON'}</i></button>`).join('')}</div>` : ''}
         <div class="lb-hint">${solo ? '係はステージ3・5・7で増える。ステージを選んで開始。' : '同じ係に複数人も可。誰も選ばない係は、係の少ない人へ自動で割り当て。係はステージ3・5・7で増える。'}</div>
-        <div class="lb-start">${host ? `<div class="seg" role="group"><button data-a="diff" data-v="easy" class="${st.diff === 'easy' ? 'on' : ''}">やさしい</button><button data-a="diff" data-v="normal" class="${st.diff !== 'easy' ? 'on' : ''}">ふつう</button></div><div class="stagepick"><button class="btn sm round" data-a="sp-" ${lobbyStage <= 1 ? 'disabled' : ''}>‹</button><b>ステージ ${lobbyStage}<small class="spbest">${BESTS[`${st.week}:${lobbyStage}`] ? '★'.repeat(BESTS[`${st.week}:${lobbyStage}`]) + '　' : ''}${COINBEST[`${st.week}:${lobbyStage}`] ? '最高 ' + COINBEST[`${st.week}:${lobbyStage}`] : '未プレイ'}</small></b><button class="btn sm round" data-a="sp+" ${lobbyStage >= maxStage ? 'disabled' : ''}>›</button></div>
-          <span class="spacer"></span><button class="btn big green" data-a="start">開始</button>` : `<div class="waitmsg">${st.diff === 'easy' ? 'やさしい・' : ''}ホストの開始待ち</div>`}</div>
+        <div class="lb-start">${host ? `<div class="seg" role="group"><button data-a="diff" data-v="easy" class="${st.diff === 'easy' ? 'on' : ''}">やさしい</button><button data-a="diff" data-v="normal" class="${st.diff !== 'easy' ? 'on' : ''}">ふつう</button></div><div class="seg"><button data-a="quick" data-v="1" class="${st.quick ? 'on' : ''}">お客5人</button><button data-a="quick" data-v="" class="${!st.quick ? 'on' : ''}">全部</button></div><div class="stagepick"><button class="btn sm round" data-a="sp-" ${lobbyStage <= 1 ? 'disabled' : ''}>‹</button><b>ステージ ${lobbyStage}<small class="spbest">${BESTS[`${st.week}:${lobbyStage}`] ? '★'.repeat(BESTS[`${st.week}:${lobbyStage}`]) + '　' : ''}${COINBEST[`${st.week}:${lobbyStage}`] ? '最高 ' + COINBEST[`${st.week}:${lobbyStage}`] : '未プレイ'}</small></b><button class="btn sm round" data-a="sp+" ${lobbyStage >= maxStage ? 'disabled' : ''}>›</button></div>
+          <span class="spacer"></span><button class="btn big green" data-a="start">開始</button>` : `<div class="waitmsg">${st.diff === 'easy' ? 'やさしい・' : ''}${st.quick ? 'お客5人・' : ''}ホストの開始待ち</div>`}</div>
       </div></div>`;
   if (!solo) qrFor(st.code).then(u => { const q = $('#lbQR'); if (q && u) q.innerHTML = `<img src="${u}" alt="QRコード">`; });
   show('lobby');
@@ -2572,6 +2605,7 @@ $('#lobby').addEventListener('click', async e => {
   if (b.dataset.a === 'sp+'){ lobbyStage = Math.min(nextStageFor(NET.st.week), lobbyStage + 1); renderLobby(); }
   if (b.dataset.a === 'start') send({t:'start', stage:lobbyStage});
   if (b.dataset.a === 'off'){ const s = new Set(NET.st.off || []); if (s.has(b.dataset.r)) s.delete(b.dataset.r); else s.add(b.dataset.r); LSJ.set('nk:off', [...s]); send({t:'off', r:b.dataset.r}); if (NET.isHost) renderLobby(); return; }
+  if (b.dataset.a === 'quick'){ LSJ.set('nk:quick', !!b.dataset.v); send({t:'quick', v:!!b.dataset.v}); if (NET.isHost) renderLobby(); return; }
   if (b.dataset.a === 'diff'){ LSJ.set('nk:diff', b.dataset.v); send({t:'diff', v:b.dataset.v}); if (NET.isHost) renderLobby(); }
   if (b.dataset.role){
     const r = b.dataset.role, set = new Set(ME.roles || []);
@@ -3406,6 +3440,150 @@ renderDress = function(){
     : `<button data-goldlock="1" class="locked" style="background:${GOLD}" aria-label="金（スタンプ7つで解放）"></button>`));
 };
 $('#dress').addEventListener('click', e => { if (e.target.closest('[data-goldlock]')){ e.stopImmediatePropagation(); sfx('nope'); toastMsg('スタンプ7つで解放'); } }, true);
+if (typeof curScreen !== 'undefined' && curScreen === 'title') renderTitle();
+
+/* =========================================================
+   ミニゲーム（ひとりで、すぐ遊べる）：連打・ぐるぐる・料理クイズ
+   ========================================================= */
+const MINI = [
+  {id:'chop', name:'連打チャレンジ', desc:'10秒で何個切れるか', icon:() => ROLE_ART.kiru(), unit:'個', coin:5},
+  {id:'mix', name:'ぐるぐるチャレンジ', desc:'10秒で何周混ぜられるか', icon:() => ROLE_ART.mazeru(), unit:'周', coin:3},
+  {id:'quiz', name:'料理クイズ', desc:'料理・材料・作り方（6問）', icon:() => ROLE_ART.recipe(), unit:'問', coin:20}
+];
+const miniBest = () => LSJ.get('nk:mini', {});
+let MG = null;
+
+function renderMini(){
+  stopMini();
+  const best = miniBest();
+  $('#mini').innerHTML = `<div class="topbar"><button class="btn round" data-m="back" aria-label="戻る"><span class="ic mono">${ICON.back()}</span></button><h2>ミニゲーム</h2><span class="starcount"><span class="ic">${ICON.coin()}</span>${WALLET.get()}</span></div>
+    <div class="minilist">${MINI.map(g => `<button class="minicard" data-m="${g.id}"><i>${g.icon()}</i><b>${esc(g.name)}</b><small>${esc(g.desc)}</small><span>最高 ${best[g.id] || 0}${g.unit}</span></button>`).join('')}</div>`;
+  show('mini');
+}
+function stopMini(){ if (MG && MG.timer) clearInterval(MG.timer); MG = null; }
+function miniFrame(g, body){
+  $('#mini').innerHTML = `<div class="topbar"><button class="btn round" data-m="menu" aria-label="戻る"><span class="ic mono">${ICON.back()}</span></button><h2>${esc(g.name)}</h2><span class="mg-time" id="mgTime"></span></div>
+    <div class="mg-score" id="mgScore">0</div>${body}`;
+}
+function miniEnd(g, score){
+  if (MG && MG.timer) clearInterval(MG.timer);
+  const best = miniBest(), isBest = score > (best[g.id] || 0);
+  if (isBest){ best[g.id] = score; LSJ.set('nk:mini', best); }
+  const coins = score * g.coin; WALLET.add(coins);
+  sfx('clear');
+  const o = overlay(`<h3>${score}${g.unit}</h3>${isBest ? '<div class="newrec">新記録</div>' : `<div class="lead">最高 ${best[g.id]}${g.unit}</div>`}
+    <div class="gain"><span class="pill"><i>${ICON.coin()}</i>財布 +${coins}</span></div>
+    <div class="ov-btns"><button class="btn" data-q="menu">ミニゲーム</button><button class="btn big green" data-q="again">もう一度</button></div>`);
+  o.onclick = e => { const b = e.target.closest('[data-q]'); if (!b) return; sfx('tap'); closeOv(); if (b.dataset.q === 'again') startMini(g.id); else renderMini(); };
+  MG = null;
+}
+function miniTimer(g, secs, onEnd){
+  const end = performance.now() + secs * 1000;
+  const tick = () => { const left = Math.max(0, (end - performance.now()) / 1000), t = $('#mgTime'); if (t) t.textContent = left.toFixed(1) + '秒'; if (left <= 0) onEnd(); };
+  MG.timer = setInterval(tick, 100); tick();
+}
+function startMini(id){
+  stopMini();
+  const g = MINI.find(x => x.id === id), cuts = Object.keys(ING).filter(c => ING[c].chop && A[ING[c].raw]);
+  MG = {id, score:0, started:false};
+  if (id === 'chop'){
+    const pick = () => cuts[Math.floor(Math.random() * cuts.length)];
+    MG.c = pick(); MG.n = 0;
+    miniFrame(g, `<div class="mg-area"><div class="board mg-board" id="mgBoard"><div class="crumbs"></div><div class="it">${A[ING[MG.c].raw]()}</div><div class="knife">${KNIFE()}</div><div class="bar"><b></b></div><div class="tapme">タップで開始</div></div></div>`);
+  }
+  if (id === 'mix'){
+    miniFrame(g, `<div class="mg-area"><div class="bowl mg-bowl" id="mgBowl"><div class="bw">${BOWL()}<div class="it">${A.cream()}</div></div><div class="whisk">${WHISK()}</div><div class="tapme">ぐるぐるで開始</div></div></div>`);
+  }
+  if (id === 'quiz'){
+    const all = SHOPS.flatMap(s => s.dishes), qs = [];
+    while (qs.length < 6){ const d = all[Math.floor(Math.random() * all.length)]; if (!qs.includes(d)) qs.push(d); }
+    MG.qs = qs; MG.i = 0; MG.all = all;
+    miniFrame(g, `<div class="mg-area quiz" id="mgQuiz"></div>`);
+    $('#mgTime').textContent = '1/6'; quizShow();
+  }
+  show('mini');
+}
+const STEP_NAME = {cut:'切る', cook:'焼く', mix:'混ぜる'};
+const stepText = c => ING[c].steps.length ? ING[c].steps.map(x => STEP_NAME[x]).join('→') : 'そのまま';
+function quizShow(){
+  const d = MG.qs[MG.i], type = ['shadow', 'ing', 'step'][MG.i % 3], q = $('#mgQuiz');
+  const rnd = arr => arr[Math.floor(Math.random() * arr.length)];
+  let head = '', opts = [];
+  if (type === 'shadow'){
+    head = `<div class="qtext">この料理は？</div><div class="qart"><i>${D[d.id]()}</i></div>`;
+    opts = [{k:d.id, t:d.name}];
+    while (opts.length < 3){ const x = rnd(MG.all); if (!opts.some(o => o.t === x.name)) opts.push({k:x.id, t:x.name}); }
+    MG.ans = d.id;
+  }
+  if (type === 'ing'){
+    const right = rnd(d.comps), pool = Object.keys(ING).filter(c => !d.comps.includes(c) && A[ING[c].raw]);
+    head = `<div class="qtext">「${esc(d.name)}」に入っている材料は？</div><div class="qart show"><i>${D[d.id]()}</i></div>`;
+    opts = [{k:right, t:ING[right].name, art:A[ING[right].raw]()}];
+    while (opts.length < 3){ const x = rnd(pool); if (!opts.some(o => o.t === ING[x].name)) opts.push({k:x, t:ING[x].name, art:A[ING[x].raw]()}); }
+    MG.ans = right;
+  }
+  if (type === 'step'){
+    const cands = d.comps.filter(c => ING[c]); const c = rnd(cands), right = stepText(c);
+    const texts = ['切る', '焼く', '混ぜる', 'そのまま', '切る→焼く', '焼く→切る', '混ぜる→焼く', '焼く→混ぜる', '混ぜる→切る→焼く'];
+    head = `<div class="qtext">「${esc(ING[c].name)}」の作り方は？</div><div class="qart show small"><i>${A[ING[c].raw]()}</i></div>`;
+    opts = [{k:right, t:right}];
+    while (opts.length < 3){ const x = rnd(texts); if (!opts.some(o => o.t === x)) opts.push({k:x, t:x}); }
+    MG.ans = right;
+  }
+  opts.sort(() => Math.random() - .5);
+  q.innerHTML = `${head}<div class="qopts">${opts.map(o => `<button class="btn ${o.art ? 'withart' : ''}" data-ans="${esc(o.k)}">${o.art ? `<i>${o.art}</i>` : ''}${esc(o.t)}</button>`).join('')}</div>`;
+}
+$('#mini').addEventListener('click', e => {
+  const b = e.target.closest('[data-m],[data-ans]'); if (!b) return;
+  if (b.dataset.m === 'back'){ sfx('tap'); stopMini(); renderTitle(); return; }
+  if (b.dataset.m === 'menu'){ sfx('tap'); renderMini(); return; }
+  if (b.dataset.m){ sfx('tap'); startMini(b.dataset.m); return; }
+  if (b.dataset.ans && MG && MG.id === 'quiz' && !MG.lock){
+    const ok = b.dataset.ans === MG.ans; MG.lock = true;
+    b.classList.add(ok ? 'ok' : 'ng'); if (!ok){ const r = [...$$('[data-ans]', $('#mgQuiz'))].find(x => x.dataset.ans === MG.ans); if (r) r.classList.add('ok'); }
+    $('.qart', $('#mgQuiz')).classList.add('show');
+    sfx(ok ? 'serve' : 'nope'); if (ok){ MG.score++; $('#mgScore').textContent = MG.score; }
+    setTimeout(() => { if (!MG) return; MG.lock = false; MG.i++; if (MG.i >= MG.qs.length) return miniEnd(MINI[2], MG.score); $('#mgTime').textContent = `${MG.i + 1}/6`; quizShow(); }, 900);
+  }
+});
+$('#mini').addEventListener('pointerdown', e => {
+  if (!MG) return;
+  const g = MINI.find(x => x.id === MG.id);
+  if (MG.id === 'chop' && e.target.closest('#mgBoard')){
+    const bd = $('#mgBoard');
+    if (!MG.started){ MG.started = true; const tm = $('.tapme', bd); if (tm) tm.hidden = true; miniTimer(g, 10, () => miniEnd(g, MG.score)); }
+    MG.n++; const need = ING[MG.c].chop || 4;
+    const kn = $('.knife', bd), it = $('.it', bd);
+    kn.classList.remove('down'); void kn.offsetWidth; kn.classList.add('down'); it.classList.remove('hit'); void it.offsetWidth; it.classList.add('hit');
+    crumbs(bd, '#e7a35c'); $('.bar b', bd).style.width = Math.min(100, MG.n / need * 100) + '%';
+    if (MG.n >= need){ sfx('cut'); MG.score++; $('#mgScore').textContent = MG.score; const cuts = Object.keys(ING).filter(c => ING[c].chop && A[ING[c].raw]); MG.c = cuts[Math.floor(Math.random() * cuts.length)]; MG.n = 0; it.innerHTML = A[ING[MG.c].raw](); setTimeout(() => { const b2 = $('.bar b', bd); if (b2) b2.style.width = '0%'; }, 80); }
+    else sfx('chop');
+  }
+  if (MG.id === 'mix' && e.target.closest('#mgBowl')){
+    const bw = $('#mgBowl'), r = bw.getBoundingClientRect();
+    MG.g = {cx:r.left + r.width / 2, cy:r.top + r.height / 2, a:Math.atan2(e.clientY - r.top - r.height / 2, e.clientX - r.left - r.width / 2), acc:MG.g ? MG.g.acc : 0};
+    if (!MG.started){ MG.started = true; const tm = $('.tapme', bw); if (tm) tm.hidden = true; miniTimer(g, 10, () => miniEnd(g, MG.score)); }
+  }
+});
+window.addEventListener('pointermove', e => {
+  if (!MG || MG.id !== 'mix' || !MG.g || !MG.down) return;
+  const G = MG.g, dx = e.clientX - G.cx, dy = e.clientY - G.cy; if (Math.hypot(dx, dy) < 10) return;
+  const a = Math.atan2(dy, dx); let d = a - G.a; if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; G.a = a; G.acc += Math.abs(d);
+  const bw = $('#mgBowl'), wk = $('.whisk', bw), it = $('.bw .it', bw), r = bw.getBoundingClientRect();
+  if (wk){ wk.classList.add('on'); wk.style.left = (e.clientX - r.left) + 'px'; wk.style.top = (e.clientY - r.top) + 'px'; }
+  if (it) it.style.transform = `rotate(${G.acc * 20}deg)`;
+  const turns = Math.floor(G.acc / (Math.PI * 2)); if (turns > MG.score){ MG.score = turns; sfx('chop'); $('#mgScore').textContent = turns; }
+});
+$('#mini').addEventListener('pointerdown', () => { if (MG) MG.down = true; }, true);
+window.addEventListener('pointerup', () => { if (MG) MG.down = false; });
+
+/* タイトルにボタン */
+const _renderTitle3 = renderTitle;
+renderTitle = function(){
+  _renderTitle3();
+  const tb = $('#title .tbtns'); if (tb && !$('[data-x="mini"]', tb)) tb.append(elm(`<button class="btn" data-x="mini"><span class="ic">${ROLE_ART.kiru()}</span>ミニゲーム</button>`));
+};
+$('#title').addEventListener('click', e => { const b = e.target.closest('[data-x="mini"]'); if (b){ sfx('tap'); renderMini(); } });
 if (typeof curScreen !== 'undefined' && curScreen === 'title') renderTitle();
 
 </script>
