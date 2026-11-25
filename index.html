@@ -272,7 +272,7 @@ body[data-theme=night] .mono svg{filter:invert(1) brightness(1.6)}
 @keyframes shake{20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
 
 /* 切る：連打 */
-.boards{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.boards{flex:1;min-height:0;display:grid;grid-template-columns:repeat(var(--n,2),minmax(0,1fr));gap:10px}
 .board{position:relative;border-radius:18px;background:linear-gradient(160deg,#f0dcbd,#e3c398);box-shadow:inset 0 -3px 0 rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none}
 body[data-theme=night] .board{background:linear-gradient(160deg,#cbb08b,#b8976d)}
 .board::after{content:"";position:absolute;right:12px;top:50%;width:9px;height:9px;border-radius:50%;background:rgba(120,80,40,.25);transform:translateY(-50%)}
@@ -294,7 +294,7 @@ body[data-theme=night] .board{background:linear-gradient(160deg,#cbb08b,#b8976d)
 @keyframes crumb{to{transform:translate(var(--dx),var(--dy));opacity:0}}
 
 /* 焼く：ドラッグで入れて、長押しで取り出す */
-.cooker{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:10px;border-radius:18px;background:#3b3f47}
+.cooker{flex:1;min-height:0;display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:10px;padding:10px;border-radius:18px;background:#3b3f47}
 .cooker.oven{background:linear-gradient(180deg,#4a4f59,#383c44)}
 .cooker.stove{background:#d9dde3}
 body[data-theme=night] .cooker.stove{background:#3b4150}
@@ -358,7 +358,7 @@ body[data-theme=night] .cooker.stove{background:#3b4150}
 .plates .none{grid-column:1/-1;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:14px;letter-spacing:.12em}
 .dragging .platecard.src{opacity:.35}
 
-@container (aspect-ratio < .8){ .cooker{grid-template-columns:1fr;grid-template-rows:repeat(3,minmax(0,1fr))} .boards{grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr))} .board .it{width:min(46%,32cqh)} .slot .it{width:min(38%,22cqh)} }
+@container (aspect-ratio < .8){ .cooker{grid-template-columns:1fr;grid-template-rows:repeat(var(--n,3),minmax(0,1fr))} .boards{grid-template-columns:1fr;grid-template-rows:repeat(var(--n,2),minmax(0,1fr))} .board .it{width:min(46%,32cqh)} .slot .it{width:min(38%,22cqh)} }
 @container (max-height:230px){ .crate .lb{display:none} .crate .art{width:90%} .queue{min-height:44px} .queue .qi{width:38px;height:38px} .tray{min-height:54px} .tray .ti{width:44px;height:44px} .board .tapme{display:none} .chute{height:42px} }
 
 #play.compact .panel .ph .tip{display:none}
@@ -542,7 +542,7 @@ body[data-theme=night] .stamp span{color:color-mix(in srgb,var(--sc) 50%,#fff)}
 @media (orientation:landscape) and (max-height:600px){ .help{display:grid;grid-template-columns:1fr 1fr} .hrow .ha{display:none} }
 
 /* ===== 混ぜる係 ===== */
-.bowls{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.bowls{flex:1;min-height:0;display:grid;grid-template-columns:repeat(var(--n,2),minmax(0,1fr));gap:10px}
 .bowl{position:relative;border-radius:18px;background:color-mix(in srgb,var(--rc) 7%,var(--card2));border:1px solid var(--line);display:flex;align-items:center;justify-content:center;touch-action:none;overflow:hidden}
 .bowl .bw{position:relative;width:min(70%,62cqh);aspect-ratio:1;display:flex;align-items:center;justify-content:center}
 .bowl .bw > svg{position:absolute;inset:0}
@@ -554,7 +554,7 @@ body[data-theme=night] .stamp span{color:color-mix(in srgb,var(--sc) 50%,#fff)}
 .bowl .whisk.on{right:auto}
 .bowl .tapme,.dish-w .tapme,.decoboard .tapme{position:absolute;top:10px;left:12px;z-index:3;font-size:11px;letter-spacing:.16em;color:var(--sub);font-weight:700}
 .bowl .emp,.dish-w .emp,.decoboard .emp{position:absolute;color:var(--sub);font-size:13px;letter-spacing:.12em}
-@container (aspect-ratio < .8){ .bowls{grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr))} .bowl .bw{width:min(60%,30cqh)} .bowl .ring{width:min(80%,40cqh)} }
+@container (aspect-ratio < .8){ .bowls{grid-template-columns:1fr;grid-template-rows:repeat(var(--n,2),minmax(0,1fr))} .bowl .bw{width:min(60%,30cqh)} .bowl .ring{width:min(80%,40cqh)} }
 
 /* ===== 洗う係 ===== */
 .shelf{flex:none;display:flex;align-items:center;gap:8px;min-height:56px;padding:5px 10px;background:var(--card2);border:1px solid var(--line);border-radius:14px}
@@ -644,6 +644,81 @@ body[data-theme=night] .sink{background:linear-gradient(180deg,#3d5a66,#2d4752)}
 @media (max-width:420px){ .rolecard .art{display:none} .rolecard{padding:8px 10px} }
 .lobby{padding:2px}
 
+/* ===== タイトル：イベント・強化・図鑑・スタンプ ===== */
+.title-sub{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:760px}
+.tbtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.tbtns .btn{min-height:44px;font-size:15px;gap:6px;padding:0 14px}
+.tbtns .btn .ic{width:22px;height:22px}
+.tbtns .btn small{font-size:12px;color:var(--sub);font-weight:700;font-variant-numeric:tabular-nums;margin-left:2px}
+.evbanner{display:flex;align-items:center;gap:10px;width:100%;padding:8px 14px;border-radius:16px;background:color-mix(in srgb,var(--ec) 12%,var(--card));border:1.5px solid var(--ec);text-align:left}
+.evbanner b{color:var(--ec);font-size:16px;font-weight:900;white-space:nowrap}
+.evbanner span{font-size:13px;color:var(--sub);white-space:nowrap}
+.evbanner .evd{margin-left:auto;display:flex;gap:4px}
+.evbanner .evd i{width:40px;height:40px;display:block}
+.evnext{font-size:13px;color:var(--sub);letter-spacing:.04em}
+.evline{font-size:13px;color:var(--sub);background:color-mix(in srgb,var(--ec) 10%,var(--card));border:1px solid var(--ec);border-radius:12px;padding:6px 12px}
+.evline b{color:var(--ec);margin-right:8px}
+@media (max-height:600px){ .tbtns .btn{min-height:38px} .evbanner .evd{display:none} }
+
+/* ===== 強化 ===== */
+.upwrap{flex:1;min-height:0;overflow:auto;padding:2px}
+.uphint{font-size:13px;color:var(--sub);margin-bottom:12px;letter-spacing:.04em}
+.upgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:10px}
+.upcard{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px;box-shadow:var(--sh2)}
+.upcard > i{width:46px;height:46px;flex:none;padding:7px;border-radius:14px;background:var(--card2);display:block}
+.upcard .ut{flex:1;min-width:0}
+.upcard b{display:block;font-size:16px}
+.upcard small{display:block;font-size:12px;color:var(--sub)}
+.upcard .lv{display:flex;gap:4px;margin-top:5px}
+.upcard .lv em{width:22px;height:6px;border-radius:3px;background:var(--line)}
+.upcard .lv em.on{background:var(--ok)}
+.upcard .btn{min-height:42px;padding:0 14px;font-size:15px;gap:4px}
+.upcard .btn .ic{width:18px;height:18px}
+.upcard.max{opacity:.75}
+
+/* ===== 図鑑 ===== */
+.btabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:none;padding:2px 2px 10px}
+.btabs::-webkit-scrollbar{display:none}
+.btabs button{flex:none;display:flex;flex-direction:column;align-items:center;min-height:48px;padding:4px 12px;border-radius:14px;border:1px solid var(--line);background:var(--card);font-size:13px;font-weight:700;white-space:nowrap}
+.btabs button small{font-size:11px;color:var(--sub);font-variant-numeric:tabular-nums}
+.btabs button.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.btabs button.on small{color:var(--card);opacity:.8}
+.btabs button.comp:not(.on){border-color:var(--ok)}
+.bgrid{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;align-content:start;padding:2px}
+.bcard{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 6px;text-align:center}
+.bcard i{width:72px;height:72px;display:block}
+.bcard b{font-size:13px;line-height:1.3}
+.bcard small{font-size:11px;color:var(--sub)}
+.bcard.unk i{filter:brightness(0);opacity:.14}
+.bcard.unk b{color:var(--sub)}
+
+/* ===== スタンプ ===== */
+.stampcard{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;width:100%}
+.stampcard .sc{position:relative;aspect-ratio:1;border-radius:50%;border:2px dashed var(--line2);display:grid;place-items:center;font-weight:900;color:var(--sub)}
+.stampcard .sc i{position:absolute;inset:12%;display:block;animation:pin .4s}
+.stampcard .sc.on{border-style:solid;border-color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,var(--card))}
+.stampcard .sc.on span{opacity:0}
+.stampcard .sc em{position:absolute;bottom:-18px;font-style:normal;font-size:11px;color:var(--warn);font-weight:700}
+
+/* ===== 結果：ハイライト ===== */
+.hilite-wrap{width:100%;display:flex;flex-direction:column;gap:8px}
+.hilite{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;width:100%}
+.hl{display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:8px 6px;animation:pin .45s both}
+.hl:nth-child(1){animation-delay:1.2s}.hl:nth-child(2){animation-delay:1.45s}.hl:nth-child(3){animation-delay:1.7s}.hl:nth-child(4){animation-delay:1.95s}
+.hl i{width:46px;height:46px;display:grid;place-items:center}
+.hl i.big{font-style:normal;font-size:30px;font-weight:900;color:var(--ok)}
+.hl small{font-size:11px;color:var(--sub);letter-spacing:.08em}
+.hl b{font-size:16px;font-variant-numeric:tabular-nums}
+.hl span{font-size:11px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.gain{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.gain .pill{display:flex;align-items:center;gap:5px;height:32px;padding:0 12px 0 8px;border-radius:999px;background:var(--card2);border:1px solid var(--line);font-size:13px;font-weight:700}
+.gain .pill i{width:18px;height:18px;display:block}
+.gain .pill.stp{color:var(--warn);border-color:var(--warn);padding-left:12px}
+.gain .pill.bk{color:var(--ok);border-color:var(--ok);padding-left:12px}
+@media (orientation:landscape) and (max-height:600px){ .hl i{width:34px;height:34px} .hilite{grid-template-columns:repeat(4,minmax(0,1fr))} }
+.swatches button.locked{opacity:.35;position:relative}
+@media (max-width:560px){ .howto{display:none} }
+
 </style>
 </head>
 <body>
@@ -657,6 +732,9 @@ body[data-theme=night] .sink{background:linear-gradient(180deg,#3d5a66,#2d4752)}
 <section class="screen" id="join"></section>
 <!-- 部屋（ロビー） -->
 <section class="screen" id="lobby"></section>
+<!-- 強化・図鑑 -->
+<section class="screen" id="shopup"></section>
+<section class="screen" id="book"></section>
 <!-- プレイ -->
 <section class="screen" id="play">
   <div class="hud" id="hud"></div>
@@ -1053,7 +1131,7 @@ const SHOPS = [
      {id:'burgerset', name:'バーガーセット', comps:['bun', 'patty', 'cheese', 'potato']}]}
 ];
 const shopOf = id => SHOPS.find(s => s.id === id) || SHOPS[0];
-const dishOf = (shop, id) => shopOf(shop).dishes.find(d => d.id === id);
+const dishOf = (shop, id) => shopOf(shop).dishes.find(d => d.id === id) || (typeof EVENT_DISHES !== 'undefined' ? EVENT_DISHES.find(d => d.id === id) : undefined);
 const THEMES = [{id:'day', name:'', sky:'#bfe6ff'}];   // ふんいき違い（夜・祭り・雪）はなし
 
 /* ---------- 3日ごとに お店が かわります ---------- */
@@ -1083,10 +1161,10 @@ const challengeOf = w => CHALLENGES[mod(w * 3 + 1, CHALLENGES.length)];
 function hashStr(s){ let h = 2166136261; for (let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 function rngOf(seed){ let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 const dishCount = (n, len = 7) => Math.min(len, 2 + Math.floor((n - 1) / 2));
-function stageConfig(shopId, week, n, players){
+function stageConfig(shopId, week, n, players, ev){
   const shop = shopOf(shopId), rnd = rngOf(hashStr(`${shopId}:${week}:${n}`));
   const solo = players <= 1, cnt = dishCount(n, shop.dishes.length);
-  const pool = shop.dishes.slice(0, cnt);
+  const pool = shop.dishes.slice(0, cnt), evd = ev ? ev.dishes : [], all = pool.concat(evd);
   /* 人数が多いほど お客も多く、間かくも短くなります */
   const total = Math.min(32, 5 + Math.ceil(n * 1.2) + (players - 1) * 2);
   const maxActive = Math.min(4, 2 + Math.floor((n - 1) / 3) + (players >= 3 ? 1 : 0));
@@ -1099,14 +1177,14 @@ function stageConfig(shopId, week, n, players){
     // あたらしい料理が少し多めに出ます
     /* 切る・焼くの仕事量が かたよらないように、少ない方を使う料理を出やすくします */
     const lack = load.cut <= load.cook ? 'cut' : 'cook';
-    const weights = pool.map((d, j) => (j === pool.length - 1 && cnt > 1 ? 2.2 : 1) * (work(d)[lack] ? 2.5 : 1));
+    const weights = all.map((d, j) => (j >= pool.length ? 1.6 : j === pool.length - 1 && cnt > 1 ? 2.2 : 1) * (work(d)[lack] ? 2.5 : 1));
     let r = rnd() * weights.reduce((a, b) => a + b, 0), k = 0;
     while (r > weights[k]){ r -= weights[k]; k++; }
-    const pick = pool[Math.min(k, pool.length - 1)], wk = work(pick); load.cut += wk.cut; load.cook += wk.cook;
+    const pick = all[Math.min(k, all.length - 1)], wk = work(pick); load.cut += wk.cut; load.cook += wk.cook;
     queue.push({dish:pick.id, animal:animals[Math.floor(rnd() * animals.length)]});
   }
   /* 最初の2人で「切る」と「焼く」の両方が必要になるように並べかえます */
-  const uses = (id, step) => shop.dishes.find(d => d.id === id).comps.some(c => ING[c].steps.includes(step));
+  const uses = (id, step) => all.find(d => d.id === id).comps.some(c => ING[c].steps.includes(step));
   for (const step of ['cut', 'cook']){
     if (queue.slice(0, 2).some(q => uses(q.dish, step))) continue;
     const j = queue.findIndex((q, i) => i >= 2 && uses(q.dish, step));
@@ -1121,7 +1199,7 @@ function stageConfig(shopId, week, n, players){
   if (n >= 3){ rush = Math.min(6, 3 + Math.floor(n / 4)); const r0 = Math.floor(total * .45); for (let i = r0; i < Math.min(total, r0 + rush); i++) queue[i].rush = 1; }
   const hurry = queue.filter(q => q.hurry).length;
   const newDish = n === 1 ? pool[pool.length - 1].id : dishCount(n, shop.dishes.length) > dishCount(n - 1, shop.dishes.length) ? pool[pool.length - 1].id : '';
-  return {total, maxActive, patience, gap, queue, newDish, rush, hurry, dishes:pool.map(d => d.id)};
+  return {total, maxActive, patience, gap, queue, newDish, rush, hurry, dishes:pool.map(d => d.id), ev:evd.map(d => d.id)};
 }
 
 /* 飾りのお手本（0〜100 の座標。順番になぞる） */
@@ -1673,19 +1751,97 @@ addMenu('gyoza', [], [{id:'g_ebigyoza', name:'えびぎょうざ', comps:['gyoza
   {id:'g_harumakiset', name:'春巻きセット', comps:['harumaki', 'gohan', 'soup']}]);
 
 /* =====================================================================
+   お店の強化・季節のイベント（データ）
+   ===================================================================== */
+/* ---------- 強化（コインで買う。ホストの強化がその部屋で使われる） ---------- */
+const UPGRADES = [
+  {id:'pan',   name:'焼き場',       desc:'焼く場所 +1',         max:2, cost:[300, 900]},
+  {id:'board', name:'まな板',       desc:'まな板 +1',           max:1, cost:[400]},
+  {id:'bowl',  name:'ボウル',       desc:'ボウル +1',           max:1, cost:[400]},
+  {id:'knife', name:'よく切れる包丁', desc:'連打 1回少なく',     max:2, cost:[300, 900]},
+  {id:'fire',  name:'強火',         desc:'焼き時間 短く',       max:2, cost:[300, 900]},
+  {id:'plate', name:'お皿',         desc:'きれいなお皿 +2枚',   max:2, cost:[200, 600]},
+  {id:'chair', name:'ふかふかの椅子', desc:'お客の待ち時間 長く', max:2, cost:[400, 1000]},
+  {id:'tip',   name:'チップ箱',     desc:'もらえるコイン 1割増し', max:1, cost:[1200]}
+];
+const upLv = (st, k) => (st && st.up && st.up[k]) || 0;
+const boardsN = st => 2 + upLv(st, 'board');
+const pansN = st => 3 + upLv(st, 'pan');
+const bowlsN = st => 2 + upLv(st, 'bowl');
+const cookMs = (st, c) => Math.round((ING[c].cook || 4000) * (1 - .12 * upLv(st, 'fire')));
+
+/* ---------- 季節のイベント（その期間だけ、どのお店にも季節メニューが出る） ---------- */
+A.kabocha = () => svg(`${shadow()}<path d="M12 36 c0 -10 6 -16 12 -16 c3 0 5 1 8 1 c3 0 5 -1 8 -1 c6 0 12 6 12 16 c0 10 -9 15 -20 15 c-11 0 -20 -5 -20 -15z" fill="#f08a3c" ${L}/><path d="M24 22 c-4 8 -4 22 0 28 M40 22 c4 8 4 22 0 28 M32 21 v30" fill="none" stroke="#c9601f" stroke-width="2"/><path d="M32 21 v-6 l4 -2" fill="none" stroke="#4fa84a" stroke-width="3.4" stroke-linecap="round"/>`);
+A.kabocha_cut = () => svg(`${shadow()}${cubes('#ffb050', P5)}`);
+A.kabocha_ready = () => svg(`${shadow()}${cubes('#e8902a', P5)}`);
+ING.kabocha = {name:'かぼちゃ', raw:'kabocha', mid:'kabocha_cut', ready:'kabocha_ready', steps:['cut', 'cook'], chop:5, cook:4500};
+Object.assign(tp, {kabocha:(x, y) => `<rect x="${x - 3.5}" y="${y - 3.5}" width="7" height="7" rx="2" fill="#e8902a" ${LT}/>`});
+
+D.ev_xmascake = () => svg(`${shadow(32, 57, 27)}${plate(28)}<path d="M10 30 v12 c0 5 10 8 22 8 c12 0 22 -3 22 -8 v-12" fill="#fff" ${L}/><ellipse cx="32" cy="30" rx="22" ry="7" fill="#fff" ${L}/>
+  <path d="M10 36 c6 4 14 5 22 5 c8 0 16 -1 22 -5" stroke="#6b3e2e" stroke-width="3" fill="none"/>${tp.berry(20, 26)}${tp.berry(44, 26)}${tp.berry(32, 22)}<rect x="27" y="24" width="10" height="5" rx="1" fill="#6b3e2e" ${LT}/><path d="M32 8 l2 5 h5 l-4 3 l2 5 l-5 -3 l-5 3 l2 -5 l-4 -3 h5z" fill="#ffd34d" ${LT}/>`);
+D.ev_chicken = () => svg(`${shadow(32, 56, 26)}${plate()}<path d="M14 42 c-2 -10 6 -18 18 -18 c10 0 18 6 16 16 c-1 6 -12 8 -18 8 c-8 0 -15 -1 -16 -6z" fill="#c9783a" ${L}/><path d="M44 28 l8 -10" stroke="${INK}" stroke-width="6" stroke-linecap="round"/><path d="M44 28 l8 -10" stroke="#fff6e0" stroke-width="3" stroke-linecap="round"/>${hl(24, 32, 6, 2.6)}<g transform="translate(30 14) scale(.4)">${inner(A.potato_ready)}</g>`);
+D.ev_osechi = () => svg(`${shadow(32, 57, 26)}<rect x="8" y="18" width="48" height="36" rx="4" fill="#2b2b33" ${L}/><rect x="11" y="21" width="42" height="30" rx="2" fill="#c9343a"/><path d="M32 21 v30 M11 36 h42" stroke="#2b2b33" stroke-width="2"/>${put([['egg', 20, 29], ['ninjin', 40, 28], ['ninjin', 46, 30], ['ebi', 22, 44], ['kuri', 40, 43], ['kuri', 46, 45]])}`);
+D.ev_zoni = () => svg(`${shadow(32, 57, 26)}<path d="M5 30 h54 c0 14 -12 24 -27 24 c-15 0 -27 -10 -27 -24z" fill="#c9343a" ${L}/><ellipse cx="32" cy="30" rx="27" ry="8.5" fill="#f3e2b8" ${L}/>${put([['mochi', 26, 29], ['mochi', 36, 30], ['ninjin', 44, 31], ['negi', 20, 31]])}`);
+D.ev_ehomaki = () => svg(`${shadow(32, 56, 26)}${plate()}<rect x="8" y="30" width="48" height="14" rx="7" fill="#2e4a3a" ${L}/><ellipse cx="54" cy="37" rx="5" ry="7" fill="#fffdf6" ${LT}/><circle cx="53" cy="35" r="1.8" fill="#4fa84a"/><circle cx="55" cy="39" r="1.8" fill="#ffd84a"/>`);
+D.ev_valentine = () => svg(`${shadow(32, 56, 26)}${plate()}<path d="M32 48 c-14 -8 -20 -16 -18 -24 c2 -7 12 -9 18 -2 c6 -7 16 -5 18 2 c2 8 -4 16 -18 24z" fill="#6b3e2e" ${L}/>${tp.whip(32, 30)}${tp.berry(32, 24)}`);
+D.ev_hina = () => svg(`${shadow(32, 57, 26)}<ellipse cx="32" cy="44" rx="26" ry="10" fill="#e8b4c8" ${L}/><ellipse cx="32" cy="40" rx="22" ry="8" fill="#fffdf6" ${L}/>${put([['ebi', 24, 38], ['ikura', 34, 38], ['egg2', 42, 41], ['egg2', 28, 43]])}`);
+D.ev_kashiwa = () => svg(`${shadow(32, 56, 26)}${plate()}${[[22, 42], [42, 42]].map(([x, y]) => `<path d="M${x - 12} ${y + 2} c0 -10 6 -16 12 -16 c6 0 12 6 12 16z" fill="#4f8a3a" ${L}/><path d="M${x - 8} ${y + 2} c0 -7 4 -11 8 -11 c4 0 8 4 8 11z" fill="#fffdf6" ${LT}/>`).join('')}`);
+D.ev_kakigori = () => svg(`${shadow(32, 57, 16)}<path d="M18 40 h28 l-4 10 h-20z" fill="#cfe9f0" ${L}/><path d="M14 40 c0 -14 8 -24 18 -24 c10 0 18 10 18 24z" fill="#fff" ${L}/><path d="M18 36 c2 -10 8 -16 14 -16 c6 0 12 6 14 16" fill="#ee3b52" opacity=".75"/>${tp.berry(32, 16)}`);
+D.ev_dango = () => svg(`${shadow(32, 56, 26)}<path d="M8 50 h48 l-6 -6 h-36z" fill="#d9a26a" ${L}/>${[[20, 40], [44, 40], [32, 38], [26, 30], [38, 30], [32, 22]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="7" fill="#fffdf6" ${LT}/>`).join('')}${tp.kuri(32, 22)}`);
+D.ev_pumpkin = () => svg(`${shadow(32, 56, 26)}${plate()}<path d="M12 46 v-14 l34 -10 l8 6 v14 z" fill="#f08a3c" ${L}/><path d="M12 32 l34 -10 l8 6 l-42 4z" fill="#e3a043" ${L}/>${tp.whip(32, 24)}`);
+D.ev_kabocha = () => curry([['kabocha', 36, 36], ['kabocha', 44, 38], ['kabocha', 40, 41]]);
+
+const EVENTS = [
+  {id:'xmas', name:'クリスマス', from:[12, 1], to:[12, 25], color:'#c0392b',
+    dishes:[{id:'ev_xmascake', name:'クリスマスケーキ', comps:['sponge', 'cream', 'ichigo', 'choco']}, {id:'ev_chicken', name:'ローストチキン', comps:['chicken', 'potato']}]},
+  {id:'newyear', name:'お正月', from:[12, 31], to:[1, 7], color:'#c9343a',
+    dishes:[{id:'ev_osechi', name:'おせち', comps:['yudetama', 'ninjin', 'ebi', 'kuri']}, {id:'ev_zoni', name:'お雑煮', comps:['mochi', 'soup', 'ninjin']}]},
+  {id:'setsubun', name:'節分', from:[2, 1], to:[2, 3], color:'#2e4a3a',
+    dishes:[{id:'ev_ehomaki', name:'恵方巻き', comps:['nori', 'kome', 'kyuri', 'tamago']}]},
+  {id:'valentine', name:'バレンタイン', from:[2, 7], to:[2, 14], color:'#a8325a',
+    dishes:[{id:'ev_valentine', name:'ハートチョコ', comps:['choco', 'cream', 'ichigo']}]},
+  {id:'hina', name:'ひなまつり', from:[3, 1], to:[3, 3], color:'#d4508f',
+    dishes:[{id:'ev_hina', name:'ひなちらし', comps:['kome', 'ebi', 'ikura', 'tamago']}]},
+  {id:'kodomo', name:'こどもの日', from:[5, 1], to:[5, 5], color:'#3a7bd5',
+    dishes:[{id:'ev_kashiwa', name:'かしわもち', comps:['mochi', 'an']}]},
+  {id:'summer', name:'夏まつり', from:[7, 20], to:[8, 31], color:'#2a9fb8',
+    dishes:[{id:'ev_kakigori', name:'かき氷', comps:['ice', 'ichigo']}]},
+  {id:'tsukimi', name:'お月見', from:[9, 10], to:[9, 20], color:'#c9900f',
+    dishes:[{id:'ev_dango', name:'月見だんご', comps:['mochi', 'kuri']}]},
+  {id:'halloween', name:'ハロウィン', from:[10, 20], to:[10, 31], color:'#e8702a',
+    dishes:[{id:'ev_pumpkin', name:'かぼちゃパイ', comps:['cookie', 'kabocha', 'cream']}, {id:'ev_kabocha', name:'かぼちゃカレー', comps:['gohan', 'roux', 'kabocha']}]}
+];
+const EVENT_DISHES = EVENTS.flatMap(e => e.dishes);
+const evById = id => EVENTS.find(e => e.id === id);
+const mdNum = (m, d) => m * 100 + d;
+function eventAt(t = Date.now()){
+  const d = new Date(t), x = mdNum(d.getMonth() + 1, d.getDate());
+  return EVENTS.find(e => { const a = mdNum(...e.from), b = mdNum(...e.to); return a <= b ? x >= a && x <= b : x >= a || x <= b; }) || null;
+}
+function nextEvent(t = Date.now()){
+  const d = new Date(t); d.setHours(0, 0, 0, 0);
+  for (let i = 1; i <= 366; i++){ const x = new Date(+d + i * 864e5), e = eventAt(x); if (e && (!eventAt(new Date(+x - 864e5)) || eventAt(new Date(+x - 864e5)).id !== e.id)) return {e, at:x}; }
+  return null;
+}
+/* そのお店で使う材料（イベント中は季節メニューの材料も並ぶ） */
+function shopIngs(st){
+  const s = shopOf(st.shop), ev = evById(st.ev);
+  if (!ev) return s.ings;
+  const out = s.ings.slice(); ev.dishes.forEach(d => d.comps.forEach(c => { if (!out.includes(c)) out.push(c); }));
+  return out;
+}
+
+/* =====================================================================
    ゲームのしくみ（ホストの端末だけが進めます。ほかの端末は結果を表示します）
    ===================================================================== */
 const BURN = 9000;          // できあがりから こげるまで
 /* やさしい：連打が少なく、焦げにくく、お客が長く待つ */
 const isEasy = st => !!st && st.diff === 'easy';
-const chopN = (c, st) => { const n = ING[c].chop || 4; return isEasy(st) ? Math.max(2, Math.ceil(n * .6)) : n; };   // 何回たたくと切れるか
+const chopN = (c, st) => { const n = (ING[c].chop || 4) - upLv(st, 'knife'); return isEasy(st) ? Math.max(2, Math.ceil(n * .6)) : Math.max(2, n); };   // 何回たたくと切れるか
 const burnMs = st => isEasy(st) ? BURN * 1.8 : BURN;
 const mixN = st => isEasy(st) ? 2 : 3;       // 何周まぜるか
 const washN = st => isEasy(st) ? 4 : 7;      // 何往復こするか
-const BOWLS = 2;
 const on = (st, r) => !!st && (st.enabled || BASE_ROLES).includes(r);
-const BOARDS = 2;           // まないたの数
-const PANS = 3;             // オーブン・コンロの数
 const CAP = {cutq:4, cookq:4, mixq:4, tray:8};
 const ACTIVE_STATES = ['wait'];
 /* 仲間に送るひとこと */
@@ -1744,11 +1900,14 @@ function startStage(st, n){
   const wk = weekInfo();
   if (wk.w !== st.week){ st.week = wk.w; st.shop = wk.shop.id; st.theme = wk.theme.id; }
   st.stage = n;
-  st.cfg = stageConfig(st.shop, st.week, n, players);
+  st.up = Object.assign({}, LSJ.get('nk:up', {}));          // ホストの強化
+  const ev = eventAt(); st.ev = ev ? ev.id : '';
+  st.cfg = stageConfig(st.shop, st.week, n, players, ev);
+  st.cfg.patience = Math.round(st.cfg.patience * (1 + .12 * upLv(st, 'chair')));
   if (isEasy(st)){ st.cfg.patience = Math.round(st.cfg.patience * 1.4); st.cfg.gap = Math.round(st.cfg.gap * 1.15); }
   st.queue = st.cfg.queue.slice(); delete st.cfg.queue;
   st.orders = []; st.items = []; st.streak = 0; st.lastServe = 0; st.stats = {}; st.maxStreak = 0; st.hurryServed = 0;
-  st.clean = on(st, 'arau') ? st.cfg.maxActive + 1 : null; st.sink = []; st.rushOn = false; st.coins = 0; st.served = 0; st.missed = 0; st.result = null;
+  st.clean = on(st, 'arau') ? st.cfg.maxActive + 1 + 2 * upLv(st, 'plate') : null; st.fast = null; st.dishN = {}; st.sink = []; st.rushOn = false; st.coins = 0; st.served = 0; st.missed = 0; st.result = null;
   st.phase = 'intro'; st.introUntil = st.now + (st.cfg.newDish ? 6500 : 3500);
   fx(st, 'intro');
 }
@@ -1776,13 +1935,13 @@ function tick(st, now){
   if (st.orders.length !== before) ch = true;
   for (const it of st.items){
     if (it.loc !== 'pan') continue;
-    if (!it.done && now >= it.cs + ING[it.c].cook){ it.done = true; fx(st, 'cooked', {i:it.id}); ch = true; }
-    if (!it.burnt && now >= it.cs + ING[it.c].cook + burnMs(st)){ it.burnt = true; fx(st, 'burnt', {i:it.id}); ch = true; }
+    if (!it.done && now >= it.cs + cookMs(st, it.c)){ it.done = true; fx(st, 'cooked', {i:it.id}); ch = true; }
+    if (!it.burnt && now >= it.cs + cookMs(st, it.c) + burnMs(st)){ it.burnt = true; fx(st, 'burnt', {i:it.id}); ch = true; }
   }
   if (!st.queue.length && !st.orders.length){
     const total = st.cfg.total, ratio = st.served / total;
     const stars = ratio >= .9 ? 3 : ratio >= .6 ? 2 : 1;
-    st.result = {stars, served:st.served, total, coins:st.coins, stage:st.stage, shop:st.shop, week:st.week, stats:st.stats || {}, maxStreak:st.maxStreak || 0, hurryServed:st.hurryServed || 0};
+    st.result = {stars, served:st.served, total, coins:st.coins, stage:st.stage, shop:st.shop, week:st.week, stats:st.stats || {}, maxStreak:st.maxStreak || 0, hurryServed:st.hurryServed || 0, fast:st.fast || null, dishN:st.dishN || {}, ev:st.ev || ''};
     st.phase = 'result'; st.items = []; fx(st, 'result'); ch = true;
   }
   return ch;
@@ -1791,14 +1950,14 @@ function dirty(st, o){ if (o.pl && st.clean != null){ st.sink.push({id:nid(st), 
 /* まないた・ボウルが空いたら、待っているものを自動でのせます */
 function fillAll(st){ fillBoards(st); fillBowls(st); }
 function fillBowls(st){
-  for (let b = 0; b < BOWLS; b++){
+  for (let b = 0; b < bowlsN(st); b++){
     if (st.items.some(i => i.loc === 'bowl' && i.slot === b)) continue;
     const it = st.items.find(i => i.loc === 'mixq'); if (!it) return;
     it.loc = 'bowl'; it.slot = b; it.mix = 0;
   }
 }
 function fillBoards(st){
-  for (let b = 0; b < BOARDS; b++){
+  for (let b = 0; b < boardsN(st); b++){
     if (st.items.some(i => i.loc === 'board' && i.slot === b)) continue;
     const it = st.items.find(i => i.loc === 'cutq'); if (!it) return;
     it.loc = 'board'; it.slot = b; it.chop = 0;
@@ -1823,7 +1982,7 @@ function apply(st, a, pid){
   const item = a.i ? st.items.find(i => i.id === a.i) : null;
   switch (a.t){
     case 'take': {
-      if (!shop.ings.includes(a.c)) return {ok:false};
+      if (!shopIngs(st).includes(a.c)) return {ok:false};
       const loc = nextLoc(st, a.c, 0);
       if (locCount(st, loc) >= CAP[loc]){ fx(st, 'full', {loc, p:pid}); return {ok:false, why:'full', loc}; }
       st.items.push({id:nid(st), c:a.c, s:0, loc, by:pid});
@@ -1858,14 +2017,14 @@ function apply(st, a, pid){
     case 'cook': {
       if (!item || item.loc !== 'cookq') return {ok:false};
       const used = new Set(st.items.filter(i => i.loc === 'pan').map(i => i.slot));
-      let slot = -1; for (let s = 0; s < PANS; s++) if (!used.has(s)){ slot = s; break; }
+      let slot = -1; for (let s = 0; s < pansN(st); s++) if (!used.has(s)){ slot = s; break; }
       if (slot < 0){ fx(st, 'full', {loc:'pan', p:pid}); return {ok:false, why:'full'}; }
       item.loc = 'pan'; item.slot = slot; item.cs = st.now; item.done = false;
       fx(st, 'cookin', {c:item.c, p:pid});
       return {ok:true};
     }
     case 'out': {
-      if (!item || item.loc !== 'pan' || st.now < item.cs + ING[item.c].cook) return {ok:false};
+      if (!item || item.loc !== 'pan' || st.now < item.cs + cookMs(st, item.c)) return {ok:false};
       if (item.burnt){ st.items = st.items.filter(i => i !== item); fx(st, 'toss', {p:pid}); return {ok:true, burnt:true}; }
       moveNext(st, item); fillAll(st); fx(st, 'out', {c:item.c, p:pid}); bump(st, pid, 'cook');
       return {ok:true};
@@ -1890,10 +2049,13 @@ function apply(st, a, pid){
       /* 続けて出すと連続ボーナス */
       st.streak = st.now - (st.lastServe || 0) < 12000 ? (st.streak || 0) + 1 : 1; st.lastServe = st.now;
       const coins = Math.round((d.comps.length * 10 + Math.round(left * 10) * 2 + (o.deco ? 5 + Math.round(o.decoQ * 10) : 0)) * (o.hurry ? 1.5 : 1)) + (st.streak >= 2 ? Math.min(5, st.streak - 1) * 5 : 0);
-      o.state = 'happy'; o.leaveAt = st.now + 1800; o.coins = coins;
-      st.coins += coins; st.served++;
+      const coinsT = Math.round(coins * (1 + .1 * upLv(st, 'tip')));
+      const ms = st.now - o.at; if (!st.fast || ms < st.fast.ms) st.fast = {ms, dish:o.dish, p:pid};
+      st.dishN = st.dishN || {}; st.dishN[o.dish] = (st.dishN[o.dish] || 0) + 1;
+      o.state = 'happy'; o.leaveAt = st.now + 1800; o.coins = coinsT;
+      st.coins += coinsT; st.served++;
       st.maxStreak = Math.max(st.maxStreak || 0, st.streak); if (o.hurry) st.hurryServed = (st.hurryServed || 0) + 1;
-      fx(st, 'serve', {o:o.id, coins, p:pid, streak:st.streak}); bump(st, pid, 'serve'); dirty(st, o);
+      fx(st, 'serve', {o:o.id, coins:coinsT, p:pid, streak:st.streak, dish:o.dish}); bump(st, pid, 'serve'); dirty(st, o);
       return {ok:true};
     }
     case 'trash': {
@@ -2249,7 +2411,7 @@ function renderTitle(){
     <div class="card weekcard"><div class="sign">${esc(wk.theme.name + wk.shop.name)}</div>
       <div class="info"><small>今のお店</small><b>残り${wk.daysLeft}日　次は${esc(wk.next.name)}</b><small>ステージ${nextStageFor(wk.w)}から</small></div>
       <div class="chal ${CHAL[wk.w] ? 'done' : ''}"><small>今回のチャレンジ</small><b>${esc(challengeOf(wk.w).desc)}</b><span>${CHAL[wk.w] ? '達成' : '★3'}</span></div>
-      <div class="dishes">${wk.shop.dishes.map(d => `<div>${D[d.id]()}</div>`).join('')}</div></div>
+      <div class="dishes">${wk.shop.dishes.slice(0, 7).map(d => `<div>${D[d.id]()}</div>`).join('')}</div></div>
     <div class="card title-me"><div class="av">${meArt('happy')}</div><div style="text-align:left"><b style="font-size:18px">${esc(ME.name)}</b><br><button class="btn sm" data-a="dress" style="margin-top:6px">着せ替え</button></div></div>
     <div class="title-btns"><button class="btn big green" data-a="solo">ひとりで</button><button class="btn big" data-a="multi"><span class="ic">${ICON.people()}</span>みんなで</button></div>
     <div class="howto">${ROLES.map(r => `<span><i>${ROLE_ART[r.id]()}</i>${esc(r.short)}：${esc(HOW[r.id])}</span>`).join('')}</div>
@@ -2493,7 +2655,7 @@ function buildPlay(force){
   mine.forEach(r => { if (viewList.length < L.v && !viewList.includes(r)) viewList.push(r); });
   viewList = viewList.slice(0, L.v);
   const vis = L.tabs ? mine.filter(r => viewList.includes(r)) : mine;
-  const key = [st.shop, vis.join(','), L.cols, L.rows, L.oh, innerWidth > innerHeight].join('|');
+  const key = [st.shop, st.ev, boardsN(st), pansN(st), bowlsN(st), vis.join(','), L.cols, L.rows, L.oh, innerWidth > innerHeight].join('|');
   if (!force && key === layoutKey) return;
   layoutKey = key;
   const p = $('#play');
@@ -2513,14 +2675,14 @@ window.addEventListener('resize', () => { if (curScreen === 'play'){ endDrag(tru
 const HOLD_SVG = `<svg class="hold" viewBox="0 0 100 100"><circle cx="50" cy="50" r="47" stroke-dasharray="295.3" stroke-dashoffset="295.3" transform="rotate(-90 50 50)"/></svg>`;
 function stationShell(r, st){
   const shop = shopOf(st.shop);
-  if (r === 'zairyo') return `<div class="zwrap"><div class="crates">${shop.ings.map(c => `<div class="crate" data-take="${c}"><div class="art">${A[ING[c].raw]()}</div><span class="lb">${esc(ING[c].name)}</span><span class="need" hidden></span></div>`).join('')}</div>
+  if (r === 'zairyo') return `<div class="zwrap"><div class="crates">${shopIngs(st).map(c => `<div class="crate" data-take="${c}"><div class="art">${A[ING[c].raw]()}</div><span class="lb">${esc(ING[c].name)}</span><span class="need" hidden></span></div>`).join('')}</div>
     <div class="chute" data-chute>${ARROW_DN()}送り口</div></div>`;
   if (r === 'kiru') return `<div class="queue"><span class="ql">待ち</span><div class="qbox" style="display:flex;gap:6px"></div></div>
-    <div class="boards">${[0, 1].map(b => `<div class="board" data-board="${b}"><div class="crumbs"></div></div>`).join('')}</div>`;
+    <div class="boards" style="--n:${boardsN(st)}">${Array.from({length:boardsN(st)}, (_, b) => b).map(b => `<div class="board" data-board="${b}"><div class="crumbs"></div></div>`).join('')}</div>`;
   if (r === 'yaku') return `<div class="queue"><span class="ql">待ち</span><div class="qbox" style="display:flex;gap:6px"></div></div>
-    <div class="cooker ${shop.cooker}">${[0, 1, 2].map(s => `<div class="slot" data-slot="${s}"></div>`).join('')}</div>`;
+    <div class="cooker ${shop.cooker}" style="--n:${pansN(st)}">${Array.from({length:pansN(st)}, (_, s) => s).map(s => `<div class="slot" data-slot="${s}"></div>`).join('')}</div>`;
   if (r === 'mazeru') return `<div class="queue"><span class="ql">待ち</span><div class="qbox" style="display:flex;gap:6px"></div></div>
-    <div class="bowls">${[0, 1].map(b => `<div class="bowl" data-bowl="${b}"></div>`).join('')}</div>`;
+    <div class="bowls" style="--n:${bowlsN(st)}">${Array.from({length:bowlsN(st)}, (_, b) => b).map(b => `<div class="bowl" data-bowl="${b}"></div>`).join('')}</div>`;
   if (r === 'arau') return `<div class="shelf"><span class="ql">きれいなお皿</span><div class="cleanbox"></div></div><div class="sink"><div class="dish-w" data-sink></div><div class="stack"></div></div>`;
   if (r === 'kazaru') return `<div class="queue"><span class="ql">飾り待ち</span><div class="qbox" style="display:flex;gap:6px"></div></div><div class="decoboard" data-deco></div>`;
   if (r === 'recipe') return `<div class="tray"><span class="ql">完成品</span><div class="tbox" style="display:flex;gap:8px"></div><span class="platecnt" hidden></span></div><div class="plates"></div>`;
@@ -2585,7 +2747,7 @@ function renderPlay(){
 function badgeFor(r, st, need){
   if (r === 'zairyo') return Object.values(need).reduce((a, b) => a + b, 0);
   if (r === 'kiru') return st.items.filter(i => i.loc === 'cutq' || i.loc === 'board').length;
-  if (r === 'yaku') return st.items.filter(i => i.loc === 'cookq').length + st.items.filter(i => i.loc === 'pan' && hostNow() >= i.cs + ING[i.c].cook).length;
+  if (r === 'yaku') return st.items.filter(i => i.loc === 'cookq').length + st.items.filter(i => i.loc === 'pan' && hostNow() >= i.cs + cookMs(st, i.c)).length;
   if (r === 'recipe') return st.items.filter(i => i.loc === 'tray').length + st.orders.filter(o => o.state === 'wait' && orderReady(st, o)).length;
   if (r === 'mazeru') return st.items.filter(i => i.loc === 'mixq' || i.loc === 'bowl').length;
   if (r === 'arau') return (st.sink || []).length;
@@ -2629,7 +2791,7 @@ function renderStation(r, pn, st, need){
       const it = st.items.find(i => i.loc === 'pan' && i.slot === +sl.dataset.slot), id = it ? it.id : '';
       if (sl.dataset.i !== id){
         sl.dataset.i = id; sl.dataset.pend = ''; sl.dataset.state = ''; sl.classList.remove('taken', 'ready', 'warn', 'burnt', 'holding');
-        sl.dataset.cs = it ? it.cs : ''; sl.dataset.ck = it ? ING[it.c].cook : '';
+        sl.dataset.cs = it ? it.cs : ''; sl.dataset.ck = it ? cookMs(st, it.c) : '';
         sl.innerHTML = it ? `<div class="it cooking">${ingArt(it.c, it.s)}</div><svg class="ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" stroke="rgba(255,255,255,.22)"/><circle class="pr" cx="50" cy="50" r="44" stroke="#ffd34d" stroke-dasharray="276.5" stroke-dashoffset="276.5" transform="rotate(-90 50 50)"/></svg>${HOLD_SVG}<i class="steam"></i><i class="steam" style="animation-delay:.6s;margin-left:14px"></i><span class="done" hidden></span>`
           : `<div class="emp">${esc(shopOf(st.shop).cookName)}</div>`;
         sl.classList.toggle('on', !!it);
@@ -3061,6 +3223,7 @@ function showIntro(){
     ${nr.map(r => `<div class="newrole" style="--rc:${r.color}"><i>${ROLE_ART[r.id]()}</i><div><small>新しい係</small><b>${esc(r.name)}</b></div><span>${esc(HOW[r.id])}</span></div>`).join('')}
     ${Object.keys(st.players).length > 1 ? `<div class="myroles"><small>担当</small>${mineSt.map(r => `<span style="--rc:${roleOf(r).color}">${esc(roleOf(r).short)}</span>`).join('')}</div>` : ''}
     ${list.length ? `<div class="lead">${st.stage === 1 ? 'メニュー' : '新メニュー'}</div><div class="menus">${list.map(recipeHTML).join('')}</div>` : ''}
+    ${st.cfg && st.cfg.ev && st.cfg.ev.length ? `<div class="evline" style="--ec:${evById(st.ev).color}"><b>${esc(evById(st.ev).name)}</b>季節メニュー：${st.cfg.ev.map(id => esc(dishOf(st.shop, id).name)).join('、')}</div>` : ''}
     <div class="lead">${isEasy(st) ? 'やさしい・' : ''}お客 ${st.cfg ? st.cfg.total : ''}人${st.cfg && st.cfg.hurry ? `・急ぎ ${st.cfg.hurry}人` : ''}${st.cfg && st.cfg.rush ? '・ラッシュあり' : ''}</div><div class="countdown" id="cd"></div>`);
 }
 function statsHTML(st, r){
@@ -3105,6 +3268,145 @@ document.addEventListener('dblclick', e => e.preventDefault(), {passive:false});
   renderTitle();
   if (room && /^\d{4}$/.test(room)){ history.replaceState(null, '', location.pathname); renderJoin(room); }
 })();
+
+/* =========================================================
+   強化・図鑑・スタンプ・ハイライト・季節イベント（画面）
+   ========================================================= */
+const WALLET = {get:() => LSJ.get('nk:wallet', 0), add(n){ LSJ.set('nk:wallet', Math.max(0, this.get() + n)); }};
+const UP = () => LSJ.get('nk:up', {});
+const BOOK = () => LSJ.get('nk:book', {});
+const ALL_DISHES = () => SHOPS.flatMap(s => s.dishes.map(d => d.id)).concat(EVENT_DISHES.map(d => d.id));
+const GOLD = '#d4a72c';
+const todayKey = (t = new Date()) => `${t.getFullYear()}-${t.getMonth() + 1}-${t.getDate()}`;
+const STAMP = () => LSJ.get('nk:stamp', {last:'', n:0, cards:0});
+const UP_ICON = {pan:() => ROLE_ART.yaku(), board:() => ROLE_ART.kiru(), bowl:() => ROLE_ART.mazeru(), knife:() => ROLE_ART.kiru(), fire:() => ROLE_ART.yaku(), plate:() => ROLE_ART.arau(), chair:() => ICON.people(), tip:() => ICON.coin()};
+
+/* ---------- 結果を記録するときに：財布・図鑑・スタンプ ---------- */
+let lastGain = null;
+const _recordResult = recordResult;
+recordResult = function(r){
+  const unlocked = _recordResult(r);
+  const gain = {coins:r.coins, newBook:[], stamp:null};
+  WALLET.add(r.coins);
+  const book = BOOK();
+  Object.entries(r.dishN || {}).forEach(([id, n]) => { if (!book[id]) gain.newBook.push(id); book[id] = (book[id] || 0) + n; });
+  LSJ.set('nk:book', book);
+  const sp = STAMP(), tk = todayKey();
+  if (sp.last !== tk){
+    sp.last = tk; sp.n++; let bonus = 50, full = false;
+    if (sp.n >= 7){ sp.n = 0; sp.cards++; bonus += 300; full = true; LSJ.set('nk:gold', true); }
+    LSJ.set('nk:stamp', sp); WALLET.add(bonus);
+    gain.stamp = {n:full ? 7 : sp.n, bonus, full};
+  }
+  lastGain = gain;
+  return unlocked;
+};
+
+/* ---------- 結果画面：ハイライト＋もらったもの ---------- */
+const _showResult = showResult;
+showResult = function(){
+  _showResult();
+  const st = NET.st, r = st && st.result, card = $('#ov .ovcard'); if (!r || !card || $('.hilite', card)) return;
+  const multi = Object.keys(st.players).length > 1, nm = id => st.players[id] ? st.players[id].name : '';
+  const items = [];
+  if (r.fast){ items.push(`<div class="hl"><i>${D[r.fast.dish] ? D[r.fast.dish]() : ''}</i><small>最速の一皿</small><b>${(r.fast.ms / 1000).toFixed(1)}秒</b>${multi ? `<span>${esc(nm(r.fast.p))}</span>` : ''}</div>`); }
+  const top = Object.entries(r.dishN || {}).sort((a, b) => b[1] - a[1])[0];
+  if (top) items.push(`<div class="hl"><i>${D[top[0]] ? D[top[0]]() : ''}</i><small>人気メニュー</small><b>${top[1]}皿</b><span>${esc((dishOf(st.shop, top[0]) || {}).name || '')}</span></div>`);
+  if (r.maxStreak >= 2) items.push(`<div class="hl"><i class="big">${r.maxStreak}</i><small>最高連続</small><b>${r.maxStreak}回</b></div>`);
+  const cuts = Object.entries(r.stats || {}).map(([id, s]) => [id, s.cut || 0]).sort((a, b) => b[1] - a[1])[0];
+  if (cuts && cuts[1]) items.push(`<div class="hl"><i>${ROLE_ART.kiru()}</i><small>${multi ? '連打王' : '切った回数'}</small><b>${cuts[1]}回</b>${multi ? `<span>${esc(nm(cuts[0]))}</span>` : ''}</div>`);
+  const g = lastGain;
+  const gainHTML = g ? `<div class="gain"><span class="pill"><i>${ICON.coin()}</i>財布 +${g.coins}</span>${g.stamp ? `<span class="pill stp">スタンプ ${g.stamp.n}/7 +${g.stamp.bonus}${g.stamp.full ? '・金のエプロン' : ''}</span>` : ''}${g.newBook.length ? `<span class="pill bk">図鑑に新しく ${g.newBook.length}品</span>` : ''}</div>` : '';
+  const btns = $('.ov-btns', card) || $('.waitmsg', card);
+  const box = elm(`<div class="hilite-wrap">${items.length ? `<div class="hilite">${items.join('')}</div>` : ''}${gainHTML}</div>`);
+  if (btns) card.insertBefore(box, btns.closest('.ov-btns') || btns); else card.append(box);
+};
+
+/* ---------- タイトル：イベント・強化・図鑑・スタンプ ---------- */
+const _renderTitle = renderTitle;
+renderTitle = function(){
+  _renderTitle();
+  const t = $('#title'), foot = $('.title-foot', t); if (!foot) return;
+  const ev = eventAt(), nx = ev ? null : nextEvent();
+  const evHTML = ev ? `<div class="evbanner" style="--ec:${ev.color}"><b>${esc(ev.name)}</b><span>開催中 〜${ev.to[0]}/${ev.to[1]}</span><span class="evd">${ev.dishes.map(d => `<i>${D[d.id]()}</i>`).join('')}</span></div>`
+    : nx ? `<div class="evnext">次のイベント：<b>${esc(nx.e.name)}</b> ${nx.at.getMonth() + 1}/${nx.at.getDate()}から</div>` : '';
+  const book = BOOK(), total = ALL_DISHES().length, got = ALL_DISHES().filter(id => book[id]).length, sp = STAMP();
+  const sub = elm(`<div class="title-sub">${evHTML}<div class="tbtns">
+    <button class="btn" data-x="up"><span class="ic">${ICON.coin()}</span>強化<small>${WALLET.get()}</small></button>
+    <button class="btn" data-x="book"><span class="ic">${ROLE_ART.recipe()}</span>図鑑<small>${got}/${total}</small></button>
+    <button class="btn" data-x="stamp"><span class="ic">${ICON.star()}</span>スタンプ<small>${sp.last === todayKey() ? '済' : ''}${sp.n}/7</small></button></div></div>`);
+  t.insertBefore(sub, foot);
+};
+$('#title').addEventListener('click', e => {
+  const b = e.target.closest('[data-x]'); if (!b) return;
+  sfx('tap');
+  if (b.dataset.x === 'up') renderUpgrades();
+  if (b.dataset.x === 'book') renderBook();
+  if (b.dataset.x === 'stamp') showStampCard();
+});
+
+/* ---------- 強化 ---------- */
+function renderUpgrades(){
+  const up = UP(), w = WALLET.get();
+  $('#shopup').innerHTML = `<div class="topbar"><button class="btn round" data-u="back" aria-label="戻る"><span class="ic mono">${ICON.back()}</span></button><h2>お店の強化</h2><span class="starcount"><span class="ic">${ICON.coin()}</span>${w}</span></div>
+    <div class="upwrap"><p class="uphint">ステージで集めたコインで買える。みんなで遊ぶときは、部屋を作った人の強化が使われる。</p>
+    <div class="upgrid">${UPGRADES.map(u => { const lv = up[u.id] || 0, maxed = lv >= u.max, cost = maxed ? 0 : u.cost[lv];
+      return `<div class="upcard ${maxed ? 'max' : ''}"><i>${UP_ICON[u.id]()}</i><div class="ut"><b>${esc(u.name)}</b><small>${esc(u.desc)}</small>
+        <span class="lv">${Array.from({length:u.max}, (_, k) => `<em class="${k < lv ? 'on' : ''}"></em>`).join('')}</span></div>
+        <button class="btn ${maxed ? '' : 'green'}" data-u="${u.id}" ${maxed || cost > w ? 'disabled' : ''}>${maxed ? '最大' : `<span class="ic">${ICON.coin()}</span>${cost}`}</button></div>`; }).join('')}</div></div>`;
+  show('shopup');
+}
+$('#shopup').addEventListener('click', e => {
+  const b = e.target.closest('[data-u]'); if (!b) return;
+  if (b.dataset.u === 'back'){ sfx('tap'); renderTitle(); return; }
+  const u = UPGRADES.find(x => x.id === b.dataset.u), up = UP(), lv = up[u.id] || 0;
+  if (lv >= u.max || WALLET.get() < u.cost[lv]){ sfx('nope'); return; }
+  WALLET.add(-u.cost[lv]); up[u.id] = lv + 1; LSJ.set('nk:up', up);
+  sfx('star'); toastMsg(`${u.name} レベル${lv + 1}`); renderUpgrades();
+});
+
+/* ---------- 図鑑 ---------- */
+let bookTab = '';
+function renderBook(){
+  const book = BOOK(), tabs = SHOPS.map(s => ({id:s.id, name:s.name, dishes:s.dishes})).concat([{id:'ev', name:'季節', dishes:EVENT_DISHES}]);
+  if (!bookTab) bookTab = weekInfo().shop.id;
+  const cur = tabs.find(t => t.id === bookTab) || tabs[0];
+  const total = ALL_DISHES().length, got = ALL_DISHES().filter(id => book[id]).length;
+  const evOf = id => EVENTS.find(e => e.dishes.some(d => d.id === id));
+  $('#book').innerHTML = `<div class="topbar"><button class="btn round" data-b="back" aria-label="戻る"><span class="ic mono">${ICON.back()}</span></button><h2>料理図鑑</h2><span class="starcount">${got}/${total}</span></div>
+    <div class="btabs">${tabs.map(t => { const g = t.dishes.filter(d => book[d.id]).length; return `<button data-tab="${t.id}" class="${t.id === cur.id ? 'on' : ''} ${g === t.dishes.length ? 'comp' : ''}">${esc(t.name)}<small>${g}/${t.dishes.length}</small></button>`; }).join('')}</div>
+    <div class="bgrid">${cur.dishes.map(d => { const n = book[d.id] || 0, e = cur.id === 'ev' ? evOf(d.id) : null;
+      return `<div class="bcard ${n ? '' : 'unk'}"><i>${D[d.id]()}</i><b>${n ? esc(d.name) : '？？？'}</b><small>${n ? `${n}皿` : e ? `${esc(e.name)}に登場` : '未発見'}</small></div>`; }).join('')}</div>`;
+  show('book');
+}
+$('#book').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  sfx('tap');
+  if (b.dataset.b === 'back') return renderTitle();
+  if (b.dataset.tab){ bookTab = b.dataset.tab; renderBook(); }
+});
+
+/* ---------- スタンプカード ---------- */
+function showStampCard(){
+  const sp = STAMP(), done = sp.last === todayKey();
+  const o = overlay(`<h3>スタンプカード</h3><div class="lead">1日1回、ステージを遊ぶと1つ。1つで50コイン、7つで300コインと金のエプロン。</div>
+    <div class="stampcard">${Array.from({length:7}, (_, i) => `<div class="sc ${i < sp.n ? 'on' : ''}"><span>${i + 1}</span>${i < sp.n ? `<i>${ICON.star(true)}</i>` : ''}${i === 6 ? '<em>300</em>' : ''}</div>`).join('')}</div>
+    <div class="lead">${done ? '今日のスタンプは済み' : '今日はまだ。ステージを遊ぶともらえる'}${sp.cards ? `・完成 ${sp.cards}枚` : ''}</div>
+    <button class="btn green" data-s="x">閉じる</button>`);
+  o.onclick = e => { if (e.target.closest('[data-s]') || e.target === o){ sfx('tap'); closeOv(); } };
+}
+
+/* ---------- 着せ替え：金のエプロン ---------- */
+const _renderDress = renderDress;
+renderDress = function(){
+  _renderDress();
+  const sw = $('#dress .swatches'); if (!sw) return;
+  const has = LSJ.get('nk:gold', false);
+  sw.append(elm(has ? `<button data-color="${GOLD}" class="${ME.color === GOLD ? 'on' : ''}" style="background:${GOLD}" aria-label="金"></button>`
+    : `<button data-goldlock="1" class="locked" style="background:${GOLD}" aria-label="金（スタンプ7つで解放）"></button>`));
+};
+$('#dress').addEventListener('click', e => { if (e.target.closest('[data-goldlock]')){ e.stopImmediatePropagation(); sfx('nope'); toastMsg('スタンプ7つで解放'); } }, true);
+if (typeof curScreen !== 'undefined' && curScreen === 'title') renderTitle();
 
 </script>
 </body>
