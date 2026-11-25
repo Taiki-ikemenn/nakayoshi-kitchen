@@ -1532,6 +1532,70 @@ addMenu('gyoza', ['soup', 'tofu', 'tsauce'], [{id:'g_sui', name:'水ぎょうざ
   {id:'g_ebichili', name:'エビチリ', comps:['ebi', 'tsauce', 'negi']}]);
 
 /* =====================================================================
+   メニュー追加（その2）：全部のお店に3品
+   ===================================================================== */
+function donburi(tops, base = '#fffdf6'){
+  return svg(`${shadow(32, 57, 24)}<path d="M8 32 h48 c0 13 -10 22 -24 22 c-14 0 -24 -9 -24 -22z" fill="#2b2b33" ${L}/><path d="M12 40 c6 5 14 7 20 7 c6 0 14 -2 20 -7" fill="none" stroke="#c9343a" stroke-width="2"/><ellipse cx="32" cy="32" rx="24" ry="7.5" fill="${base}" ${L}/>${put(tops)}`);
+}
+Object.assign(tp, {
+  maguro:(x, y) => `<path d="M${x - 8} ${y + 2} c2 -5 12 -6 16 -2 c-2 4 -12 5 -16 2z" fill="#e0485a" ${LT}/>`,
+  salmon:(x, y) => `<path d="M${x - 8} ${y + 2} c2 -5 12 -6 16 -2 c-2 4 -12 5 -16 2z" fill="#ff9562" ${LT}/><path d="M${x - 4} ${y} l6 -1" stroke="#ffe0cc" stroke-width="1.2"/>`,
+  lettuce:(x, y) => `<path d="M${x - 8} ${y} c3 -3 5 2 8 0 c3 -3 5 2 8 0" fill="none" stroke="#5fb447" stroke-width="3" stroke-linecap="round"/>`,
+  fries:(x, y) => [-4, 0, 4].map((a, i) => `<rect x="${x + a - 1.6}" y="${y - 8 + i}" width="3.2" height="10" rx="1" fill="#ffcf3f" ${LT}/>`).join('')
+});
+D.tomacheese = () => svg(`${shadow(32, 56, 26)}${plate()}${sandwich(['#f0473f', '#ffd34d'])}`);
+D.hamcrois = () => svg(`${shadow(32, 56, 26)}${plate()}<g transform="translate(3 3) scale(.9)">${inner(A.crois_ready)}</g>${tp.lettuce(32, 36)}${tp.ham(26, 33)}${tp.ham(38, 33)}`);
+D.chocopan = () => bread('#c97a35', [], `<path d="M18 30 c4 -4 8 2 14 -2 c6 4 10 -2 14 2" fill="none" stroke="#5a3222" stroke-width="3.4" stroke-linecap="round"/>`);
+D.r_negichashu = () => ramen([['chashu', 22, 30], ['chashu', 36, 31], ['negi', 30, 28], ['negi', 44, 30]]);
+D.r_misochashu = () => ramen([['chashu', 24, 30], ['chashu', 38, 30], ['negi', 46, 32]], '#c98a3c');
+D.r_misomoyashi = () => ramen([['moyashi', 26, 28], ['moyashi', 34, 30], ['moyashi', 42, 28]], '#c98a3c');
+D.oyakodon = () => donburi([['salmon', 24, 30], ['salmon', 40, 30], ['ikura', 32, 32]]);
+D.tekkadon = () => donburi([['maguro', 22, 31], ['maguro', 32, 29], ['maguro', 42, 31], ['negi', 32, 34]]);
+D.tamamaki = () => maki((x, y) => `<rect x="${x - 3}" y="${y - 3}" width="6" height="6" rx="1" fill="#ffd84a"/>`);
+D.z_ebikinoko = () => pizza([['ebi', 24, 36], ['kinoko', 36, 34], ['ebi', 40, 41], ['kinoko', 28, 42]]);
+D.z_hamcorn = () => pizza([['ham', 24, 36], ['ham', 38, 35], ['corn', 30, 33], ['corn', 33, 41], ['corn', 44, 40], ['cheese', 22, 42]]);
+D.z_veg = () => pizza([['tomato', 22, 37], ['piman', 32, 33], ['tomato', 42, 38], ['piman', 30, 42]]);
+D.chococookie = () => svg(`${shadow(32, 56, 26)}${plate()}${onPlate(A.cookie_ready, [[21, 48, .5], [43, 48, .5], [32, 43, .56]])}${tp.choco(22, 38)}${tp.choco(42, 38)}${tp.choco(32, 33)}`);
+D.maronparfait = () => svg(`${shadow(32, 57, 16)}<path d="M20 18 h24 l-4 26 h-16z" fill="#fff" ${L}/><path d="M21 24 h22 l-1 6 h-20z" fill="#d9a25a" opacity=".85"/><path d="M22 34 h20 l-1 6 h-18z" fill="#f2c45a" opacity=".85"/><rect x="28" y="44" width="8" height="6" fill="#fff" ${LT}/><rect x="22" y="50" width="20" height="4" rx="2" fill="#fff" ${LT}/>${tp.whip(32, 18)}${tp.kuri(32, 12)}`);
+D.berrycheese = () => svg(`${shadow(32, 56, 26)}${plate()}<g transform="translate(0 -2)">${cakeSlice('#ffe9a8', '#ee3b52', tp.berry(30, 18) + tp.berry(40, 16))}</g>`);
+D.c_cheesehamburg = () => curry([['patty', 40, 37], ['cheese', 40, 33]]);
+D.c_potato = () => curry([['jaga', 36, 36], ['jaga', 44, 37], ['jaga', 40, 41]]);
+D.c_ebicheese = () => curry([['ebi', 36, 36], ['ebi', 44, 39], ['cheese', 40, 34]]);
+D.tomatoburger = () => svg(`${shadow(32, 57, 24)}${burger(`<rect x="16" y="30" width="32" height="4" rx="2" fill="#f0473f" ${LT}/>`)}`);
+D.cheesechicken = () => svg(`${shadow(32, 57, 24)}${burger(`<path d="M12 34 h40 l-6 6 l-4 -3 l-6 5 l-5 -4 l-6 5 l-4 -4 z" fill="#ffd34d" ${LT}/>`).replace('fill="#8a4b2f"', 'fill="#e0a046"')}`);
+D.chickenset = () => svg(`${shadow(32, 56, 26)}${plate()}${put([['chicken', 20, 42], ['chicken', 30, 40], ['chicken', 24, 46]])}<g transform="translate(26 6) scale(.55)">${inner(A.potato_ready)}</g>`);
+D.p_chocobana = () => pancakes([['whip', 32, 26], ['choco', 24, 28], ['banana', 40, 28], ['choco', 34, 22]]);
+D.p_honeyice = () => pancakes([['ice', 32, 24], ['honey', 32, 32]]);
+D.p_mixberry = () => pancakes([['whip', 32, 26], ['berry', 24, 26], ['blue', 40, 28], ['blue', 36, 22]]);
+D.t_mochicheese = () => takoyaki([['mochi', 24, 30], ['cheese', 34, 29], ['mochi', 42, 31]]);
+D.t_ebinegi = () => takoyaki([['ebi', 26, 30], ['negi', 36, 31], ['ebi', 42, 31]]);
+D.t_cheesekatsuo = () => takoyaki([['cheese', 24, 31], ['katsuo', 34, 29], ['katsuo', 42, 32]]);
+D.g_tenshin = () => donburi([['egg2', 26, 30], ['egg2', 36, 30], ['egg2', 31, 27]], '#e8553a');
+D.g_soup = () => svg(`${shadow(32, 57, 26)}<path d="M5 30 h54 c0 14 -12 24 -27 24 c-15 0 -27 -10 -27 -24z" fill="#fff" ${L}/><ellipse cx="32" cy="30" rx="27" ry="8.5" fill="#f3e2b8" ${L}/>${put([['egg2', 26, 30], ['egg2', 38, 30], ['negi', 32, 32]])}`);
+D.g_mabodon = () => donburi([['tofu', 24, 30], ['tofu', 34, 28], ['tofu', 40, 32], ['negi', 30, 33]], '#d9442b');
+
+addMenu('pan', [], [{id:'tomacheese', name:'トマトチーズサンド', comps:['shokupan', 'tomato', 'cheese']}, {id:'hamcrois', name:'ハムクロワッサン', comps:['crois', 'ham', 'lettuce']},
+  {id:'chocopan', name:'チョコパン', comps:['kiji', 'choco']}]);
+addMenu('ramen', [], [{id:'r_negichashu', name:'ねぎチャーシュー麺', comps:['men', 'soup', 'chashu', 'negi']}, {id:'r_misochashu', name:'みそチャーシュー', comps:['men', 'miso', 'chashu']},
+  {id:'r_misomoyashi', name:'もやしみそラーメン', comps:['men', 'miso', 'moyashi']}]);
+addMenu('sushi', [], [{id:'oyakodon', name:'サーモンいくら丼', comps:['kome', 'salmon', 'ikura']}, {id:'tekkadon', name:'鉄火丼', comps:['kome', 'maguro', 'negi']},
+  {id:'tamamaki', name:'たまご巻き', comps:['nori', 'kome', 'tamago']}]);
+addMenu('pizza', [], [{id:'z_ebikinoko', name:'えびきのこピザ', comps:['pdough', 'tsauce', 'ebi', 'kinoko']}, {id:'z_hamcorn', name:'ハムコーンピザ', comps:['pdough', 'ham', 'corn', 'cheese']},
+  {id:'z_veg', name:'ベジタブルピザ', comps:['pdough', 'tsauce', 'tomato', 'piman']}]);
+addMenu('cake', [], [{id:'chococookie', name:'チョコクッキー', comps:['cookie', 'choco']}, {id:'maronparfait', name:'マロンパフェ', comps:['cookie', 'cream', 'kuri']},
+  {id:'berrycheese', name:'いちごチーズケーキ', comps:['sponge', 'cheese', 'ichigo']}]);
+addMenu('curry', [], [{id:'c_cheesehamburg', name:'チーズハンバーグカレー', comps:['gohan', 'roux', 'patty', 'cheese']}, {id:'c_potato', name:'ポテトカレー', comps:['gohan', 'roux', 'jaga']},
+  {id:'c_ebicheese', name:'えびチーズカレー', comps:['gohan', 'roux', 'ebi', 'cheese']}]);
+addMenu('burger', [], [{id:'tomatoburger', name:'トマトバーガー', comps:['bun', 'patty', 'tomato']}, {id:'cheesechicken', name:'チーズチキンバーガー', comps:['bun', 'chicken', 'cheese']},
+  {id:'chickenset', name:'チキンポテト', comps:['chicken', 'potato']}]);
+addMenu('pancake', [], [{id:'p_chocobana', name:'チョコバナナパンケーキ', comps:['pcdough', 'cream', 'choco', 'banana']}, {id:'p_honeyice', name:'はちみつアイス', comps:['pcdough', 'ice', 'honey']},
+  {id:'p_mixberry', name:'ミックスベリー', comps:['pcdough', 'cream', 'ichigo', 'blueberry']}]);
+addMenu('tako', [], [{id:'t_mochicheese', name:'もちチーズ焼き', comps:['tdough', 'mochi', 'cheese']}, {id:'t_ebinegi', name:'えびねぎ焼き', comps:['tdough', 'ebi', 'negi']},
+  {id:'t_cheesekatsuo', name:'チーズかつおたこ焼き', comps:['tdough', 'tako', 'cheese', 'katsuo']}]);
+addMenu('gyoza', [], [{id:'g_tenshin', name:'天津飯', comps:['gohan', 'tokitama', 'tsauce']}, {id:'g_soup', name:'たまごスープ', comps:['soup', 'tokitama', 'negi']},
+  {id:'g_mabodon', name:'マーボー丼', comps:['gohan', 'tofu', 'negi', 'tsauce']}]);
+
+/* =====================================================================
    ゲームのしくみ（ホストの端末だけが進めます。ほかの端末は結果を表示します）
    ===================================================================== */
 const BURN = 9000;          // できあがりから こげるまで
