@@ -758,6 +758,17 @@ body[data-theme=night] .sink{background:linear-gradient(180deg,#3d5a66,#2d4752)}
 .endpick input{min-height:48px;font-size:18px;border:1px solid var(--line);border-radius:12px;padding:4px 10px;background:var(--card2);color:var(--ink)}
 .hud .eta{font-size:12px;font-weight:700;color:var(--sub);white-space:nowrap;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 10px}
 #play.compact .hud .eta{font-size:11px;padding:3px 8px}
+.mg-sink{width:min(92cqw,92cqh,560px);aspect-ratio:1.3;display:flex}
+.mg-target{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:8px}
+.mg-target > i{width:64px;height:64px;display:block}
+.mg-target b{display:block;font-size:16px}
+.mg-target span{display:flex;gap:4px}
+.mg-target em{width:30px;height:30px;display:block}
+.mg-sky{position:relative;width:min(100%,720px);height:100%;border-radius:20px;background:var(--card2);border:1px solid var(--line);overflow:hidden;touch-action:none}
+.mg-sky .tapme{position:absolute;top:40%;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:8px 18px;border-radius:999px;font-weight:700}
+.fall{position:absolute;top:0;width:64px;height:64px;cursor:pointer;transition:opacity .2s}
+.fall.got{opacity:0;filter:drop-shadow(0 0 8px var(--ok))}
+.fall.miss{opacity:0;filter:grayscale(1)}
 
 </style>
 </head>
@@ -1790,6 +1801,61 @@ addMenu('tako', ['sausage'], [{id:'t_sausage', name:'ソーセージ焼き', com
   {id:'t_ebicheese', name:'えびチーズ焼き', comps:['tdough', 'ebi', 'cheese']}]);
 addMenu('gyoza', [], [{id:'g_ebigyoza', name:'えびぎょうざ', comps:['gyoza', 'ebi']}, {id:'g_tamamoyashi', name:'もやしたまご炒め', comps:['moyashi', 'tokitama']},
   {id:'g_harumakiset', name:'春巻きセット', comps:['harumaki', 'gohan', 'soup']}]);
+
+/* =====================================================================
+   メニュー追加（その4）：全部のお店に3品
+   ===================================================================== */
+D.sausagecheese = () => bread('#e39a45', [['sausage', 32, 30], ['cheese', 24, 34], ['cheese', 40, 34]]);
+D.blt = () => svg(`${shadow(32, 56, 26)}${plate()}${sandwich(['#b8573a', '#8fd16a', '#f0473f'])}`);
+D.ancream = () => bread('#c97a35', [['an', 32, 30], ['whip', 32, 26]]);
+D.r_misowakame = () => ramen([['wakame', 22, 30], ['wakame', 34, 29], ['wakame', 44, 31]], '#c98a3c');
+D.r_tsukemen = () => svg(`${shadow(32, 57, 28)}<ellipse cx="20" cy="40" rx="16" ry="10" fill="#ffe07a" ${L}/>${[37, 41, 45].map(y => `<path d="M8 ${y} q3 -3 6 0 t6 0 t6 0 t6 0" fill="none" stroke="#e3b93c" stroke-width="2"/>`).join('')}<path d="M36 34 h24 c0 10 -5 16 -12 16 c-7 0 -12 -6 -12 -16z" fill="#2b2b33" ${L}/><ellipse cx="48" cy="34" rx="12" ry="4" fill="#b8742a" ${L}/>${tp.chashu(46, 33)}${tp.nori(56, 34)}`);
+D.r_butter2 = () => ramen([['butter', 30, 29], ['negi', 22, 31], ['negi', 42, 31]]);
+D.salmondon = () => donburi([['salmon', 22, 31], ['salmon', 32, 29], ['salmon', 42, 31], ['negi', 32, 34]]);
+D.kaisendon = () => donburi([['maguro', 22, 30], ['salmon', 34, 29], ['ebi', 42, 32], ['maguro', 30, 34]]);
+D.ebimaki = () => maki((x, y) => `<path d="M${x - 3} ${y + 1} c0 -3 6 -4 6 0" fill="none" stroke="#ff8a76" stroke-width="2.4" stroke-linecap="round"/>`);
+D.z_salamicheese = () => pizza([['salami', 22, 37], ['cheese', 32, 33], ['salami', 42, 37], ['cheese', 30, 42], ['salami', 36, 41]]);
+D.z_pine = () => pizza([['pine', 22, 37], ['cheese', 32, 33], ['pine', 42, 37], ['pine', 30, 42]]);
+D.z_deluxe = () => pizza([['salami', 22, 37], ['kinoko', 32, 33], ['salami', 42, 37], ['kinoko', 34, 42], ['basil', 26, 42]]);
+D.chocobanacookie = () => svg(`${shadow(32, 56, 26)}${plate()}${onPlate(A.cookie_ready, [[21, 48, .5], [43, 48, .5]])}${tp.banana(22, 38)}${tp.choco(44, 38)}${tp.banana(34, 34)}`);
+D.chococream = () => svg(`${shadow(32, 56, 26)}${plate()}<g transform="translate(0 -2)">${cakeSlice('#8a5236', '#fff', tp.choco(28, 22) + tp.whip(40, 21))}</g>`);
+D.ichigocookie = () => svg(`${shadow(32, 56, 26)}${plate()}${onPlate(A.cookie_ready, [[21, 48, .5], [43, 48, .5], [32, 43, .56]])}${tp.berry(22, 36)}${tp.berry(44, 36)}${tp.berry(33, 31)}`);
+D.c_horencheese = () => curry([['horen', 38, 36], ['cheese', 44, 38], ['horen', 42, 41]]);
+D.c_ebicorn = () => curry([['ebi', 36, 36], ['corn', 42, 38], ['corn', 46, 36], ['ebi', 44, 41]]);
+D.c_hamburgegg = () => curry([['patty', 40, 38], ['egg', 40, 33]]);
+D.baconcheese = () => svg(`${shadow(32, 57, 24)}${burger(`<path d="M12 34 h40 l-6 6 l-4 -3 l-6 5 l-5 -4 l-6 5 l-4 -4 z" fill="#ffd34d" ${LT}/><path d="M12 31 c4 -3 7 3 10 0 c4 -3 7 3 10 0 c4 -3 7 3 10 0 c3 -2 6 1 8 0" fill="none" stroke="#b8573a" stroke-width="3.4" stroke-linecap="round"/>`)}`);
+D.chickentomato = () => svg(`${shadow(32, 57, 24)}${burger(`<rect x="16" y="30" width="32" height="4" rx="2" fill="#f0473f" ${LT}/>`).replace('fill="#8a4b2f"', 'fill="#e0a046"')}`);
+D.burgerpotato = () => svg(`${shadow(32, 57, 28)}<g transform="translate(-8 4) scale(.78)">${burger()}</g><g transform="translate(30 10) scale(.56)">${inner(A.potato_ready)}</g>`);
+D.p_icebanana = () => pancakes([['ice', 32, 24], ['banana', 22, 29], ['banana', 42, 29]]);
+D.p_berryhoney = () => pancakes([['blue', 24, 28], ['blue', 40, 28], ['blue', 32, 24], ['honey', 32, 33]]);
+D.p_kiwiice = () => pancakes([['ice', 32, 24], ['kiwi', 22, 29], ['kiwi', 42, 29]]);
+D.t_sausagecorn = () => takoyaki([['sausage', 32, 30], ['corn', 22, 32], ['corn', 42, 32]]);
+D.t_ebitenkasu = () => takoyaki([['ebi', 26, 30], ['tenkasu', 36, 30], ['ebi', 44, 32]]);
+D.t_mochicorn = () => takoyaki([['mochi', 24, 30], ['corn', 34, 30], ['mochi', 42, 31], ['corn', 30, 33]]);
+D.g_negigyoza = () => gyozaPlate(5, tp.negi(26, 36) + tp.negi(40, 36));
+D.g_tofusoup = () => svg(`${shadow(32, 57, 26)}<path d="M5 30 h54 c0 14 -12 24 -27 24 c-15 0 -27 -10 -27 -24z" fill="#fff" ${L}/><ellipse cx="32" cy="30" rx="27" ry="8.5" fill="#f3e2b8" ${L}/>${put([['tofu', 24, 30], ['tofu', 36, 29], ['tofu', 44, 31], ['negi', 30, 32]])}`);
+D.g_ebitama = () => svg(`${shadow(32, 56, 26)}${plate()}<path d="M12 44 c-2 -8 6 -14 20 -14 c14 0 22 6 20 14 c-2 3 -36 3 -40 0z" fill="#ffd84a" ${L}/>${put([['ebi', 24, 38], ['ebi', 38, 36], ['ebi', 32, 41]])}`);
+
+addMenu('pan', ['bacon'], [{id:'sausagecheese', name:'ソーセージチーズパン', comps:['kiji', 'sausage', 'cheese']}, {id:'blt', name:'BLTサンド', comps:['shokupan', 'bacon', 'lettuce', 'tomato']},
+  {id:'ancream', name:'あんクリームパン', comps:['kiji', 'an', 'cream']}]);
+addMenu('ramen', [], [{id:'r_misowakame', name:'わかめみそラーメン', comps:['men', 'miso', 'wakame']}, {id:'r_tsukemen', name:'つけ麺', comps:['men', 'soup', 'chashu', 'nori']},
+  {id:'r_butter2', name:'バターしょうゆ', comps:['men', 'soup', 'butter']}]);
+addMenu('sushi', [], [{id:'salmondon', name:'サーモン丼', comps:['kome', 'salmon', 'negi']}, {id:'kaisendon', name:'海鮮丼', comps:['kome', 'maguro', 'salmon', 'ebi']},
+  {id:'ebimaki', name:'えび巻き', comps:['nori', 'kome', 'ebi']}]);
+addMenu('pizza', [], [{id:'z_salamicheese', name:'サラミチーズピザ', comps:['pdough', 'salami', 'cheese']}, {id:'z_pine', name:'パインチーズピザ', comps:['pdough', 'pine', 'cheese']},
+  {id:'z_deluxe', name:'デラックスピザ', comps:['pdough', 'tsauce', 'salami', 'kinoko']}]);
+addMenu('cake', [], [{id:'chocobanacookie', name:'チョコバナナクッキー', comps:['cookie', 'banana', 'choco']}, {id:'chococream', name:'チョコクリームケーキ', comps:['sponge', 'cream', 'choco']},
+  {id:'ichigocookie', name:'いちごクッキー', comps:['cookie', 'ichigo']}]);
+addMenu('curry', [], [{id:'c_horencheese', name:'ほうれん草チーズカレー', comps:['gohan', 'roux', 'horen', 'cheese']}, {id:'c_ebicorn', name:'えびコーンカレー', comps:['gohan', 'roux', 'ebi', 'corn']},
+  {id:'c_hamburgegg', name:'ハンバーグたまごカレー', comps:['gohan', 'roux', 'patty', 'yudetama']}]);
+addMenu('burger', [], [{id:'baconcheese', name:'ベーコンチーズバーガー', comps:['bun', 'patty', 'bacon', 'cheese']}, {id:'chickentomato', name:'チキントマトバーガー', comps:['bun', 'chicken', 'tomato']},
+  {id:'burgerpotato', name:'ハンバーガーセット', comps:['bun', 'patty', 'potato']}]);
+addMenu('pancake', [], [{id:'p_icebanana', name:'アイスバナナ', comps:['pcdough', 'ice', 'banana']}, {id:'p_berryhoney', name:'ベリーはちみつ', comps:['pcdough', 'blueberry', 'honey']},
+  {id:'p_kiwiice', name:'キウイアイス', comps:['pcdough', 'kiwi', 'ice']}]);
+addMenu('tako', [], [{id:'t_sausagecorn', name:'ソーセージコーン焼き', comps:['tdough', 'sausage', 'corn']}, {id:'t_ebitenkasu', name:'えび天かす焼き', comps:['tdough', 'ebi', 'tenkasu']},
+  {id:'t_mochicorn', name:'もちコーン焼き', comps:['tdough', 'mochi', 'corn']}]);
+addMenu('gyoza', [], [{id:'g_negigyoza', name:'ねぎぎょうざ', comps:['gyoza', 'negi']}, {id:'g_tofusoup', name:'豆腐スープ', comps:['soup', 'tofu', 'negi']},
+  {id:'g_ebitama', name:'えびたま', comps:['ebi', 'tokitama']}]);
 
 /* =====================================================================
    お店の強化・季節のイベント（データ）
@@ -3650,6 +3716,75 @@ renderPlay = function(){
   let e = $('.eta', hud); if (!e){ e = elm('<span class="eta"></span>'); const c = $('.coins', hud); hud.insertBefore(e, c); }
   e.textContent = txt;
 };
+
+/* =========================================================
+   ミニゲーム追加：お皿洗い・材料キャッチ
+   ========================================================= */
+MINI.push({id:'wash', name:'お皿洗いチャレンジ', desc:'10秒で何枚洗えるか', icon:() => ROLE_ART.arau(), unit:'枚', coin:6},
+  {id:'catch', name:'材料キャッチ', desc:'料理の材料だけタップ（15秒）', icon:() => ROLE_ART.zairyo(), unit:'個', coin:4});
+const _startMini2 = startMini;
+startMini = function(id){
+  if (id !== 'wash' && id !== 'catch') return _startMini2(id);
+  stopMini();
+  const g = MINI.find(x => x.id === id);
+  MG = {id, score:0, started:false};
+  if (id === 'wash'){
+    MG.n = 0;
+    miniFrame(g, `<div class="mg-area"><div class="sink mg-sink" style="--rc:#2a9fb8"><div class="dish-w" id="mgSink"><div class="pl">${A.plate_dirty()}</div><div class="suds"></div><div class="tapme">左右にこすって開始</div><div class="bar"><b></b></div></div></div></div>`);
+  }
+  if (id === 'catch'){
+    const dishes = SHOPS.flatMap(s => s.dishes).filter(d => d.comps.length >= 2);
+    MG.d = dishes[Math.floor(Math.random() * dishes.length)]; MG.items = []; MG.uid = 0;
+    miniFrame(g, `<div class="mg-target"><i>${D[MG.d.id]()}</i><div><b>${esc(MG.d.name)}</b><span>${MG.d.comps.map(c => `<em>${A[ING[c].raw]()}</em>`).join('')}</span></div></div>
+      <div class="mg-area"><div class="mg-sky" id="mgSky"><div class="tapme">タップで開始</div></div></div>`);
+  }
+  show('mini');
+};
+function catchLoop(){
+  if (!MG || MG.id !== 'catch') return;
+  const sky = $('#mgSky'); if (!sky) return;
+  const now = performance.now(), H = sky.clientHeight, W = sky.clientWidth;
+  if (now - (MG.lastSpawn || 0) > 650){
+    MG.lastSpawn = now;
+    const good = Math.random() < .55, pool = good ? MG.d.comps : Object.keys(ING).filter(c => !MG.d.comps.includes(c) && A[ING[c].raw]);
+    const c = pool[Math.floor(Math.random() * pool.length)], e = elm(`<div class="fall" data-c="${c}">${A[ING[c].raw]()}</div>`);
+    e.style.left = Math.random() * Math.max(10, W - 70) + 'px'; sky.append(e);
+    MG.items.push({e, y:-70, v:H / (2.6 + Math.random() * 1.2)});
+  }
+  const dt = Math.min(.05, (now - (MG.lastT || now)) / 1000); MG.lastT = now;
+  MG.items = MG.items.filter(it => { it.y += it.v * dt; it.e.style.transform = `translateY(${it.y}px)`; if (it.y > H){ it.e.remove(); return false; } return document.body.contains(it.e); });
+  MG.raf = requestAnimationFrame(catchLoop);
+}
+$('#mini').addEventListener('pointerdown', e => {
+  if (!MG) return;
+  const g = MINI.find(x => x.id === MG.id);
+  if (MG.id === 'wash' && e.target.closest('#mgSink')){
+    MG.w = {x:e.clientX, dir:0, run:0};
+    if (!MG.started){ MG.started = true; const tm = $('.tapme', $('#mgSink')); if (tm) tm.hidden = true; miniTimer(g, 10, () => miniEnd(g, MG.score)); }
+  }
+  if (MG.id === 'catch'){
+    if (!MG.started && e.target.closest('#mgSky')){ MG.started = true; const tm = $('.tapme', $('#mgSky')); if (tm) tm.remove(); MG.lastT = performance.now(); catchLoop(); miniTimer(g, 15, () => { cancelAnimationFrame(MG.raf); miniEnd(g, MG.score); }); return; }
+    const f = e.target.closest('.fall'); if (!f || !MG.started) return;
+    const ok = MG.d.comps.includes(f.dataset.c);
+    MG.score = Math.max(0, MG.score + (ok ? 1 : -1)); $('#mgScore').textContent = MG.score;
+    sfx(ok ? 'take' : 'nope'); f.classList.add(ok ? 'got' : 'miss'); setTimeout(() => f.remove(), 250);
+  }
+});
+window.addEventListener('pointermove', e => {
+  if (!MG || MG.id !== 'wash' || !MG.w || !MG.down) return;
+  const W0 = MG.w, dx = e.clientX - W0.x; W0.x = e.clientX; const s = Math.sign(dx); if (!s) return;
+  if (s !== W0.dir){
+    if (W0.run > 22 && W0.dir){
+      MG.n++; const sk = $('#mgSink'); bubbles(sk, e); sfx('chop');
+      const p = Math.min(1, MG.n / 6); $('.bar b', sk).style.width = p * 100 + '%'; $('.pl', sk).style.setProperty('--clean', p);
+      if (MG.n >= 6){ MG.n = 0; MG.score++; $('#mgScore').textContent = MG.score; sfx('plate'); const pl = $('.pl', sk); pl.innerHTML = A.plate_dirty(); pl.style.setProperty('--clean', 0); $('.bar b', sk).style.width = '0%'; }
+    }
+    W0.dir = s; W0.run = 0;
+  }
+  W0.run += Math.abs(dx);
+});
+const _stopMini2 = stopMini;
+stopMini = function(){ if (MG && MG.raf) cancelAnimationFrame(MG.raf); _stopMini2(); };
 
 </script>
 </body>
