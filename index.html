@@ -769,6 +769,15 @@ body[data-theme=night] .sink{background:linear-gradient(180deg,#3d5a66,#2d4752)}
 .fall{position:absolute;top:0;width:64px;height:64px;cursor:pointer;transition:opacity .2s}
 .fall.got{opacity:0;filter:drop-shadow(0 0 8px var(--ok))}
 .fall.miss{opacity:0;filter:grayscale(1)}
+.mg-deco{width:min(92cqw,92cqh,560px);aspect-ratio:1;flex:none;--sauce:#d4508f}
+.mg-deco .tapme{top:12px;left:50%;transform:translateX(-50%);background:var(--card);padding:4px 12px;border-radius:999px;white-space:nowrap}
+.mg-area.col{flex-direction:column;gap:18px}
+.mg-pan{width:min(60cqw,40cqh,260px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#3b3f47 0 60%,#2a2d33 61%);display:grid;place-items:center;box-shadow:inset 0 -6px 0 rgba(0,0,0,.25)}
+.mg-pan .it{width:70%;transition:filter .1s}
+.mg-gauge{position:relative;width:min(90%,520px);height:26px;border-radius:13px;background:linear-gradient(90deg,#f4c7a0,#e08a3a 50%,#5a2f1c);border:1px solid var(--line)}
+.mg-gauge .zone{position:absolute;top:-4px;bottom:-4px;border-radius:8px;border:3px solid var(--ok);background:color-mix(in srgb,var(--ok) 25%,transparent)}
+.mg-gauge .ptr{position:absolute;top:-10px;bottom:-10px;width:6px;margin-left:-3px;border-radius:3px;background:var(--ink)}
+body:has(#mini.on) #toast{bottom:auto;top:calc(var(--safe-t) + 70px)}
 
 </style>
 </head>
@@ -1856,6 +1865,61 @@ addMenu('tako', [], [{id:'t_sausagecorn', name:'ソーセージコーン焼き',
   {id:'t_mochicorn', name:'もちコーン焼き', comps:['tdough', 'mochi', 'corn']}]);
 addMenu('gyoza', [], [{id:'g_negigyoza', name:'ねぎぎょうざ', comps:['gyoza', 'negi']}, {id:'g_tofusoup', name:'豆腐スープ', comps:['soup', 'tofu', 'negi']},
   {id:'g_ebitama', name:'えびたま', comps:['ebi', 'tokitama']}]);
+
+/* =====================================================================
+   メニュー追加（その5）：全部のお店に3品
+   ===================================================================== */
+D.baconeggtoast = () => svg(`${shadow(32, 56, 26)}${plate()}<rect x="12" y="26" width="40" height="20" rx="5" fill="#f2c98a" ${L}/><rect x="15" y="29" width="34" height="14" rx="3" fill="#ffe7b0"/>${tp.bacon(32, 31)}${tp.egg(32, 38)}`);
+D.chocomelon = () => svg(`${shadow(32, 56, 26)}${plate()}${onPlate(A.melon_ready, [[22, 47, .55], [42, 47, .55]])}${tp.choco(22, 34)}${tp.choco(42, 34)}`);
+D.hamtamacrois = () => svg(`${shadow(32, 56, 26)}${plate()}<g transform="translate(3 3) scale(.9)">${inner(A.crois_ready)}</g>${tp.ham(26, 33)}${tp.egg(38, 33)}`);
+D.r_misocorn = () => ramen([['corn', 22, 29], ['corn', 27, 31], ['corn', 32, 29], ['corn', 37, 31], ['corn', 42, 29]], '#c98a3c');
+D.r_moyachashu = () => ramen([['moyashi', 24, 28], ['chashu', 38, 30], ['moyashi', 32, 31]]);
+D.r_wakametama = () => ramen([['wakame', 22, 30], ['egg', 34, 30], ['wakame', 44, 31]]);
+D.ikuradon = () => donburi([['ikura', 26, 30], ['ikura', 36, 29], ['ikura', 31, 33], ['ikura', 42, 32]]);
+D.takokyurimaki = () => maki((x, y) => `<circle cx="${x - 1.6}" cy="${y}" r="2.2" fill="#e0485a"/><circle cx="${x + 2}" cy="${y + 1}" r="2" fill="#4fa84a"/>`);
+D.salmonkyurimaki = () => maki((x, y) => `<circle cx="${x - 1.6}" cy="${y}" r="2.2" fill="#ff9562"/><circle cx="${x + 2}" cy="${y + 1}" r="2" fill="#4fa84a"/>`);
+D.z_hampiman = () => pizza([['ham', 22, 37], ['piman', 32, 33], ['ham', 42, 38], ['piman', 30, 42], ['cheese', 38, 42]]);
+D.z_ebitomato = () => pizza([['ebi', 24, 36], ['tomato', 34, 33], ['ebi', 40, 41], ['tomato', 28, 42]]);
+D.z_salamicorn = () => pizza([['salami', 22, 37], ['corn', 30, 33], ['salami', 42, 37], ['corn', 34, 42], ['corn', 38, 34]]);
+D.kuricookie = () => svg(`${shadow(32, 56, 26)}${plate()}${onPlate(A.cookie_ready, [[21, 48, .5], [43, 48, .5], [32, 43, .56]])}${tp.kuri(22, 37)}${tp.kuri(43, 37)}${tp.kuri(32, 31)}`);
+D.bananacheese = () => svg(`${shadow(32, 56, 26)}${plate()}<g transform="translate(0 -2)">${cakeSlice('#ffe9a8', '#e8b46a', tp.banana(28, 22) + tp.banana(40, 19))}</g>`);
+D.chococheese = () => svg(`${shadow(32, 56, 26)}${plate()}<g transform="translate(0 -2)">${cakeSlice('#ffe9a8', '#5b3424', tp.choco(32, 20))}</g>`);
+D.c_katsuyasai = () => curry([['katsu', 38, 35], ['ninjin', 46, 40], ['ninjin', 34, 41]]);
+D.c_eggcheese = () => curry([['egg', 38, 36], ['cheese', 44, 40], ['cheese', 34, 40]]);
+D.c_horenegg = () => curry([['horen', 36, 37], ['egg', 44, 38]]);
+D.baconegg = () => svg(`${shadow(32, 57, 24)}${burger(`<ellipse cx="32" cy="34" rx="16" ry="4" fill="#fffdf6" ${LT}/><circle cx="32" cy="34" r="3.4" fill="#ffb02e"/><path d="M12 31 c4 -3 7 3 10 0 c4 -3 7 3 10 0 c4 -3 7 3 10 0 c3 -2 6 1 8 0" fill="none" stroke="#b8573a" stroke-width="3.4" stroke-linecap="round"/>`)}`);
+D.ebiset = () => svg(`${shadow(32, 57, 28)}<g transform="translate(-8 4) scale(.78)">${burger().replace('fill="#8a4b2f"', 'fill="#e8a05a"')}</g><g transform="translate(30 10) scale(.56)">${inner(A.potato_ready)}</g>`);
+D.chickenbacon = () => svg(`${shadow(32, 57, 24)}${burger(`<path d="M12 33 c4 -3 7 3 10 0 c4 -3 7 3 10 0 c4 -3 7 3 10 0 c3 -2 6 1 8 0" fill="none" stroke="#b8573a" stroke-width="3.4" stroke-linecap="round"/>`).replace('fill="#8a4b2f"', 'fill="#e0a046"')}`);
+D.p_chocoberry = () => pancakes([['choco', 24, 28], ['berry', 32, 24], ['choco', 40, 28]]);
+D.p_butterberry = () => pancakes([['butter', 32, 27], ['blue', 22, 29], ['blue', 42, 29]]);
+D.p_icecream = () => pancakes([['ice', 30, 24], ['whip', 40, 27]]);
+D.t_sausagenegi = () => takoyaki([['sausage', 32, 30], ['negi', 22, 32], ['negi', 42, 32]]);
+D.t_tenkasucheese = () => takoyaki([['tenkasu', 24, 31], ['cheese', 34, 29], ['tenkasu', 42, 31]]);
+D.t_mochikatsuo = () => takoyaki([['mochi', 24, 30], ['katsuo', 34, 29], ['mochi', 42, 31]]);
+D.g_moyashigyoza = () => gyozaPlate(5, tp.moyashi(26, 36) + tp.moyashi(40, 36));
+D.g_ebiharumaki = () => svg(`${shadow(32, 56, 26)}${plate()}<g transform="translate(4 6) scale(.85)">${inner(A.harumaki_ready)}</g>${tp.ebi(44, 34)}`);
+D.g_kyabetsusoup = () => svg(`${shadow(32, 57, 26)}<path d="M5 30 h54 c0 14 -12 24 -27 24 c-15 0 -27 -10 -27 -24z" fill="#fff" ${L}/><ellipse cx="32" cy="30" rx="27" ry="8.5" fill="#f3e2b8" ${L}/>${put([['egg2', 24, 30], ['lettuce', 36, 29], ['egg2', 42, 31]])}`);
+
+addMenu('pan', [], [{id:'baconeggtoast', name:'ベーコンエッグトースト', comps:['shokupan', 'bacon', 'yudetama']}, {id:'chocomelon', name:'チョコメロンパン', comps:['melon', 'choco']},
+  {id:'hamtamacrois', name:'ハムたまごクロワッサン', comps:['crois', 'ham', 'yudetama']}]);
+addMenu('ramen', [], [{id:'r_misocorn', name:'みそコーンラーメン', comps:['men', 'miso', 'corn']}, {id:'r_moyachashu', name:'もやしチャーシュー麺', comps:['men', 'soup', 'moyashi', 'chashu']},
+  {id:'r_wakametama', name:'わかめ味玉ラーメン', comps:['men', 'soup', 'wakame', 'yudetama']}]);
+addMenu('sushi', [], [{id:'ikuradon', name:'いくら丼', comps:['kome', 'ikura']}, {id:'takokyurimaki', name:'たこきゅうり巻き', comps:['nori', 'kome', 'tako', 'kyuri']},
+  {id:'salmonkyurimaki', name:'サーモンきゅうり巻き', comps:['nori', 'kome', 'salmon', 'kyuri']}]);
+addMenu('pizza', [], [{id:'z_hampiman', name:'ハムピーマンピザ', comps:['pdough', 'ham', 'piman', 'cheese']}, {id:'z_ebitomato', name:'えびトマトピザ', comps:['pdough', 'ebi', 'tomato']},
+  {id:'z_salamicorn', name:'サラミコーンピザ', comps:['pdough', 'salami', 'corn']}]);
+addMenu('cake', [], [{id:'kuricookie', name:'くりクッキー', comps:['cookie', 'kuri']}, {id:'bananacheese', name:'バナナチーズケーキ', comps:['sponge', 'cheese', 'banana']},
+  {id:'chococheese', name:'チョコチーズケーキ', comps:['sponge', 'cheese', 'choco']}]);
+addMenu('curry', [], [{id:'c_katsuyasai', name:'カツ野菜カレー', comps:['gohan', 'roux', 'katsu', 'ninjin']}, {id:'c_eggcheese', name:'たまごチーズカレー', comps:['gohan', 'roux', 'yudetama', 'cheese']},
+  {id:'c_horenegg', name:'ほうれん草たまごカレー', comps:['gohan', 'roux', 'horen', 'yudetama']}]);
+addMenu('burger', [], [{id:'baconegg', name:'ベーコンエッグバーガー', comps:['bun', 'patty', 'bacon', 'yudetama']}, {id:'ebiset', name:'えびバーガーセット', comps:['bun', 'ebi', 'potato']},
+  {id:'chickenbacon', name:'チキンベーコンバーガー', comps:['bun', 'chicken', 'bacon']}]);
+addMenu('pancake', [], [{id:'p_chocoberry', name:'チョコいちご', comps:['pcdough', 'choco', 'ichigo']}, {id:'p_butterberry', name:'バターベリー', comps:['pcdough', 'butter', 'blueberry']},
+  {id:'p_icecream', name:'アイスクリーム', comps:['pcdough', 'ice', 'cream']}]);
+addMenu('tako', [], [{id:'t_sausagenegi', name:'ソーセージねぎ焼き', comps:['tdough', 'sausage', 'negi']}, {id:'t_tenkasucheese', name:'天かすチーズたこ焼き', comps:['tdough', 'tako', 'tenkasu', 'cheese']},
+  {id:'t_mochikatsuo', name:'もちかつお焼き', comps:['tdough', 'mochi', 'katsuo']}]);
+addMenu('gyoza', [], [{id:'g_moyashigyoza', name:'もやしぎょうざ', comps:['gyoza', 'moyashi']}, {id:'g_ebiharumaki', name:'えび春巻き', comps:['harumaki', 'ebi']},
+  {id:'g_kyabetsusoup', name:'キャベツたまごスープ', comps:['soup', 'kyabetsu', 'tokitama']}]);
 
 /* =====================================================================
    お店の強化・季節のイベント（データ）
@@ -3785,6 +3849,76 @@ window.addEventListener('pointermove', e => {
 });
 const _stopMini2 = stopMini;
 stopMini = function(){ if (MG && MG.raf) cancelAnimationFrame(MG.raf); _stopMini2(); };
+
+/* =========================================================
+   ミニゲーム追加：なぞり飾り・焼き加減ストップ
+   ========================================================= */
+MINI.push({id:'deco', name:'なぞり飾りチャレンジ', desc:'15秒で何個飾れるか', icon:() => ROLE_ART.kazaru(), unit:'個', coin:6},
+  {id:'bake', name:'焼き加減ストップ', desc:'ちょうどいい所でタップ（8回）', icon:() => ROLE_ART.yaku(), unit:'回', coin:15});
+const _startMini3 = startMini;
+startMini = function(id){
+  if (id !== 'deco' && id !== 'bake') return _startMini3(id);
+  stopMini();
+  const g = MINI.find(x => x.id === id);
+  MG = {id, score:0, started:false};
+  if (id === 'deco'){
+    miniFrame(g, `<div class="mg-area"><div class="decoboard mg-deco" id="mgDeco" style="--rc:#d4508f"></div></div>`);
+    decoNext();
+  }
+  if (id === 'bake'){
+    MG.round = 0;
+    miniFrame(g, `<div class="mg-area col"><div class="mg-pan" id="mgPan"><div class="it">${A.patty()}</div></div>
+      <div class="mg-gauge" id="mgGauge"><i class="zone"></i><b class="ptr"></b></div><button class="btn big green" id="mgStop">ストップ</button></div>`);
+    $('#mgTime').textContent = '1/8'; bakeRound();
+  }
+  show('mini');
+};
+function decoNext(){
+  const db = $('#mgDeco'); if (!db) return;
+  const ds = SHOPS.flatMap(s => s.dishes), d = ds[Math.floor(Math.random() * ds.length)], p = DECOS[Math.floor(Math.random() * DECOS.length)];
+  MG.pts = p.pts; MG.next = 0; MG.path = [];
+  db.innerHTML = `<div class="dish">${D[d.id]()}</div><svg class="pat" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"><polyline points="${p.pts.map(x => x.join(',')).join(' ')}" class="guide"/>${p.pts.map((x, i) => `<circle cx="${x[0]}" cy="${x[1]}" r="${i ? 3 : 5}" class="cp ${i ? '' : 'start'}" data-n="${i}"/>`).join('')}<polyline points="" class="ink"/></svg>${MG.started ? '' : '<div class="tapme">大きい丸からなぞって開始</div>'}`;
+}
+function bakeRound(){
+  const w = Math.max(14, 26 - MG.round * 1.6), c = 20 + Math.random() * (60 - w);
+  MG.zone = [c, c + w]; MG.speed = 70 + MG.round * 14; MG.pos = 0; MG.dir = 1; MG.lock = false;
+  const z = $('#mgGauge .zone'); z.style.left = c + '%'; z.style.width = w + '%';
+  const it = $('#mgPan .it'); it.innerHTML = A.patty(); it.style.filter = '';
+  MG.lastT = performance.now(); cancelAnimationFrame(MG.raf); MG.raf = requestAnimationFrame(bakeLoop);
+}
+function bakeLoop(){
+  if (!MG || MG.id !== 'bake' || MG.lock) return;
+  const now = performance.now(), dt = (now - MG.lastT) / 1000; MG.lastT = now;
+  MG.pos += MG.dir * MG.speed * dt; if (MG.pos >= 100){ MG.pos = 100; MG.dir = -1; } if (MG.pos <= 0){ MG.pos = 0; MG.dir = 1; }
+  const p = $('#mgGauge .ptr'); if (p) p.style.left = MG.pos + '%';
+  const it = $('#mgPan .it'); if (it) it.style.filter = `brightness(${1.1 - MG.pos / 160}) saturate(${1 - MG.pos / 300})`;
+  MG.raf = requestAnimationFrame(bakeLoop);
+}
+$('#mini').addEventListener('click', e => {
+  if (!MG || MG.id !== 'bake' || !e.target.closest('#mgStop') || MG.lock) return;
+  MG.lock = true; cancelAnimationFrame(MG.raf);
+  const ok = MG.pos >= MG.zone[0] && MG.pos <= MG.zone[1], it = $('#mgPan .it');
+  if (ok){ MG.score++; $('#mgScore').textContent = MG.score; sfx('serve'); it.innerHTML = A.patty_ready(); it.style.filter = ''; toastMsg('ちょうどいい'); }
+  else { sfx('nope'); toastMsg(MG.pos < MG.zone[0] ? 'まだ生焼け' : '焼きすぎ'); }
+  MG.round++;
+  setTimeout(() => { if (!MG || MG.id !== 'bake') return; if (MG.round >= 8) return miniEnd(MINI.find(x => x.id === 'bake'), MG.score); $('#mgTime').textContent = `${MG.round + 1}/8`; bakeRound(); }, 800);
+});
+$('#mini').addEventListener('pointerdown', e => {
+  if (!MG || MG.id !== 'deco') return;
+  const db = e.target.closest('#mgDeco'); if (!db) return;
+  const G = decoGeom(db), u = [(e.clientX - G.x0) / G.s, (e.clientY - G.y0) / G.s];
+  if (Math.hypot(u[0] - MG.pts[0][0], u[1] - MG.pts[0][1]) > 16){ toastMsg('大きい丸から'); return; }
+  if (!MG.started){ MG.started = true; const tm = $('.tapme', db); if (tm) tm.remove(); miniTimer(MINI.find(x => x.id === 'deco'), 15, () => miniEnd(MINI.find(x => x.id === 'deco'), MG.score)); }
+  MG.tr = {G}; MG.next = 1; MG.path = [u]; $$('.cp', db).forEach(c => c.classList.toggle('hit', c.dataset.n === '0'));
+});
+window.addEventListener('pointermove', e => {
+  if (!MG || MG.id !== 'deco' || !MG.tr) return;
+  const db = $('#mgDeco'), G = MG.tr.G, u = [(e.clientX - G.x0) / G.s, (e.clientY - G.y0) / G.s];
+  MG.path.push(u); const ink = $('.ink', db); if (ink) ink.setAttribute('points', MG.path.map(p => p.map(v => v.toFixed(1)).join(',')).join(' '));
+  if (MG.next < MG.pts.length && Math.hypot(u[0] - MG.pts[MG.next][0], u[1] - MG.pts[MG.next][1]) < 11){ const c = $(`.cp[data-n="${MG.next}"]`, db); if (c) c.classList.add('hit'); MG.next++; sfx('tap'); }
+  if (MG.next >= MG.pts.length){ MG.tr = null; MG.score++; $('#mgScore').textContent = MG.score; sfx('plate'); db.classList.add('done'); setTimeout(() => { db.classList.remove('done'); if (MG && MG.id === 'deco') decoNext(); }, 250); }
+});
+window.addEventListener('pointerup', () => { if (MG && MG.id === 'deco' && MG.tr){ MG.tr = null; const db = $('#mgDeco'); if (db){ const ink = $('.ink', db); if (ink) ink.setAttribute('points', ''); $$('.cp', db).forEach(c => c.classList.remove('hit')); } } });
 
 </script>
 </body>
